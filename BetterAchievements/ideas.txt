@@ -1,4 +1,9 @@
 - cache current values
+- cool customization (i mean that's the point of me making the plugin anyway)
 - better tracking of the things
+- track progress over time
+- achievement roulette!
+- filter by ranked achievements (excludes seasonal/etc)
+- tracking in chat/in a different tab/wherever
 - sync with friends?
-- sync with lalachievements/ffxivcollect?
+- sync with lalachievements/ffxivcollect

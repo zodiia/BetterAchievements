@@ -1,7 +1,6 @@
 using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-using Serilog;
 
 namespace BetterAchievements.Windows.Components;
 
@@ -22,8 +21,6 @@ public static partial class ImGuiComponents
         var clampedProgress = Math.Clamp(progress, 0f, 1f);
         var insideTextSize = insideText != null ? ImGui.CalcTextSize(insideText) : Vector2.Zero;
 
-
-        Log.Information("{Progress}", clampedProgress);
         // Background
         Vector2 barStart = cursorPos;
         Vector2 barEnd = new Vector2(barStart.X + width, barStart.Y + height);

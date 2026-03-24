@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Content Include="BetterAchievements.json" />
+    <Content Include="Data\layout.schema.json" />
     <Content Include="ideas.txt" />
     <Content Include="research.txt" />
   </ItemGroup>

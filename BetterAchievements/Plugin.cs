@@ -4,6 +4,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using BetterAchievements.Hooks;
 using BetterAchievements.Unlockables;
 using BetterAchievements.Windows;
@@ -44,7 +45,6 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static unsafe UIState* UiState { get; } = UIState.Instance();
 
-
     internal static readonly UnlockablesProgressService UnlockablesProgressService = new();
 
     private const string CommandName = "/betterachievements";
@@ -56,6 +56,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("BetterAchievements");
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
+    public MainWindowLayout MainWindowLayout { get; init; }
 
     private readonly AchievementProgressHook? achievementProgressHook;
 
@@ -69,9 +70,11 @@ public sealed class Plugin : IDalamudPlugin
         } catch (Exception e) {
             Log.Warning(e, "Could not hook achievement progress. This feature will be disabled.");
         }
+
+        MainWindowLayout = LoadMainWindowLayout();
         
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, DataManager, UnlockState);
+        MainWindow = new MainWindow(this);
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
@@ -101,6 +104,12 @@ public sealed class Plugin : IDalamudPlugin
         achievementProgressHook?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+    }
+
+    private MainWindowLayout LoadMainWindowLayout()
+    {
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, };
+        return JsonSerializer.Deserialize<MainWindowLayout>(GetResourceFile("layout.json"), options)!;
     }
 
     public string GetResourceFile(string fileName)

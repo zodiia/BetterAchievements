@@ -1,10 +1,170 @@
 {
-    "currentMaxId": 0,
-    "categories": [
+    "$schema": "layout.schema.json",
+    "achievementLayout": [
         {
-            "key": "",
-            "name": "",
-            "description": ""
+            "type": "group",
+            "name": "Battle",
+            "items": [
+                {
+                    "type": "group",
+                    "name": "General",
+                    "items": [
+                        {
+                            "type": "category",
+                            "name": "Combat",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Hunting Logs",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "FATE",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Jobs",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Blue Mage",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Beastmaster",
+                            "items": []
+                        }
+                    ]
+                },
+                {
+                    "type": "category",
+                    "name": "Dungeons",
+                    "items": []
+                },
+                {
+                    "type": "category",
+                    "name": "Trials",
+                    "items": []
+                },
+                {
+                    "type": "category",
+                    "name": "Raids",
+                    "items": []
+                },
+                {
+                    "type": "category",
+                    "name": "The Hunt",
+                    "items": []
+                },
+                {
+                    "type": "category",
+                    "name": "Treasure Hunt",
+                    "items": []
+                },
+                {
+                    "type": "group",
+                    "name": "Field Operations",
+                    "items": [
+                        {
+                            "type": "category",
+                            "name": "Eureka",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Bozja",
+                            "items": []
+                        },
+                        {
+                            "type": "category",
+                            "name": "Occult Crescent",
+                            "items": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "PvP",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Character",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Items",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Crafting & Gathering",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Quests",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Exploration",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "Grand Company",
+            "items": [
+                {
+                    "type": "category",
+                    "name": "Combat",
+                    "items": []
+                }
+            ]
         }
     ]
 }

@@ -1,36 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Numerics;
 using BetterAchievements.Unlockables;
 using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using Dalamud.Plugin.Services;
 using Achievement = Lumina.Excel.Sheets.Achievement;
 
 namespace BetterAchievements.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    // We give this window a hidden ID using ##.
-    // The user will see "My Amazing Window" as window title,
-    // but for ImGui the ID is "My Amazing Window##With a hidden ID"
-    public MainWindow(Plugin plugin, IDataManager dataManager, IUnlockState unlockState)
+    private readonly Plugin plugin;
+    private AchievementLayoutCategory? selectedLayoutCategory;
+
+    public MainWindow(Plugin plugin)
         : base("Better Achievements")
     {
+        this.plugin = plugin;
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(800, 450),
+            MinimumSize = new Vector2(900, 450),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
     }
 
     public void Dispose() { }
 
-    public override void Draw()
+    public void DrawMainContent()
     {
-        if (!ImGui.BeginChild("MainContent", Vector2.Zero))
+        if (!ImGui.BeginChild("MainContent", Vector2.Zero, true))
         {
             return;
         }
@@ -68,5 +66,57 @@ public class MainWindow : Window, IDisposable
         }, "Triple-decker"));
 
         ImGui.EndChild();
+    }
+
+    private void DrawSidebarLayout(AchievementLayout layout)
+    {
+        if (layout is AchievementLayoutGroup group)
+        {
+            if (ImGui.TreeNodeEx(group.Name, ImGuiTreeNodeFlags.SpanFullWidth))
+            {
+                foreach (var subLayout in group.Items)
+                {
+                    DrawSidebarLayout(subLayout);
+                }
+                ImGui.TreePop();
+            }
+        }
+        else if (layout is AchievementLayoutCategory category)
+        {
+            if (ImGui.TreeNodeEx(category.Name, ImGuiTreeNodeFlags.Leaf |
+                                                ImGuiTreeNodeFlags.NoTreePushOnOpen |
+                                                ImGuiTreeNodeFlags.SpanFullWidth |
+                                                (selectedLayoutCategory == category ? ImGuiTreeNodeFlags.Selected : 0)))
+            {
+                if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+                {
+                    selectedLayoutCategory = category;
+                }
+            }
+        }
+    }
+
+    public void DrawSidebar()
+    {
+        if (ImGui.BeginChild("Sidebar",  Vector2.Zero with { X = 350 }, true))
+        {
+            if (!ImGui.CollapsingHeader("Achievements"))
+            {
+                return;
+            }
+
+            foreach (var layout in plugin.MainWindowLayout.AchievementLayout)
+            {
+                DrawSidebarLayout(layout);
+            }
+            ImGui.EndChild();
+        }
+    }
+
+    public override void Draw()
+    {
+        DrawSidebar();
+        ImGui.SameLine();
+        DrawMainContent();
     }
 }
