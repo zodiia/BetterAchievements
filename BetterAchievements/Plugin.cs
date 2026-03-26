@@ -43,9 +43,13 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService]
     internal static IUnlockState UnlockState { get; private set; } = null!;
 
+    [PluginService]
+    internal static IAddonEventManager AddonEventManager { get; private set; } = null!;
+
     internal static unsafe UIState* UiState { get; } = UIState.Instance();
 
-    internal static readonly UnlockablesProgressService UnlockablesProgressService = new();
+    internal static UnlockablesProgressService UnlockablesProgressService { get; private set; } = null!;
+    internal static UnlockablesService UnlockablesService { get; private set; } = null!;
 
     private const string CommandName = "/betterachievements";
     private const string CommandAlias = "/bach";
@@ -70,6 +74,9 @@ public sealed class Plugin : IDalamudPlugin
         } catch (Exception e) {
             Log.Warning(e, "Could not hook achievement progress. This feature will be disabled.");
         }
+
+        UnlockablesProgressService = new();
+        UnlockablesService = new();
 
         MainWindowLayout = LoadMainWindowLayout();
         

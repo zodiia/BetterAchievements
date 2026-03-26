@@ -20,6 +20,8 @@ public static partial class ImGuiComponents
     {
         ImGui.TextColored(ColorOrange(), achievement.Name());
         ImGui.SameLine();
+        ImGui.TextDisabled(" #" + achievement.Id());
+        ImGui.SameLine();
         if (achievement.Unlocked)
         {
             SameLineRightTextColored(ColorGreen(), "Unlocked");
@@ -51,7 +53,7 @@ public static partial class ImGuiComponents
         {
             ProgressBar(
                 (progress ?? 1.0f) / achievement.Maximum() ?? 1.0f,
-                progress != null ? ColorProgress() : ColorRed(),
+                progress != null ? ColorProgress(1.0f, 0.5f) : ColorRed(),
                 insideText: progress != null ? $"{achievement.Progress()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progress != null,
@@ -64,7 +66,7 @@ public static partial class ImGuiComponents
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
     }
 
-    private static void MultiProgressBasedAchievementLevels(UnlockableMultiAchievement achievements)
+    private static void MultiProgressBasedAchievementLevels(UnlockableTieredAchievement achievements)
     {
         int i = achievements.Unlocked.Count;
         var currentText = "";
@@ -83,7 +85,7 @@ public static partial class ImGuiComponents
         }
     }
 
-    public static void MultiProgressBasedAchievement(UnlockableMultiAchievement achievements)
+    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements)
     {
         ImGui.BeginGroup();
 
@@ -100,10 +102,9 @@ public static partial class ImGuiComponents
             ImGui.Text(currentLevel.Description());
             ImGui.SameLine();
             ImGui.TextDisabled(" (current level)");
-            Log.Information("{Progress}, {Maximum}", maxLevel.Progress(), currentLevel.Maximum());
             ProgressBar(
                 (maxLevel.Progress() ?? 1.0f) / currentLevel.Maximum() ?? 1.0f,
-                progressLoaded ? ColorProgress() : ColorRed(),
+                progressLoaded ? ColorProgress(1.0f, 0.5f) : ColorRed(),
                 insideText: progressLoaded ? $"{maxLevel.Progress()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,
@@ -119,7 +120,7 @@ public static partial class ImGuiComponents
         {
             ProgressBar(
                 (maxLevel.Progress() ?? 1.0f) / maxLevel.Maximum() ?? 1.0f,
-                progressLoaded ? ColorProgress() : ColorRed(),
+                progressLoaded ? ColorProgress(1.0f, 0.5f) : ColorRed(),
                 insideText: progressLoaded ? $"{maxLevel.Progress()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,
@@ -128,7 +129,6 @@ public static partial class ImGuiComponents
 
         ImGui.EndGroup();
         return;
-
 
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(maxLevel.Id());
     }
