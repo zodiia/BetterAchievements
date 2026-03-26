@@ -18,6 +18,8 @@ public sealed record UnlockableAchievement(Achievement Achievement)
     public byte Points() => Achievement.Points;
     public byte Type() => Achievement.Type;
 
+    public readonly string NameLowercase = Achievement.Name.ToString().ToLower();
+
     public uint? Maximum()
     {
         switch (Achievement.Type)

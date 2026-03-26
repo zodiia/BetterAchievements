@@ -14,8 +14,11 @@ public class MainWindow : Window, IDisposable
     private readonly Plugin plugin;
     private AchievementLayoutCategory? selectedLayoutCategory;
 
-    private const string AchievementListNotLoadedWarning = "Achievement list not loaded.\nPlease open the vanilla achievement window once!";
+    private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
+
+    private string searchBuffer = "";
+    private string searchTerm = "";
 
     public MainWindow(Plugin plugin)
         : base("Better Achievements")
@@ -32,12 +35,14 @@ public class MainWindow : Window, IDisposable
 
     private void DrawTopbarLayout()
     {
-        if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 40 }, true))
+        if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 48 }, true))
         {
-            Log.Information(Vector2.Zero.ToString());
-            Log.Information(ImGui.GetContentRegionAvail().ToString());
+            if (ImGui.InputTextEx("", "Search", ref searchBuffer, 128, default(Vector2) with { X = 400 }))
+            {
+                searchTerm = searchBuffer.ToLower(); // do not recalculate ToLower many times per frames
+            }
 
-            ImGui.GetWindowDrawList().AddRectFilled(Vector2.Zero, ImGui.GetContentRegionAvail(), ImGui.GetColorU32(ImGuiComponents.ColorRed()), 0.0f);
+            ImGui.SameLine();
 
             ImGui.EndChild();
         }
@@ -88,6 +93,10 @@ public class MainWindow : Window, IDisposable
             if (achievement is AchievementLayoutItemSimple simple)
             {
                 var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id);
+                if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
+                {
+                    continue;
+                }
                 if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
                 {
                     ImGuiComponents.ProgressBasedAchievement(unlockable);
@@ -100,7 +109,12 @@ public class MainWindow : Window, IDisposable
 
             if (achievement is AchievementLayoutItemTiered tiered)
             {
-                ImGuiComponents.MultiProgressBasedAchievement(Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids));
+                var unlockable = Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids);
+                if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
+                {
+                    continue;
+                }
+                ImGuiComponents.MultiProgressBasedAchievement(unlockable);
             }
 
             if (achievement is AchievementLayoutItemCombined combined)
@@ -109,6 +123,10 @@ public class MainWindow : Window, IDisposable
                 foreach (var simpleAchievement in combined.Ids)
                 {
                     var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simpleAchievement);
+                    if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
+                    {
+                        continue;
+                    }
                     if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
                     {
                         ImGuiComponents.ProgressBasedAchievement(unlockable);
