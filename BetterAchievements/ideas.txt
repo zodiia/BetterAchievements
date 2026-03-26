@@ -1,3 +1,6 @@
+- search bar
+- pinned/favorites
+- keep favorites on the screen
 - cache current values
 - cool customization (i mean that's the point of me making the plugin anyway)
 - better tracking of the things

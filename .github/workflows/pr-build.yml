@@ -1,8 +1,10 @@
-name: Sample PR Builder for SamplePlugin
+name: Sample PR Builder for BetterAchievements
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
 
@@ -10,7 +12,7 @@ jobs:
     runs-on: windows-2022
 
     env:
-      Solution_Name: SamplePlugin
+      Solution_Name: BetterAchievements
 
     steps:
     - name: Checkout
@@ -35,5 +37,3 @@ jobs:
         name: SamplePlugin
         path: .\SamplePlugin\bin\x64\Release\SamplePlugin\*
         if-no-files-found: error
-        retention-days: 1
-

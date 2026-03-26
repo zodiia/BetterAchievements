@@ -5,6 +5,7 @@ using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
+using Serilog;
 
 namespace BetterAchievements.Windows;
 
@@ -28,6 +29,19 @@ public class MainWindow : Window, IDisposable
     }
 
     public void Dispose() { }
+
+    private void DrawTopbarLayout()
+    {
+        if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 40 }, true))
+        {
+            Log.Information(Vector2.Zero.ToString());
+            Log.Information(ImGui.GetContentRegionAvail().ToString());
+
+            ImGui.GetWindowDrawList().AddRectFilled(Vector2.Zero, ImGui.GetContentRegionAvail(), ImGui.GetColorU32(ImGuiComponents.ColorRed()), 0.0f);
+
+            ImGui.EndChild();
+        }
+    }
 
     private bool DrawWarnings()
     {
@@ -56,7 +70,7 @@ public class MainWindow : Window, IDisposable
         return false;
     }
 
-    public void DrawMainContent()
+    private void DrawMainContent()
     {
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail(), true))
         {
@@ -143,7 +157,7 @@ public class MainWindow : Window, IDisposable
         }
     }
 
-    public void DrawSidebar()
+    private void DrawSidebar()
     {
         if (ImGui.BeginChild("Sidebar", ImGui.GetContentRegionAvail() with { X = 350 }, true))
         {
@@ -163,6 +177,7 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
+        DrawTopbarLayout();
         DrawSidebar();
         ImGui.SameLine();
         DrawMainContent();
