@@ -35,5 +35,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SamplePlugin
-        path: .\SamplePlugin\bin\x64\Release\SamplePlugin\*
+        path: .\BetterAchievements\bin\x64\Release\BetterAchievements\*
         if-no-files-found: error
