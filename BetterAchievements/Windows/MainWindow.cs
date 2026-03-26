@@ -3,9 +3,8 @@ using System.Linq;
 using System.Numerics;
 using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using Lumina.Excel.Sheets;
-using Serilog;
 
 namespace BetterAchievements.Windows;
 
@@ -37,12 +36,25 @@ public class MainWindow : Window, IDisposable
     {
         if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 48 }, true))
         {
-            if (ImGui.InputTextEx("", "Search", ref searchBuffer, 128, default(Vector2) with { X = 400 }))
+            var padding = ImGui.GetStyle().CellPadding;
+            ImGui.SameLine();
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y);
+            ImGui.Text("Search:");
+            ImGui.SameLine();
+            if (ImGui.InputTextEx("", "Search achievements", ref searchBuffer, 128, default(Vector2) with { X = 400 }))
             {
                 searchTerm = searchBuffer.ToLower(); // do not recalculate ToLower many times per frames
             }
 
             ImGui.SameLine();
+
+            var achievementPointsText = $"9945 {FontAwesomeIcon.Trophy.ToIconString()}";
+            var size = ImGui.CalcTextSize(achievementPointsText);
+
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - size.X);
+            ImGui.PushFont(ImGui.GetFont() with { Scale = 1.5f });
+            ImGui.TextColored(ImGuiComponents.ColorOrange(), achievementPointsText);
+            ImGui.PopFont();
 
             ImGui.EndChild();
         }
