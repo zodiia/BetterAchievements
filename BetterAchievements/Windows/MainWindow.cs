@@ -5,25 +5,25 @@ using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
+using Serilog;
 
 namespace BetterAchievements.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    private readonly Plugin plugin;
-    private AchievementLayoutCategory? selectedLayoutCategory;
-
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
 
-    private string searchBuffer = "";
-    private string searchTerm = "";
+    private readonly Plugin plugin;
+
+    private readonly MainWindowState state;
 
     public MainWindow(Plugin plugin)
         : base("Better Achievements")
     {
         this.plugin = plugin;
-        SizeConstraints = new WindowSizeConstraints
+        state = new(plugin.MainWindowLayout);
+        SizeConstraints = new()
         {
             MinimumSize = new Vector2(900, 450),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -41,9 +41,9 @@ public class MainWindow : Window, IDisposable
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y + 1);
             ImGui.Text("Search:");
             ImGui.SameLine();
-            if (ImGui.InputTextEx("", "Search achievements", ref searchBuffer, 128, default(Vector2) with { X = 400 }))
+            if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 }))
             {
-                searchTerm = searchBuffer.ToLower(); // do not recalculate ToLower many times per frames
+                state.SetSearch(state.SearchBuffer); // do not recalculate ToLower many times per frames
             }
 
             ImGui.SameLine();
@@ -79,7 +79,7 @@ public class MainWindow : Window, IDisposable
             return true;
         }
 
-        if (selectedLayoutCategory == null)
+        if (state.SelectedCategory == null)
         {
             var available = ImGui.GetContentRegionAvail();
             var textSize = ImGui.CalcTextSize(NoCategorySelectedWarning);
@@ -100,13 +100,15 @@ public class MainWindow : Window, IDisposable
             return;
         }
 
-        if (DrawWarnings() || selectedLayoutCategory == null) // null is already checked but just doing that so that my ide stops screaming at me
+        if (DrawWarnings() || state.SelectedCategory == null) // null is already checked but just doing that so that my ide stops screaming at me
         {
             ImGui.EndChild();
             return;
         }
 
-        foreach (var achievement in selectedLayoutCategory.Items)
+        Log.Information("{Count}", state.SelectedCategory.Items.Count);
+
+        foreach (var achievement in state.SelectedCategory.Items)
         {
             if (achievement is AchievementLayoutItemSimple simple)
             {
@@ -125,10 +127,7 @@ public class MainWindow : Window, IDisposable
             if (achievement is AchievementLayoutItemTiered tiered)
             {
                 var unlockable = Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids);
-                if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
-                {
-                    continue;
-                }
+
                 ImGuiComponents.MultiProgressBasedAchievement(unlockable);
             }
 
@@ -138,10 +137,7 @@ public class MainWindow : Window, IDisposable
                 foreach (var simpleAchievement in combined.Ids)
                 {
                     var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simpleAchievement);
-                    if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
-                    {
-                        continue;
-                    }
+
                     if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
                     {
                         ImGuiComponents.ProgressBasedAchievement(unlockable);
@@ -153,7 +149,7 @@ public class MainWindow : Window, IDisposable
                 }
             }
 
-            if (achievement != selectedLayoutCategory.Items.Last())
+            if (achievement != state.SelectedCategory.Items.Last())
             {
                 ImGui.Separator();
             }
@@ -180,11 +176,11 @@ public class MainWindow : Window, IDisposable
             if (ImGui.TreeNodeEx(category.Name, ImGuiTreeNodeFlags.Leaf |
                                                 ImGuiTreeNodeFlags.NoTreePushOnOpen |
                                                 ImGuiTreeNodeFlags.SpanFullWidth |
-                                                (selectedLayoutCategory == category ? ImGuiTreeNodeFlags.Selected : 0)))
+                                                (state.SelectedCategory?.Id == category.Id ? ImGuiTreeNodeFlags.Selected : 0)))
             {
                 if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
                 {
-                    selectedLayoutCategory = category;
+                    state.SetCategory(category.Id);
                 }
             }
         }
@@ -200,7 +196,7 @@ public class MainWindow : Window, IDisposable
                 return;
             }
 
-            foreach (var layout in plugin.MainWindowLayout.AchievementLayout)
+            foreach (var layout in state.FilteredLayout.AchievementLayout)
             {
                 DrawSidebarLayout(layout);
             }

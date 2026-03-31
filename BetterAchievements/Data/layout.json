@@ -6,6 +6,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 0,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 1 },
@@ -184,6 +185,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 1,
                     "name": "Dungeons",
                     "items": [
                         { "type": "simple", "id": 739 },
@@ -286,6 +288,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 2,
                     "name": "Trials",
                     "items": [
                         { "type": "simple", "id": 855 },
@@ -341,6 +344,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 3,
                     "name": "Raids",
                     "items": [
                         { "type": "simple", "id": 747 },
@@ -474,6 +478,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 4,
                     "name": "The Hunt",
                     "items": [
                         { "type": "simple", "id": 964 },
@@ -547,6 +552,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 5,
                     "name": "Treasure Hunt",
                     "items": [
                         { "type": "simple", "id": 878 },
@@ -652,6 +658,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 6,
                     "name": "Field Operations",
                     "items": [
                         { "type": "simple", "id": 2227 },
@@ -735,6 +742,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 7,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 813 },
@@ -762,6 +770,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 8,
                     "name": "Ranking",
                     "items": [
                         { "type": "simple", "id": 1540 },
@@ -846,6 +855,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 9,
                     "name": "The Wolves' Den",
                     "items": [
                         { "type": "simple", "id": 2110 },
@@ -932,6 +942,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 10,
                     "name": "Frontline",
                     "items": [
                         { "type": "simple", "id": 930 },
@@ -1014,6 +1025,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 11,
                     "name": "Rival Wings",
                     "items": [
                         { "type": "simple", "id": 1932 },
@@ -1037,6 +1049,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 12,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 44 },
@@ -1216,6 +1229,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 13,
                     "name": "Disciples of War",
                     "items": [
                         { "type": "tiered", "ids": [19, 20, 21, 22, 23, 1167, 1814, 2246, 2892, 3429] },
@@ -1235,6 +1249,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 14,
                     "name": "Disciples of Magic",
                     "items": [
                         { "type": "tiered", "ids": [45, 46, 47, 48, 49, 1172, 1819, 2251, 2897, 3434 ] },
@@ -1250,6 +1265,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 15,
                     "name": "Disciples of the Hand",
                     "items": [
                         { "type": "simple", "id": 57 },
@@ -1336,6 +1352,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 16,
                     "name": "Disciples of the Land",
                     "items": [
                         { "type": "simple", "id": 98 },
@@ -1372,6 +1389,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 17,
                     "name": "Commendation",
                     "items": [
                         { "type": "simple", "id": 858 },
@@ -1385,6 +1403,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 18,
                     "name": "Gold Saucer",
                     "items": [
                         { "type": "tiered", "ids": [1083, 1084, 1085, 1086, 1087] },
@@ -1424,6 +1443,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 19,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 126 },
@@ -1474,6 +1494,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 20,
                     "name": "Currency",
                     "items": [
                         { "type": "simple", "id": 114 },
@@ -1487,6 +1508,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 21,
                     "name": "Desynthesis",
                     "items": [
                         { "type": "simple", "id": 1006 },
@@ -1500,6 +1522,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 22,
                     "name": "Collectables",
                     "items": [
                         { "type": "simple", "id": 1289 },
@@ -1589,6 +1612,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 23,
                     "name": "Materia",
                     "items": [
                         { "type": "simple", "id": 296 },
@@ -1614,6 +1638,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 24,
                     "name": "Relic Weapons",
                     "items": [
                         { "type": "simple", "id": 129 },
@@ -1634,6 +1659,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 25,
                     "name": "Zodiac Weapons",
                     "items": [
                         { "type": "simple", "id": 1054 },
@@ -1642,6 +1668,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 26,
                     "name": "Anima Weapons",
                     "items": [
                         { "type": "simple", "id": 1406 },
@@ -1726,6 +1753,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 27,
                     "name": "Deep Dungeon Weapons",
                     "items": [
                         { "type": "simple", "id": 1581 },
@@ -1759,6 +1787,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 28,
                     "name": "Eureka Weapons",
                     "items": [
                         { "type": "simple", "id": 2030 },
@@ -1825,6 +1854,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 29,
                     "name": "Resistance Weapons",
                     "items": [
                         { "type": "simple", "id": 2569 },
@@ -1899,6 +1929,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 30,
                     "name": "Manderville Weapons",
                     "items": [
                         { "type": "simple", "id": 3128 },
@@ -1981,6 +2012,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 31,
                     "name": "Phantom Weapons",
                     "items": [
                         { "type": "simple", "id": 3638 },
@@ -2050,6 +2082,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 32,
                     "name": "Skysteel Tools",
                     "items": [
                         { "type": "simple", "id": 2659 },
@@ -2078,6 +2111,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 33,
                     "name": "Splendorous Tools",
                     "items": [
                         { "type": "simple", "id": 3193 },
@@ -2117,6 +2151,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 34,
                     "name": "Cosmic Tools",
                     "items": [
                         { "type": "simple", "id": 3691 },
@@ -2162,6 +2197,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 35,
                     "name": "All Disciplines",
                     "items": [
                         { "type": "simple", "id": 2522 },
@@ -2198,6 +2234,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 36,
                     "name": "Carpenter",
                     "items": [
                         { "type": "simple", "id": 137 },
@@ -2236,6 +2273,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 37,
                     "name": "Blacksmith",
                     "items": [
                         { "type": "simple", "id": 143 },
@@ -2274,6 +2312,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 38,
                     "name": "Armorer",
                     "items": [
                         { "type": "simple", "id": 149 },
@@ -2312,6 +2351,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 39,
                     "name": "Goldsmith",
                     "items": [
                         { "type": "simple", "id": 155 },
@@ -2350,6 +2390,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 40,
                     "name": "Leatherworker",
                     "items": [
                         { "type": "simple", "id": 161 },
@@ -2388,6 +2429,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 41,
                     "name": "Weaver",
                     "items": [
                         { "type": "simple", "id": 167 },
@@ -2426,6 +2468,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 42,
                     "name": "Alchemist",
                     "items": [
                         { "type": "simple", "id": 173 },
@@ -2464,6 +2507,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 43,
                     "name": "Culinarian",
                     "items": [
                         { "type": "simple", "id": 179 },
@@ -2502,6 +2546,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 44,
                     "name": "Miner",
                     "items": [
                         { "type": "simple", "id": 185 },
@@ -2556,6 +2601,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 45,
                     "name": "Botanist",
                     "items": [
                         { "type": "simple", "id": 222 },
@@ -2610,6 +2656,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 46,
                     "name": "Fisher",
                     "items": [
                         { "type": "simple", "id": 259 },
@@ -2744,6 +2791,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 47,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 341 },
@@ -2822,6 +2870,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 48,
                     "name": "Main Scenario",
                     "items": [
                         { "type": "simple", "id": 310 },
@@ -2904,6 +2953,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 49,
                     "name": "Job/Role Quests",
                     "items": [
                         { "type": "simple", "id": 313 },
@@ -3019,6 +3069,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 50,
                     "name": "Levequests",
                     "items": [
                         { "type": "simple", "id": 323 },
@@ -3141,6 +3192,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 51,
                     "name": "Allied Society Quests",
                     "items": [
                         { "type": "simple", "id": 863 },
@@ -3231,6 +3283,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 52,
                     "name": "Seasonal Events",
                     "items": [
                         { "type": "simple", "id": 811 },
@@ -3395,6 +3448,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 53,
                     "name": "Sightseeing Log",
                     "items": [
                         { "type": "simple", "id": 928 },
@@ -3410,6 +3464,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 54,
                     "name": "La Noscea",
                     "items": [
                         { "type": "simple", "id": 647 },
@@ -3422,6 +3477,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 55,
                     "name": "The Black Shroud",
                     "items": [
                         { "type": "simple", "id": 657 },
@@ -3432,6 +3488,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 56,
                     "name": "Thanalan",
                     "items": [
                         { "type": "simple", "id": 652 },
@@ -3443,6 +3500,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 57,
                     "name": "Coerthas",
                     "items": [
                         { "type": "simple", "id": 661 },
@@ -3451,6 +3509,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 58,
                     "name": "Mor Dhona",
                     "items": [
                         { "type": "simple", "id": 662 }
@@ -3458,6 +3517,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 59,
                     "name": "Abalathia's Spine",
                     "items": [
                         { "type": "simple", "id": 1206 },
@@ -3466,6 +3526,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 60,
                     "name": "Dravania",
                     "items": [
                         { "type": "simple", "id": 1203 },
@@ -3475,6 +3536,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 61,
                     "name": "Gyr Abania",
                     "items": [
                         { "type": "simple", "id": 1877 },
@@ -3484,6 +3546,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 62,
                     "name": "Othard",
                     "items": [
                         { "type": "simple", "id": 1880 },
@@ -3493,6 +3556,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 63,
                     "name": "Norvrandt",
                     "items": [
                         { "type": "simple", "id": 2371 },
@@ -3505,6 +3569,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 64,
                     "name": "The Northern Empty",
                     "items": [
                         { "type": "simple", "id": 2974 }
@@ -3512,6 +3577,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 65,
                     "name": "Ilsabard",
                     "items": [
                         { "type": "simple", "id": 2975 },
@@ -3520,6 +3586,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 66,
                     "name": "Yok Tural",
                     "items": [
                         { "type": "simple", "id": 3511 },
@@ -3529,6 +3596,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 67,
                     "name": "Xak Tural",
                     "items": [
                         { "type": "simple", "id": 3514 },
@@ -3537,6 +3605,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 68,
                     "name": "Other",
                     "items": [
                         { "type": "simple", "id": 2977 },
@@ -3547,6 +3616,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 69,
                     "name": "Duty",
                     "items": [
                         { "type": "simple", "id": 663 },
@@ -3747,6 +3817,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 70,
                     "name": "General",
                     "items": [
                         { "type": "simple", "id": 589 },
@@ -3762,6 +3833,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 71,
                     "name": "Maelstrom",
                     "items": [
                         { "type": "simple", "id": 527 },
@@ -3789,6 +3861,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 72,
                     "name": "Order of the Twin Adder",
                     "items": [
                         { "type": "simple", "id": 528 },
@@ -3816,6 +3889,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 73,
                     "name": "Immortal Flames",
                     "items": [
                         { "type": "simple", "id": 529 },
@@ -3849,6 +3923,7 @@
             "items": [
                 {
                     "type": "category",
+                    "id": 74,
                     "name": "Battle",
                     "items": [
                         { "type": "simple", "id": 8 },
@@ -3866,6 +3941,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 75,
                     "name": "Currency",
                     "items": [
                         { "type": "simple", "id": 120 },
@@ -3878,6 +3954,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 76,
                     "name": "Gathering",
                     "items": [
                         { "type": "simple", "id": 204 },
@@ -3938,6 +4015,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 77,
                     "name": "Quests",
                     "items": [
                         { "type": "simple", "id": 319 },
@@ -4082,6 +4160,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 78,
                     "name": "Seasonal Events",
                     "items": [
                         { "type": "simple", "id": 486 },
@@ -4113,6 +4192,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 79,
                     "name": "Dungeons",
                     "items": [
                         { "type": "simple", "id": 511 },
@@ -4129,6 +4209,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 80,
                     "name": "Exploration",
                     "items": [
                         { "type": "simple", "id": 521 },
@@ -4141,6 +4222,7 @@
                 },
                 {
                     "type": "category",
+                    "id": 81,
                     "name": "Grand Company",
                     "items": [
                         { "type": "simple", "id": 578 },
