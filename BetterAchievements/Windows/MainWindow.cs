@@ -38,7 +38,7 @@ public class MainWindow : Window, IDisposable
         {
             var padding = ImGui.GetStyle().CellPadding;
             ImGui.SameLine();
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y + 1);
             ImGui.Text("Search:");
             ImGui.SameLine();
             if (ImGui.InputTextEx("", "Search achievements", ref searchBuffer, 128, default(Vector2) with { X = 400 }))
@@ -48,14 +48,20 @@ public class MainWindow : Window, IDisposable
 
             ImGui.SameLine();
 
-            var achievementPointsText = $"9945 {FontAwesomeIcon.Trophy.ToIconString()}";
-            var size = ImGui.CalcTextSize(achievementPointsText);
-
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - size.X);
-            ImGui.PushFont(ImGui.GetFont() with { Scale = 1.5f });
-            ImGui.TextColored(ImGuiComponents.ColorOrange(), achievementPointsText);
+            ImGui.PushFont(UiBuilder.IconFont);
+            var icon = FontAwesomeIcon.Trophy.ToIconString();
+            var iconSize = ImGui.CalcTextSize(icon);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - iconSize.X);
+            ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - iconSize.Y) / 2);
+            ImGui.TextColored(ImGuiComponents.ColorOrange(), icon);
             ImGui.PopFont();
 
+            ImGui.SameLine();
+            var achievementPointsText = $"12345 ";
+            var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
+            ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - achievementPointsSize.Y) / 2);
+            ImGui.TextColored(ImGuiComponents.ColorOrange(), achievementPointsText);
             ImGui.EndChild();
         }
     }
@@ -105,10 +111,7 @@ public class MainWindow : Window, IDisposable
             if (achievement is AchievementLayoutItemSimple simple)
             {
                 var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id);
-                if (searchBuffer != "" && !unlockable.NameLowercase.Contains(searchTerm))
-                {
-                    continue;
-                }
+
                 if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
                 {
                     ImGuiComponents.ProgressBasedAchievement(unlockable);
