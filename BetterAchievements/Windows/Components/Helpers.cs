@@ -20,31 +20,7 @@ public static partial class ImGuiComponents
     public static Vector4 ColorYellow() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudYellow ?? DefaultGrey;
     public static Vector4 ColorGrey() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudGrey ?? DefaultGrey;
     public static Vector4 ColorBlack() => DefaultBlack; // dalamud doesn't have a black so i guess i'm making my own
-
-    public static Vector4 ColorProgress(float alpha = 1.0f, float brightness = 0.0f)
-    {
-        var orange = StyleModel.GetFromCurrent().BuiltInColors?.DalamudOrange ?? DefaultProgress;
-        brightness = Math.Clamp(brightness, -1.0f, 1.0f);
-        if (brightness >= 0.0f)
-        {
-            return new()
-            {
-                X = (1.0f - orange.X) * brightness + orange.X,
-                Y = (1.0f - orange.Y) * brightness + orange.Y,
-                Z = (1.0f - orange.Z) * brightness + orange.Z,
-                W = alpha
-            };
-        }
-        var factor = 1 + brightness;
-        return new()
-        {
-            X = orange.X * factor,
-            Y = orange.Y * factor,
-            Z = orange.Z * factor,
-            W = alpha
-        };
-        // return DefaultProgress with { W = alpha };
-    }
+    public static Vector4 ColorProgress() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudOrange ?? DefaultProgress;
 
     private static string ToRoman(int number)
     {
@@ -59,5 +35,28 @@ public static partial class ImGuiComponents
     private static float SizeEm(float em)
     {
         return Plugin.PluginInterface.UiBuilder.FontDefaultSizePx * em;
+    }
+
+    public static Vector4 Brightness(this Vector4 v, float brightness)
+    {
+        brightness = Math.Clamp(brightness, -1.0f, 1.0f);
+        if (brightness >= 0.0f)
+        {
+            return new()
+            {
+                X = (1.0f - v.X) * brightness + v.X,
+                Y = (1.0f - v.Y) * brightness + v.Y,
+                Z = (1.0f - v.Z) * brightness + v.Z,
+                W = v.W
+            };
+        }
+        var factor = 1 + brightness;
+        return new()
+        {
+            X = v.X * factor,
+            Y = v.Y * factor,
+            Z = v.Z * factor,
+            W = v.W
+        };
     }
 }

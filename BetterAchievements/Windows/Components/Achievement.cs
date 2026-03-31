@@ -2,6 +2,7 @@ using System.Linq;
 using System.Numerics;
 using BetterAchievements.Unlockables;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Serilog;
 
 namespace BetterAchievements.Windows.Components;
@@ -53,7 +54,7 @@ public static partial class ImGuiComponents
         {
             ProgressBar(
                 (progress ?? 1.0f) / achievement.Maximum() ?? 1.0f,
-                progress != null ? ColorProgress(1.0f, 0.5f) : ColorRed(),
+                progress != null ? ColorProgress().Brightness(0.5f) : ColorRed(),
                 insideText: progress != null ? $"{achievement.Progress()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progress != null,
@@ -104,7 +105,7 @@ public static partial class ImGuiComponents
             ImGui.TextDisabled(" (current level)");
             ProgressBar(
                 (maxLevel.Progress() ?? 1.0f) / currentLevel.Maximum() ?? 1.0f,
-                progressLoaded ? ColorProgress(1.0f, 0.5f) : ColorRed(),
+                progressLoaded ? ColorProgress().Brightness(0.5f) : ColorRed(),
                 insideText: progressLoaded ? $"{maxLevel.Progress()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,
@@ -120,7 +121,7 @@ public static partial class ImGuiComponents
         {
             ProgressBar(
                 (maxLevel.Progress() ?? 1.0f) / maxLevel.Maximum() ?? 1.0f,
-                progressLoaded ? ColorProgress(1.0f, 0.5f) : ColorRed(),
+                progressLoaded ? ColorProgress().Brightness(0.5f) : ColorRed(),
                 insideText: progressLoaded ? $"{maxLevel.Progress()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,

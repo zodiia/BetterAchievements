@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using BetterAchievements.Helpers;
 using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
+using ImGuiComponentsDalamud = Dalamud.Interface.Components.ImGuiComponents;
 using Serilog;
 
 namespace BetterAchievements.Windows;
@@ -32,14 +34,28 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose() { }
 
+    private Vector4 GetTriStateColor(TriState state)
+    {
+        switch (state)
+        {
+            case TriState.True:
+                return ImGuiComponents.ColorGreen();
+            case TriState.False:
+                return ImGuiComponents.ColorRed();
+        }
+        return ImGuiComponents.ColorGrey();
+    }
+
     private void DrawTopbarLayout()
     {
         if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 48 }, true))
         {
             var padding = ImGui.GetStyle().CellPadding;
+
             ImGui.SameLine();
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y + 1);
             ImGui.Text("Search:");
+
             ImGui.SameLine();
             if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 }))
             {
@@ -47,7 +63,39 @@ public class MainWindow : Window, IDisposable
             }
 
             ImGui.SameLine();
+            if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Lock,
+                                                  GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.45f),
+                                                  GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.05f),
+                                                  GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.25f)))
+            {
+                state.SetFilterLocked(state.FilterLocked.Next());
+            }
+            ImGui.SameLine();
+            if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Gift,
+                                                  GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.45f),
+                                                  GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.05f),
+                                                  GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.25f)))
+            {
+                state.SetFilterHasRewards(state.FilterHasRewards.Next());
+            }
+            ImGui.SameLine();
+            if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Trophy,
+                                                  GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.45f),
+                                                  GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.05f),
+                                                  GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.25f)))
+            {
+                state.SetFilterIsRanked(state.FilterIsRanked.Next());
+            }
+            ImGui.SameLine();
+            if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Map,
+                                                  GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.45f),
+                                                  GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.05f),
+                                                  GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.25f)))
+            {
+                state.SetFilterCurrentZone(state.FilterCurrentZone.Next());
+            }
 
+            ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
             var icon = FontAwesomeIcon.Trophy.ToIconString();
             var iconSize = ImGui.CalcTextSize(icon);
