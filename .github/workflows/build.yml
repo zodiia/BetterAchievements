@@ -29,10 +29,16 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release
 
+    - name: Generate testing repo JSON
+      run: |
+        eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
+
     - name: Update Latest Release
       uses: softprops/action-gh-release@v2
       with:
-        files: BetterAchievements\bin\x64\Release\BetterAchievements\*
+        files: |
+          BetterAchievements\bin\x64\Release\BetterAchievements\*
+          testing-repo.json
         tag_name: latest
         name: "Latest Build"
         prerelease: true

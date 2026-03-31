@@ -1,0 +1,24 @@
+[
+    {
+        "Author": "zodiia",
+        "InternalName": "BetterAchievements",
+        "Name": "Better Achievements",
+        "AssemblyVersion": "0.0.0.$(git rev-list --count main)",
+        "Punchline": "The vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
+        "Description": "Git commit hash: $(git rev-parse --short HEAD), built on $(TZ=UTC date).\\\\nThe vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
+        "ApplicableVersion": "any",
+        "RepoUrl": "https://www.github.com/zodiia/BetterAchievements",
+        "DalamudApiLevel": 14,
+        "DownloadCount": 67,
+        "IsHide": false,
+        "IsTestingExclusive": false,
+        "DownloadLinkInstall": "https://github.com/zodiia/BetterAchievements/releases/download/latest/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/zodiia/BetterAchievements/releases/download/latest/latest.zip",
+        "LastUpdate": "$(date +%s)",
+        "Tags": [
+            "achievements",
+            "tracker",
+            "better"
+        ]
+    }
+]
