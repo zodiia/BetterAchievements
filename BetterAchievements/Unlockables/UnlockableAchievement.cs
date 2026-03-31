@@ -19,6 +19,7 @@ public sealed record UnlockableAchievement(Achievement Achievement)
     public byte Type() => Achievement.Type;
 
     public readonly string NameLowercase = Achievement.Name.ToString().ToLower();
+    public readonly string DescriptionLowercase = Achievement.Description.ToString().ToLower();
 
     public uint? Maximum()
     {

@@ -15,22 +15,25 @@ public class MainWindowState(MainWindowLayout layout)
     private string currentSearch = "";
 
     public MainWindowLayout FilteredLayout { get; private set; } = layout;
-    public AchievementLayoutCategory? SelectedCategory { get; private set; } = null;
+    public AchievementLayoutCategory? SelectedCategory { get; private set; }
     public string SearchBuffer = "";
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
     {
-        return unlockablesService.GetUnlockableAchievement(item.Id).NameLowercase.Contains(currentSearch);
+        var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
+        return achievement.NameLowercase.Contains(currentSearch) || achievement.DescriptionLowercase.Contains(currentSearch);
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item)
     {
-        return unlockablesService.GetUnlockableTieredAchievement(item.Ids).NameLowercase.Contains(currentSearch);
+        var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids);
+        return achievements.NameLowercase.Contains(currentSearch) || achievements.DescriptionLowercase.Contains(currentSearch);
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemCombined item)
     {
-        return unlockablesService.GetUnlockableAchievement(item.Ids.Last()).NameLowercase.Contains(currentSearch);
+        var achievements = unlockablesService.GetUnlockableAchievement(item.Ids.Last());
+        return achievements.NameLowercase.Contains(currentSearch) || achievements.DescriptionLowercase.Contains(currentSearch);
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItem item)
