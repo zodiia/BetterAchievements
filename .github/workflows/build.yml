@@ -1,4 +1,4 @@
-name: Sample PR Builder for BetterAchievements
+name: Build latest on main
 
 on:
   push:
@@ -30,10 +30,10 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Update Latest Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: .\BetterAchievements\bin\x64\Release\BetterAchievements\*
+        files: BetterAchievements\bin\x64\Release\BetterAchievements\*
         tag_name: latest
         name: "Latest Build"
         prerelease: true
-      env: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.RELEASE_TOKEN }}
