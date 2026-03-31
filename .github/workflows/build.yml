@@ -30,6 +30,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Generate testing repo JSON
+      shell: bash
       run: |
         eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
 
