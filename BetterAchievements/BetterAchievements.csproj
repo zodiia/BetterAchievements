@@ -9,13 +9,15 @@
 
   <ItemGroup>
     <Content Include="BetterAchievements.json" />
-    <Content Include="ideas.txt" />
-    <Content Include="research.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Data\layout.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helpers\" />
   </ItemGroup>
 </Project>

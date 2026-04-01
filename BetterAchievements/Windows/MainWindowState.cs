@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using BetterAchievements.Helpers;
 using BetterAchievements.Unlockables;
-using Serilog;
 
 namespace BetterAchievements.Windows;
 
@@ -17,10 +15,6 @@ public class MainWindowState(MainWindowLayout layout)
 
     public MainWindowLayout FilteredLayout { get; private set; } = layout;
     public AchievementLayoutCategory? SelectedCategory { get; private set; }
-    public TriState FilterLocked { get; private set; } = TriState.Undefined;
-    public TriState FilterHasRewards { get; private set; } = TriState.Undefined;
-    public TriState FilterIsRanked { get; private set; } = TriState.Undefined;
-    public TriState FilterCurrentZone { get; private set; } = TriState.Undefined;
     public string SearchBuffer = "";
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
@@ -53,7 +47,6 @@ public class MainWindowState(MainWindowLayout layout)
     {
         var items = category.Items.Where(FilterAchievementLayoutItem).ToList();
         if (items.Count == 0) return null;
-        Log.Information("{Count}", items.Count);
         return category with { Items = items };
     }
 
@@ -118,25 +111,5 @@ public class MainWindowState(MainWindowLayout layout)
     {
         currentSearch = search.ToLower();
         FilterAll();
-    }
-
-    public void SetFilterLocked(TriState state)
-    {
-        FilterLocked = state;
-    }
-
-    public void SetFilterHasRewards(TriState state)
-    {
-        FilterHasRewards = state;
-    }
-
-    public void SetFilterIsRanked(TriState state)
-    {
-        FilterIsRanked = state;
-    }
-
-    public void SetFilterCurrentZone(TriState state)
-    {
-        FilterCurrentZone = state;
     }
 }
