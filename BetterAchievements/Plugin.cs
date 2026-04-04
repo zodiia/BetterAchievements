@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using BetterAchievements.Hooks;
+using BetterAchievements.Lalachievements;
 using BetterAchievements.Unlockables;
 using BetterAchievements.Windows;
 using Dalamud.Interface.Windowing;
@@ -50,6 +51,7 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static UnlockablesProgressService UnlockablesProgressService { get; private set; } = null!;
     internal static UnlockablesService UnlockablesService { get; private set; } = null!;
+    internal static LalachievementsService LalachievementsService { get; private set; } = null!;
 
     private const string CommandName = "/betterachievements";
     private const string CommandAlias = "/bach";
@@ -77,6 +79,7 @@ public sealed class Plugin : IDalamudPlugin
 
         UnlockablesProgressService = new();
         UnlockablesService = new();
+        LalachievementsService = new();
 
         MainWindowLayout = LoadMainWindowLayout();
         
