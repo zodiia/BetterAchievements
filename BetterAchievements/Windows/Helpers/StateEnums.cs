@@ -7,6 +7,7 @@ public enum ContainsRewardsFilter { All, Rewards, UnclaimedRewards }
 public enum RankedFilter { All, Lalachievements }
 public enum AreaFilter { All, Region, Zone }
 public enum SortBy { Default, Alphabetically, MostCommon, Rarest }
+public enum GroupBy { Default, Better }
 
 public static class StateEnumsExtensions {
     public static string DisplayName(this UnlockStatusFilter filter)
@@ -66,6 +67,17 @@ public static class StateEnumsExtensions {
             case SortBy.Rarest: return "Rarest first";
         }
 
+        throw new ArgumentOutOfRangeException($"{filter} not implemented.");
+    }
+
+    public static string DisplayName(this GroupBy filter)
+    {
+        switch (filter)
+        {
+            case GroupBy.Default: return "Vanilla groups";
+            case GroupBy.Better: return "Better groups";
+        }
+        
         throw new ArgumentOutOfRangeException($"{filter} not implemented.");
     }
 }

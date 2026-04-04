@@ -3,7 +3,7 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Unlockables;
 
-public sealed record UnlockableAchievement(Achievement Achievement)
+public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
 {
     internal bool Unlocked { get; } = Plugin.UnlockState.IsAchievementComplete(Achievement);
 
@@ -18,8 +18,10 @@ public sealed record UnlockableAchievement(Achievement Achievement)
     public byte Points() => Achievement.Points;
     public byte Type() => Achievement.Type;
 
-    public readonly string NameLowercase = Achievement.Name.ToString().ToLower();
-    public readonly string DescriptionLowercase = Achievement.Description.ToString().ToLower();
+    private readonly string nameLowercase = Achievement.Name.ToString().ToLower();
+    public string NameLowercase() => nameLowercase;
+    private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
+    public string DescriptionLowercase() => descriptionLowercase;
 
     public uint? Maximum()
     {

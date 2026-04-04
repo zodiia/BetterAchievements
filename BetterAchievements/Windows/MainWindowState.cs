@@ -15,24 +15,51 @@ public class MainWindowState(MainWindowLayout layout)
 
     public MainWindowLayout FilteredLayout { get; private set; } = layout;
     public AchievementLayoutCategory? SelectedCategory { get; private set; }
+    public List<Unlockable> CategoryUnlockables { get; private set; } = new();
     public string SearchBuffer = "";
+    public UnlockStatusFilter UnlockStatusFilter { get; private set; } = UnlockStatusFilter.All;
+    public ContainsRewardsFilter ContainsRewardsFilter { get; private set; } = ContainsRewardsFilter.All;
+    public RankedFilter RankedFilter { get; private set; } = RankedFilter.All;
+    public AreaFilter AreaFilter { get; private set; } = AreaFilter.All;
+    public SortBy SortBy { get; private set; } = SortBy.Default;
+    public GroupBy GroupBy { get; private set; } = GroupBy.Default;
+
+    private bool MatchSearch(string name, string desc)
+    {
+        return name.Contains(currentSearch) || desc.Contains(currentSearch);
+    }
+
+    private bool MatchUnlockFilter(bool unlocked)
+    {
+        switch (UnlockStatusFilter)
+        {
+            case UnlockStatusFilter.All: return true;
+            case UnlockStatusFilter.Unlocked: return unlocked;
+            case UnlockStatusFilter.Locked: return !unlocked;
+        }
+        throw new ArgumentOutOfRangeException($"{UnlockStatusFilter} not implemented.");
+    }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
     {
         var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
-        return achievement.NameLowercase.Contains(currentSearch) || achievement.DescriptionLowercase.Contains(currentSearch);
+        return MatchSearch(achievement.NameLowercase(), achievement.DescriptionLowercase())
+               && MatchUnlockFilter(achievement.Unlocked);
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item)
     {
         var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids);
-        return achievements.NameLowercase.Contains(currentSearch) || achievements.DescriptionLowercase.Contains(currentSearch);
+        return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
+               && MatchUnlockFilter(achievements.Unlocked.Last());
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemCombined item)
     {
         var achievements = unlockablesService.GetUnlockableAchievement(item.Ids.Last());
-        return achievements.NameLowercase.Contains(currentSearch) || achievements.DescriptionLowercase.Contains(currentSearch);
+        return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase());
+        // && MatchUnlockFilter(achievements.Unlocked.All());
+        // TODO
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItem item)
@@ -111,5 +138,39 @@ public class MainWindowState(MainWindowLayout layout)
     {
         currentSearch = search.ToLower();
         FilterAll();
+    }
+
+    public void SetUnlockStatusFilter(UnlockStatusFilter unlockStatusFilter)
+    {
+        UnlockStatusFilter = unlockStatusFilter;
+        FilterAll();
+    }
+
+    public void SetContainsRewardsFilter(ContainsRewardsFilter containsRewardsFilter)
+    {
+        ContainsRewardsFilter = containsRewardsFilter;
+        FilterAll();
+    }
+
+    public void SetRankedFilter(RankedFilter rankedFilter)
+    {
+        RankedFilter = rankedFilter;
+        FilterAll();
+    }
+
+    public void SetAreaFilter(AreaFilter areaFilter)
+    {
+        AreaFilter = areaFilter;
+        FilterAll();
+    }
+
+    public void SetSortBy(SortBy sortBy)
+    {
+        SortBy = sortBy;
+    }
+
+    public void SetGroupBy(GroupBy groupBy)
+    {
+        GroupBy = groupBy;
     }
 }
