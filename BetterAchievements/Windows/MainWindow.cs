@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using BetterAchievements.Unlockables;
 using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -48,40 +50,6 @@ public class MainWindow : Window, IDisposable
             {
                 state.SetSearch(state.SearchBuffer); // do not recalculate ToLower many times per frames
             }
-
-            // ImGui.SameLine();
-            // if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Lock,
-            //                                       GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.45f),
-            //                                       GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.05f),
-            //                                       GetTriStateColor(state.FilterLocked).WithAlpha(0.7f).Brightness(-0.25f)))
-            // {
-            //     state.SetFilterLocked(state.FilterLocked.Next());
-            //     ImGui.OpenPopup(ImGuiComponents.FilterPopupId);
-            // }
-            // ImGui.SameLine();
-            // if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Gift,
-            //                                       GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.45f),
-            //                                       GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.05f),
-            //                                       GetTriStateColor(state.FilterHasRewards).WithAlpha(0.7f).Brightness(-0.25f)))
-            // {
-            //     state.SetFilterHasRewards(state.FilterHasRewards.Next());
-            // }
-            // ImGui.SameLine();
-            // if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Trophy,
-            //                                       GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.45f),
-            //                                       GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.05f),
-            //                                       GetTriStateColor(state.FilterIsRanked).WithAlpha(0.7f).Brightness(-0.25f)))
-            // {
-            //     state.SetFilterIsRanked(state.FilterIsRanked.Next());
-            // }
-            // ImGui.SameLine();
-            // if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.Map,
-            //                                       GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.45f),
-            //                                       GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.05f),
-            //                                       GetTriStateColor(state.FilterCurrentZone).WithAlpha(0.7f).Brightness(-0.25f)))
-            // {
-            //     state.SetFilterCurrentZone(state.FilterCurrentZone.Next());
-            // }
 
             ImGui.SameLine();
             if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.SlidersH))
@@ -155,50 +123,26 @@ public class MainWindow : Window, IDisposable
             return;
         }
 
-        Log.Information("{Count}", state.SelectedCategory.Items.Count);
-
-        foreach (var achievement in state.SelectedCategory.Items)
+        foreach (var it in state.CategoryUnlockables)
         {
-            if (achievement is AchievementLayoutItemSimple simple)
+            if (it is UnlockableAchievement achievement)
             {
-                var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id);
-
-                if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
+                if (achievement.Maximum() != null && achievement.Maximum() > 1)
                 {
-                    ImGuiComponents.ProgressBasedAchievement(unlockable);
+                    ImGuiComponents.ProgressBasedAchievement(achievement);
                 }
                 else
                 {
-                    ImGuiComponents.SimpleAchievement(unlockable);
+                    ImGuiComponents.SimpleAchievement(achievement);
                 }
             }
 
-            if (achievement is AchievementLayoutItemTiered tiered)
+            if (it is UnlockableTieredAchievement tiered)
             {
-                var unlockable = Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids);
-
-                ImGuiComponents.MultiProgressBasedAchievement(unlockable);
+                ImGuiComponents.MultiProgressBasedAchievement(tiered);
             }
 
-            if (achievement is AchievementLayoutItemCombined combined)
-            {
-                // currently not handled, TODO
-                foreach (var simpleAchievement in combined.Ids)
-                {
-                    var unlockable = Plugin.UnlockablesService.GetUnlockableAchievement(simpleAchievement);
-
-                    if (unlockable.Maximum() != null && unlockable.Maximum() > 1)
-                    {
-                        ImGuiComponents.ProgressBasedAchievement(unlockable);
-                    }
-                    else
-                    {
-                        ImGuiComponents.SimpleAchievement(unlockable);
-                    }
-                }
-            }
-
-            if (achievement != state.SelectedCategory.Items.Last())
+            if (it != state.CategoryUnlockables.Last())
             {
                 ImGui.Separator();
             }

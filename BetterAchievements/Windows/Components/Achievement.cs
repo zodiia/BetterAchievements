@@ -21,6 +21,8 @@ public static partial class ImGuiComponents
     {
         ImGui.TextColored(ColorOrange(), achievement.Name());
         ImGui.SameLine();
+        ImGui.TextColored(ColorYellow(), $" {achievement.Points()} points");
+        ImGui.SameLine();
         ImGui.TextDisabled(" #" + achievement.Id());
         ImGui.SameLine();
         if (achievement.Unlocked)
@@ -91,6 +93,8 @@ public static partial class ImGuiComponents
         ImGui.BeginGroup();
 
         ImGui.TextColored(ColorOrange(), achievements.Name);
+        ImGui.SameLine();
+        ImGui.TextColored(ColorYellow(), $" {achievements.AcquiredPoints}/{achievements.TotalPoints} points");
         MultiProgressBasedAchievementLevels(achievements);
 
         var currentLevel = achievements.UnlockableAchievements.Find(it => !it.Unlocked);

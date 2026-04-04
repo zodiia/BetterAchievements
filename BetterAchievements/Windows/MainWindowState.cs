@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Unlockables;
+using BetterAchievements.Windows.Helpers;
 
 namespace BetterAchievements.Windows;
 
@@ -96,6 +98,46 @@ public class MainWindowState(MainWindowLayout layout)
         return null;
     }
 
+    private void SortCategory()
+    {
+        if (SelectedCategory == null) return;
+        List<AchievementLayoutItem> sortedItems;
+
+        if (SortBy != SortBy.Alphabetically)
+        {
+            sortedItems = SelectedCategory.Items.OrderBy(it =>
+            {
+                if (it is AchievementLayoutItemSimple simple)
+                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue);
+                if (it is AchievementLayoutItemTiered tiered)
+                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue);
+                if (it is AchievementLayoutItemCombined combined) // TODO: fix
+                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(combined.Ids.Last(), uint.MaxValue);
+                return uint.MaxValue;
+            }).ToList();
+        }
+        else
+        {
+            sortedItems = SelectedCategory.Items;
+        }
+
+        CategoryUnlockables = sortedItems.SelectMany<AchievementLayoutItem, Unlockable>(it =>
+        {
+            if (it is AchievementLayoutItemSimple simple)
+                return [Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
+            if (it is AchievementLayoutItemTiered tiered)
+                return [Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids)];
+            if (it is AchievementLayoutItemCombined combined) // TODO: fix
+                return combined.Ids.Select(simple => Plugin.UnlockablesService.GetUnlockableAchievement(simple)).ToList();
+            return [];
+        }).ToList();
+
+        if (SortBy == SortBy.Alphabetically)
+        {
+            CategoryUnlockables.Sort((a, b) => a.NameLowercase().CompareTo(b.NameLowercase()));
+        }
+    }
+
     private void FilterAll()
     {
         var items = mainLayout.AchievementLayout.SelectMany<AchievementLayout, AchievementLayout>(it =>
@@ -132,6 +174,7 @@ public class MainWindowState(MainWindowLayout layout)
     {
         currentCategoryId = categoryId;
         SelectedCategory = FindCategory(FilteredLayout.AchievementLayout, categoryId);
+        SortCategory();
     }
 
     public void SetSearch(string search)
@@ -167,6 +210,7 @@ public class MainWindowState(MainWindowLayout layout)
     public void SetSortBy(SortBy sortBy)
     {
         SortBy = sortBy;
+        SortCategory();
     }
 
     public void SetGroupBy(GroupBy groupBy)
