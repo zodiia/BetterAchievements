@@ -30,7 +30,7 @@ public class LalachievementsService
                 var idx = 0u;
                 foreach (var it in response.Rarity)
                 {
-                    AchievementRarity[idx] = it.Id;
+                    AchievementRarity[it.Id] = idx;
                     idx++;
                 }
             }

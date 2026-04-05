@@ -103,7 +103,7 @@ public class MainWindowState(MainWindowLayout layout)
         if (SelectedCategory == null) return;
         List<AchievementLayoutItem> sortedItems;
 
-        if (SortBy != SortBy.Alphabetically)
+        if (SortBy is SortBy.MostCommon or SortBy.Rarest)
         {
             sortedItems = SelectedCategory.Items.OrderBy(it =>
             {
@@ -115,6 +115,10 @@ public class MainWindowState(MainWindowLayout layout)
                     return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(combined.Ids.Last(), uint.MaxValue);
                 return uint.MaxValue;
             }).ToList();
+            if (SortBy == SortBy.MostCommon)
+            {
+                sortedItems.Reverse();
+            }
         }
         else
         {
@@ -134,7 +138,7 @@ public class MainWindowState(MainWindowLayout layout)
 
         if (SortBy == SortBy.Alphabetically)
         {
-            CategoryUnlockables.Sort((a, b) => a.NameLowercase().CompareTo(b.NameLowercase()));
+            CategoryUnlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -146,7 +150,7 @@ public class MainWindowState(MainWindowLayout layout)
             if (res == null) return [];
             return [res];
         }).ToList();
-        FilteredLayout = mainLayout with { AchievementLayout = items };
+        FilteredLayout = new MainWindowLayout { AchievementLayout = items };
         SetCategory(currentCategoryId);
     }
 
