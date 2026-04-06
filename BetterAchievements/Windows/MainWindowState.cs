@@ -8,8 +8,6 @@ namespace BetterAchievements.Windows;
 
 public class MainWindowState(MainWindowLayout layout)
 {
-    private readonly UnlockablesService unlockablesService = Plugin.UnlockablesService;
-
     private readonly MainWindowLayout mainLayout = layout;
 
     private uint currentCategoryId = uint.MaxValue;
@@ -42,24 +40,37 @@ public class MainWindowState(MainWindowLayout layout)
         throw new ArgumentOutOfRangeException($"{UnlockStatusFilter} not implemented.");
     }
 
+    private bool MatchRankedFilter(bool lalachievements)
+    {
+        switch (RankedFilter)
+        {
+            case RankedFilter.All: return true;
+            case RankedFilter.Lalachievements: return lalachievements;
+        }
+        throw new ArgumentOutOfRangeException($"{RankedFilter} not implemented.");
+    }
+
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
     {
-        var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
+        var achievement = Plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement.NameLowercase(), achievement.DescriptionLowercase())
-               && MatchUnlockFilter(achievement.Unlocked);
+               && MatchUnlockFilter(achievement.Unlocked)
+               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item)
     {
-        var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids);
+        var achievements = Plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids);
         return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
-               && MatchUnlockFilter(achievements.Unlocked.Last());
+               && MatchUnlockFilter(achievements.Unlocked.Last())
+               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.Achievements.Last().RowId));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemCombined item)
     {
-        var achievements = unlockablesService.GetUnlockableAchievement(item.Ids.Last());
-        return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase());
+        var achievements = Plugin.UnlockablesService.GetUnlockableAchievement(item.Ids.Last());
+        return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
+               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.Id()));
         // && MatchUnlockFilter(achievements.Unlocked.All());
         // TODO
     }

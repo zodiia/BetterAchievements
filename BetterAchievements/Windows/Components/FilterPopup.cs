@@ -43,8 +43,7 @@ public static partial class ImGuiComponents
                         state.SetContainsRewardsFilter(ContainsRewardsFilter.UnclaimedRewards);
                 }
             }
-            using (var combo = ImRaii.Combo("Counts towards rankings", "(not implemented)", ImGuiComboFlags.HeightLargest))
-            // using (var combo = ImRaii.Combo("Counts towards rankings", state.RankedFilter.DisplayName(), ImGuiComboFlags.HeightLargest))
+            using (var combo = ImRaii.Combo("Counts towards rankings", state.RankedFilter.DisplayName(), ImGuiComboFlags.HeightLargest))
             {
                 if (combo)
                 {
