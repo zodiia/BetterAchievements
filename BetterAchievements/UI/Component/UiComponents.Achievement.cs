@@ -78,20 +78,23 @@ public static partial class UiComponents
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
     }
 
-    private static void MultiProgressBasedAchievementLevels(UnlockableTieredAchievement achievements)
+    private static void MultiProgressBasedAchievementTiers(UnlockableTieredAchievement achievements)
     {
         var widthCalculationText = "";
         for (var i = 1; i <= achievements.Maximum(); i++) widthCalculationText += ToRoman(i);
-        var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X;
+        var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X - UiSize.Em(achievements.Maximum() - 1);
 
         for (var i = 1; i <= achievements.Maximum(); i++)
         {
             var text = $"{ToRoman(i)}";
-            position += i > 1 ? UiSize.Em(1.0f) : 0.0f;
 
             ImGui.SameLine();
             ImGui.SetCursorPosX(position);
             ImGui.TextColored(achievements.ProvidesAchievements()[i - 1].Unlocked() ? UiColors.ColorGreen() : UiColors.ColorRed(), text);
+            if (i != achievements.Maximum())
+            {
+                position += UiSize.Em(1) + ImGui.CalcTextSize(text).X;
+            }
         }
     }
 
