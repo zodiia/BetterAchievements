@@ -9,7 +9,7 @@ public enum AreaFilter { All, Region, Zone }
 public enum SortBy { Default, Alphabetically, MostCommon, Rarest }
 public enum GroupBy { Default, Better }
 
-public static class StateEnumsExtensions {
+public static class FilterEnumsExtensions {
     public static string DisplayName(this UnlockStatusFilter filter)
     {
         switch (filter)

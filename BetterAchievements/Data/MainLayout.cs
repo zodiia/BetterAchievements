@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace BetterAchievements.Windows;
+namespace BetterAchievements.Data;
 
-public record MainWindowLayout
+public record MainLayout
 {
     public required List<AchievementLayout> AchievementLayout { get; set; }
 }

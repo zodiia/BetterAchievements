@@ -2,9 +2,9 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 
-namespace BetterAchievements.Windows.Components;
+namespace BetterAchievements.UI.Component;
 
-public static partial class ImGuiComponents
+public static partial class UiComponents
 {
     public static void ProgressBar(
         float progress,
@@ -60,15 +60,15 @@ public static partial class ImGuiComponents
         // Inside Text
         if (insideText != null)
         {
-            if (fillEnd.X + SizeEm(0.5f) + insideTextSize.X < barEnd.X - SizeEm(0.5f))
+            if (fillEnd.X + UiSize.Em(0.5f) + insideTextSize.X < barEnd.X - UiSize.Em(0.5f))
             {
-                ImGui.SetCursorScreenPos(new() { X = fillEnd.X + SizeEm(0.5f), Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
+                ImGui.SetCursorScreenPos(new() { X = fillEnd.X + UiSize.Em(0.5f), Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
                 ImGui.TextColored(color, insideText);
             }
             else
             {
-                ImGui.SetCursorScreenPos(new() { X = fillEnd.X - SizeEm(0.5f) - insideTextSize.X, Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
-                ImGui.TextColored(ColorBlack(), insideText);
+                ImGui.SetCursorScreenPos(new() { X = fillEnd.X - UiSize.Em(0.5f) - insideTextSize.X, Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
+                ImGui.TextColored(UiColors.ColorBlack(), insideText);
             }
         }
 

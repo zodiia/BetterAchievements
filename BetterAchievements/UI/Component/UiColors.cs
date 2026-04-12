@@ -2,9 +2,9 @@ using System;
 using System.Numerics;
 using Dalamud.Interface.Style;
 
-namespace BetterAchievements.Windows.Components;
+namespace BetterAchievements.UI.Component;
 
-public static partial class ImGuiComponents
+public static class UiColors
 {
     private static readonly Vector4 DefaultGreen = new(0.1f, 0.8f, 0.2f, 1);
     private static readonly Vector4 DefaultRed = new(0.8f, 0.1f, 0.2f, 1);
@@ -21,21 +21,6 @@ public static partial class ImGuiComponents
     public static Vector4 ColorGrey() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudGrey ?? DefaultGrey;
     public static Vector4 ColorBlack() => DefaultBlack; // dalamud doesn't have a black so i guess i'm making my own
     public static Vector4 ColorProgress() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudOrange ?? DefaultProgress;
-
-    private static string ToRoman(int number)
-    {
-        if (number >= 10) return "X" + ToRoman(number - 10);
-        if (number >= 9) return "IX" + ToRoman(number - 9);
-        if (number >= 5) return "V" + ToRoman(number - 5);
-        if (number >= 4) return "IV" + ToRoman(number - 4);
-        if (number >= 1) return "I" + ToRoman(number - 1);
-        return "";
-    }
-
-    private static float SizeEm(float em)
-    {
-        return Plugin.PluginInterface.UiBuilder.FontDefaultSizePx * em;
-    }
 
     public static Vector4 Brightness(this Vector4 v, float brightness)
     {

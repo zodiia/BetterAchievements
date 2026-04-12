@@ -1,12 +1,10 @@
 using BetterAchievements.Windows.Helpers;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiComponentsDalamud = Dalamud.Interface.Components.ImGuiComponents;
 
+namespace BetterAchievements.UI.Window;
 
-namespace BetterAchievements.Windows.Components;
-
-public static partial class ImGuiComponents
+public static class FilterPopup
 {
     public const string FiltersPopupId = "FilterPopup";
 

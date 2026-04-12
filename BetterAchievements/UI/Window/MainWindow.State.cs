@@ -1,21 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BetterAchievements.Data;
+using BetterAchievements.Data.Unlockable;
 using BetterAchievements.Unlockables;
 using BetterAchievements.Windows.Helpers;
 
-namespace BetterAchievements.Windows;
+namespace BetterAchievements.UI.Window;
 
-public class MainWindowState(MainWindowLayout layout)
+public class MainWindowState(MainLayout layout)
 {
-    private readonly MainWindowLayout mainLayout = layout;
+    private readonly MainLayout mainLayout = layout;
 
     private uint currentCategoryId = uint.MaxValue;
     private string currentSearch = "";
 
-    public MainWindowLayout FilteredLayout { get; private set; } = layout;
+    public MainLayout FilteredLayout { get; private set; } = layout;
     public AchievementLayoutCategory? SelectedCategory { get; private set; }
-    public List<Unlockable> CategoryUnlockables { get; private set; } = new();
+    public List<IUnlockable> CategoryUnlockables { get; private set; } = new();
     public string SearchBuffer = "";
     public UnlockStatusFilter UnlockStatusFilter { get; private set; } = UnlockStatusFilter.All;
     public ContainsRewardsFilter ContainsRewardsFilter { get; private set; } = ContainsRewardsFilter.All;
@@ -54,7 +56,7 @@ public class MainWindowState(MainWindowLayout layout)
     {
         var achievement = Plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement.NameLowercase(), achievement.DescriptionLowercase())
-               && MatchUnlockFilter(achievement.Unlocked)
+               && MatchUnlockFilter(achievement.Unlocked())
                && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
     }
 
@@ -62,8 +64,8 @@ public class MainWindowState(MainWindowLayout layout)
     {
         var achievements = Plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids);
         return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
-               && MatchUnlockFilter(achievements.Unlocked.Last())
-               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.Achievements.Last().RowId));
+               && MatchUnlockFilter(achievements.Unlocked())
+               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemCombined item)
@@ -136,7 +138,7 @@ public class MainWindowState(MainWindowLayout layout)
             sortedItems = SelectedCategory.Items;
         }
 
-        CategoryUnlockables = sortedItems.SelectMany<AchievementLayoutItem, Unlockable>(it =>
+        CategoryUnlockables = sortedItems.SelectMany<AchievementLayoutItem, IUnlockable>(it =>
         {
             if (it is AchievementLayoutItemSimple simple)
                 return [Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
@@ -161,7 +163,7 @@ public class MainWindowState(MainWindowLayout layout)
             if (res == null) return [];
             return [res];
         }).ToList();
-        FilteredLayout = new MainWindowLayout { AchievementLayout = items };
+        FilteredLayout = new MainLayout { AchievementLayout = items };
         SetCategory(currentCategoryId);
     }
 

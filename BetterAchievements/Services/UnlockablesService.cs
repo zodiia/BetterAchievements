@@ -2,10 +2,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using BetterAchievements.Data.Unlockable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 
-namespace BetterAchievements.Unlockables;
+namespace BetterAchievements.Services;
 
 public class UnlockablesService
 {

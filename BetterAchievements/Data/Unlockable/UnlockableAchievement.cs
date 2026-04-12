@@ -1,29 +1,30 @@
 using System.Collections.Generic;
 using Lumina.Excel.Sheets;
 
-namespace BetterAchievements.Unlockables;
+namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
+public sealed record UnlockableAchievement(Achievement Achievement) : IUnlockable
 {
-    internal bool Unlocked { get; } = Plugin.UnlockState.IsAchievementComplete(Achievement);
-
-    public uint? Progress() => Plugin.UnlockablesProgressService.GetProgress(Id());
-
     public uint Id() => Achievement.RowId;
+    public UnlockableType Type() => UnlockableType.Achievement;
     public string Name() => Achievement.Name.ToString();
     public string Description() => Achievement.Description.ToString();
     public AchievementCategory SubCategory() => Achievement.AchievementCategory.Value;
     public AchievementKind Category() => Achievement.AchievementCategory.Value.AchievementKind.Value;
     public uint Icon() => Achievement.Icon;
     public byte Points() => Achievement.Points;
-    public byte Type() => Achievement.Type;
+    public byte AchievementType() => Achievement.Type;
 
     private readonly string nameLowercase = Achievement.Name.ToString().ToLower();
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
+    private readonly uint? current = Plugin.UnlockablesProgressService.GetProgress(Achievement.RowId);
+    public uint? Current() => current;
+    private readonly bool unlocked = Plugin.UnlockState.IsAchievementComplete(Achievement);
+    public bool Unlocked() => unlocked;
 
-    public uint? Maximum()
+    public uint Maximum()
     {
         switch (Achievement.Type)
         {
@@ -32,7 +33,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
             case 10: case 12: case 13: case 17: case 19:
                 return Achievement.Key.RowId;
             default:
-                return null;
+                return 1;
         }
     }
 
@@ -41,7 +42,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public List<uint>? CompoundedAchievementIds()
     {
-        if (Type() != 2)
+        if (AchievementType() != 2)
         {
             return null;
         }
@@ -68,7 +69,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public BeastTribe? BeastTribe()
     {
-        if (Type() != 15)
+        if (AchievementType() != 15)
         {
             return null;
         }
@@ -81,7 +82,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public BeastReputationRank? BeastReputationRank()
     {
-        if (Type() != 15)
+        if (AchievementType() != 15)
         {
             return null;
         }
@@ -94,7 +95,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public GrandCompany? GrandCompany()
     {
-        if (Type() != 11)
+        if (AchievementType() != 11)
         {
             return null;
         }
@@ -107,7 +108,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public AetherCurrentCompFlgSet? AetherCurrentCompFlgSet()
     {
-        if (Type() != 20)
+        if (AchievementType() != 20)
         {
             return null;
         }
@@ -120,7 +121,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public ClassJob? RelicClassJob()
     {
-        if (Type() != 24)
+        if (AchievementType() != 24)
         {
             return null;
         }
@@ -133,7 +134,7 @@ public sealed record UnlockableAchievement(Achievement Achievement) : Unlockable
      */
     public uint? TripleTriadCardSet()
     {
-        if (Type() != 29)
+        if (AchievementType() != 29)
         {
             return null;
         }

@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using BetterAchievements.Data;
+using BetterAchievements.Data.Unlockable;
+using BetterAchievements.UI.Component;
 using BetterAchievements.Unlockables;
-using BetterAchievements.Windows.Components;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
-using Dalamud.Interface.Windowing;
-using ImGuiComponentsDalamud = Dalamud.Interface.Components.ImGuiComponents;
-using Serilog;
+using Dalamud.Interface.Components;
 
-namespace BetterAchievements.Windows;
+namespace BetterAchievements.UI.Window;
 
-public class MainWindow : Window, IDisposable
+public class MainWindow : Dalamud.Interface.Windowing.Window, IDisposable
 {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
@@ -25,7 +24,7 @@ public class MainWindow : Window, IDisposable
         : base("Better Achievements")
     {
         this.plugin = plugin;
-        state = new(plugin.MainWindowLayout);
+        state = new(plugin.MainLayout);
         SizeConstraints = new()
         {
             MinimumSize = new Vector2(900, 450),
@@ -52,9 +51,9 @@ public class MainWindow : Window, IDisposable
             }
 
             ImGui.SameLine();
-            if (ImGuiComponentsDalamud.IconButton(FontAwesomeIcon.SlidersH))
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH))
             {
-                ImGui.OpenPopup(ImGuiComponents.FiltersPopupId);
+                ImGui.OpenPopup(FilterPopup.FiltersPopupId);
             }
 
             if (ImGui.IsItemHovered())
@@ -62,7 +61,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.SetTooltip("Filters and sorting options");
             }
 
-            ImGuiComponents.FiltersPopup(state);
+            FilterPopup.FiltersPopup(state);
 
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
@@ -70,7 +69,7 @@ public class MainWindow : Window, IDisposable
             var iconSize = ImGui.CalcTextSize(icon);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - iconSize.X);
             ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - iconSize.Y) / 2);
-            ImGui.TextColored(ImGuiComponents.ColorOrange(), icon);
+            ImGui.TextColored(UiColors.ColorOrange(), icon);
             ImGui.PopFont();
 
             ImGui.SameLine();
@@ -78,7 +77,7 @@ public class MainWindow : Window, IDisposable
             var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
             ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - achievementPointsSize.Y) / 2);
-            ImGui.TextColored(ImGuiComponents.ColorOrange(), achievementPointsText);
+            ImGui.TextColored(UiColors.ColorOrange(), achievementPointsText);
             ImGui.EndChild();
         }
     }
@@ -92,7 +91,7 @@ public class MainWindow : Window, IDisposable
             var cursorPos = ImGui.GetCursorPos();
 
             ImGui.SetCursorPos(new() { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
-            ImGui.TextColored(ImGuiComponents.ColorRed(), AchievementListNotLoadedWarning);
+            ImGui.TextColored(UiColors.ColorRed(), AchievementListNotLoadedWarning);
             return true;
         }
 
@@ -103,7 +102,7 @@ public class MainWindow : Window, IDisposable
             var cursorPos = ImGui.GetCursorPos();
 
             ImGui.SetCursorPos(new() { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
-            ImGui.TextColored(ImGuiComponents.ColorRed(), NoCategorySelectedWarning);
+            ImGui.TextColored(UiColors.ColorRed(), NoCategorySelectedWarning);
             return true;
         }
 
@@ -127,19 +126,19 @@ public class MainWindow : Window, IDisposable
         {
             if (it is UnlockableAchievement achievement)
             {
-                if (achievement.Maximum() != null && achievement.Maximum() > 1)
+                if (achievement.Maximum() > 1)
                 {
-                    ImGuiComponents.ProgressBasedAchievement(achievement);
+                    UiComponents.ProgressBasedAchievement(achievement);
                 }
                 else
                 {
-                    ImGuiComponents.SimpleAchievement(achievement);
+                    UiComponents.SimpleAchievement(achievement);
                 }
             }
 
             if (it is UnlockableTieredAchievement tiered)
             {
-                ImGuiComponents.MultiProgressBasedAchievement(tiered);
+                UiComponents.MultiProgressBasedAchievement(tiered);
             }
 
             if (it != state.CategoryUnlockables.Last())

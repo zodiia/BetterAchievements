@@ -5,8 +5,11 @@ using Dalamud.Plugin;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using BetterAchievements.Data;
 using BetterAchievements.Hooks;
 using BetterAchievements.Lalachievements;
+using BetterAchievements.Services;
+using BetterAchievements.UI.Window;
 using BetterAchievements.Unlockables;
 using BetterAchievements.Windows;
 using Dalamud.Interface.Windowing;
@@ -19,9 +22,6 @@ public sealed class Plugin : IDalamudPlugin
 {
     [PluginService]
     internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-
-    [PluginService]
-    internal static ITextureProvider TextureProvider { get; private set; } = null!;
 
     [PluginService]
     internal static ICommandManager CommandManager { get; private set; } = null!;
@@ -62,7 +62,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("BetterAchievements");
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-    public MainWindowLayout MainWindowLayout { get; init; }
+    public MainLayout MainLayout { get; init; }
 
     private readonly AchievementProgressHook? achievementProgressHook;
 
@@ -81,7 +81,7 @@ public sealed class Plugin : IDalamudPlugin
         UnlockablesService = new();
         LalachievementsService = new();
 
-        MainWindowLayout = LoadMainWindowLayout();
+        MainLayout = LoadMainWindowLayout();
         
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(this);
@@ -116,16 +116,16 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
     }
 
-    private MainWindowLayout LoadMainWindowLayout()
+    private MainLayout LoadMainWindowLayout()
     {
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, };
-        return JsonSerializer.Deserialize<MainWindowLayout>(GetResourceFile("layout.json"), options)!;
+        return JsonSerializer.Deserialize<MainLayout>(GetResourceFile("layout.json"), options)!;
     }
 
     public string GetResourceFile(string fileName)
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = $"BetterAchievements.Data.{fileName}";
+        var resourceName = $"BetterAchievements.Resources.{fileName}";
         
         using Stream? stream = assembly.GetManifestResourceStream(resourceName);
         using StreamReader reader = new(stream ?? throw new InvalidOperationException());
