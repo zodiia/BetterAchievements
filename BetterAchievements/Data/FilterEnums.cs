@@ -1,6 +1,6 @@
 using System;
 
-namespace BetterAchievements.Windows.Helpers;
+namespace BetterAchievements.Data;
 
 public enum UnlockStatusFilter { All, Unlocked, Locked }
 public enum ContainsRewardsFilter { All, Rewards, UnclaimedRewards }

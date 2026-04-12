@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Serilog;
 
-namespace BetterAchievements.Lalachievements;
+namespace BetterAchievements.External.Lalachievements;
 
 public class LalachievementsService
 {
@@ -37,7 +37,7 @@ public class LalachievementsService
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Error requesting Lalachievements for achievement rarity.");
+            Log.Error(exception, "Error requesting Lalachievements for achievement rarity");
         }
     }
 }

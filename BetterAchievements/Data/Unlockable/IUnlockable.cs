@@ -1,5 +1,3 @@
-using BetterAchievements.Windows.Helpers;
-
 namespace BetterAchievements.Data.Unlockable;
 
 public enum UnlockableType

@@ -4,21 +4,21 @@ using System.Numerics;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
-using BetterAchievements.Unlockables;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Windowing;
 
-namespace BetterAchievements.UI.Window;
+namespace BetterAchievements.UI.Windows;
 
-public class MainWindow : Dalamud.Interface.Windowing.Window, IDisposable
+public class MainWindow : Window, IDisposable
 {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
 
     private readonly Plugin plugin;
 
-    private readonly MainWindowState state;
+    private MainWindowState state;
 
     public MainWindow(Plugin plugin)
         : base("Better Achievements")
@@ -55,10 +55,22 @@ public class MainWindow : Dalamud.Interface.Windowing.Window, IDisposable
             {
                 ImGui.OpenPopup(FilterPopup.FiltersPopupId);
             }
-
             if (ImGui.IsItemHovered())
             {
                 ImGui.SetTooltip("Filters and sorting options");
+            }
+
+
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
+            {
+                var category = state.SelectedCategory?.Id;
+                state = new MainWindowState(plugin.MainLayout);
+                if (category != null) state.SetCategory((uint) category);
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Refresh UI state");
             }
 
             FilterPopup.FiltersPopup(state);

@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data.Unlockable;
-using BetterAchievements.Unlockables;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Component;
@@ -105,7 +104,7 @@ public static partial class UiComponents
         ImGui.TextColored(UiColors.ColorOrange(), achievements.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.ColorYellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
-        MultiProgressBasedAchievementLevels(achievements);
+        MultiProgressBasedAchievementTiers(achievements);
 
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
         var maxLevel = achievements.ProvidesAchievements().Last();

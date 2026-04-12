@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BetterAchievements.Lalachievements;
+namespace BetterAchievements.External.Lalachievements;
 
 public record RarityResponse(string CharCount, List<RarityEntry> Rarity);
 

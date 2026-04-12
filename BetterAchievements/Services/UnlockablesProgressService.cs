@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace BetterAchievements.Unlockables;
+namespace BetterAchievements.Services;
 
 public class UnlockablesProgressService
 {

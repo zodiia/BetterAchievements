@@ -1,8 +1,8 @@
-using BetterAchievements.Windows.Helpers;
+using BetterAchievements.Data;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 
-namespace BetterAchievements.UI.Window;
+namespace BetterAchievements.UI.Windows;
 
 public static class FilterPopup
 {

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
-using BetterAchievements.Unlockables;
-using BetterAchievements.Windows.Helpers;
 
-namespace BetterAchievements.UI.Window;
+namespace BetterAchievements.UI.Windows;
 
 public class MainWindowState(MainLayout layout)
 {
