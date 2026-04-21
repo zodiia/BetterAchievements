@@ -23,6 +23,8 @@ public sealed record UnlockableAchievement(Achievement Achievement) : IUnlockabl
     public uint? Current() => current;
     private readonly bool unlocked = Plugin.UnlockState.IsAchievementComplete(Achievement);
     public bool Unlocked() => unlocked;
+    private readonly bool pinned = Plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
+    public bool Pinned() => pinned;
 
     public uint Maximum()
     {

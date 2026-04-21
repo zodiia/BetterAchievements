@@ -42,4 +42,15 @@ public class UnlockablesService
         tieredAchievements[achievementIds.Last()] = unlockable;
         return unlockable;
     }
+
+    public IUnlockable? GetExistingAchievement(uint achievementId)
+    {
+        return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
+    }
+
+    public void Refresh()
+    {
+        achievements.Clear();
+        tieredAchievements.Clear();
+    }
 }

@@ -17,6 +17,8 @@ public record UnlockableTieredAchievement : IUnlockable
         maximumPoints = (uint) ExcelAchievements.Select(it => (int) it.Points).Sum();
         currentPoints = (uint) ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
         current = (uint) providesAchievements.Count(it => it.Unlocked());
+        pinned = ExcelAchievements.Any(it => Plugin.Configuration.PinnedAchievements.Contains(it.RowId));
+        ids = ExcelAchievements.Select(it => it.RowId).ToList();
     }
 
     public readonly List<Achievement> ExcelAchievements;
@@ -28,6 +30,8 @@ public record UnlockableTieredAchievement : IUnlockable
     private readonly List<UnlockableAchievement> providesAchievements;
 
     public uint Id() => ExcelAchievements.Last().RowId;
+    private List<uint> ids;
+    public List<uint> Ids() => ids;
     public UnlockableType Type() => UnlockableType.Achievement;
     public string Name() => name;
     public string Description() => description;
@@ -39,6 +43,8 @@ public record UnlockableTieredAchievement : IUnlockable
     public uint? Current() => current;
     public uint Maximum() => (uint) providesAchievements.Count;
     public bool Unlocked() => Current() == Maximum();
+    private readonly bool pinned;
+    public bool Pinned() => pinned;
 
     public uint CurrentPoints() => currentPoints;
     public uint MaximumPoints() => maximumPoints;

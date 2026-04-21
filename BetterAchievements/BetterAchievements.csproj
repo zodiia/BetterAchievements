@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <PropertyGroup>
     <Version>0.0.0.1</Version>
-    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/zodiia/BetterAchievements</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -13,11 +13,10 @@
 
   <ItemGroup>
     <Folder Include="External\" />
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\layout.json">
+    <EmbeddedResource Include="Resources\layout.jsonc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

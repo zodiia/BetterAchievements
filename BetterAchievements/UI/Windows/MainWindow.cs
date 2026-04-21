@@ -7,6 +7,7 @@ using BetterAchievements.UI.Component;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
 namespace BetterAchievements.UI.Windows;
@@ -64,9 +65,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
             if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
             {
-                var category = state.SelectedCategory?.Id;
-                state = new MainWindowState(plugin.MainLayout);
-                if (category != null) state.SetCategory((uint) category);
+                state.Refresh();
             }
             if (ImGui.IsItemHovered())
             {
@@ -85,7 +84,7 @@ public class MainWindow : Window, IDisposable
             ImGui.PopFont();
 
             ImGui.SameLine();
-            var achievementPointsText = $"12345 ";
+            var achievementPointsText = $"{state.AchievementPoints} ";
             var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
             ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - achievementPointsSize.Y) / 2);
@@ -107,7 +106,7 @@ public class MainWindow : Window, IDisposable
             return true;
         }
 
-        if (state.SelectedCategory == null)
+        if (state.SelectedCategoryId == MainWindowState.NoCategoryId)
         {
             var available = ImGui.GetContentRegionAvail();
             var textSize = ImGui.CalcTextSize(NoCategorySelectedWarning);
@@ -121,36 +120,25 @@ public class MainWindow : Window, IDisposable
         return false;
     }
 
-    private void DrawMainContent()
+    private void DrawAchievementsMainContent()
     {
-        if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail(), true))
-        {
-            return;
-        }
-
-        if (DrawWarnings() || state.SelectedCategory == null) // null is already checked but just doing that so that my ide stops screaming at me
-        {
-            ImGui.EndChild();
-            return;
-        }
-
         foreach (var it in state.CategoryUnlockables)
         {
             if (it is UnlockableAchievement achievement)
             {
                 if (achievement.Maximum() > 1)
                 {
-                    UiComponents.ProgressBasedAchievement(achievement);
+                    UiComponents.ProgressBasedAchievement(achievement, state);
                 }
                 else
                 {
-                    UiComponents.SimpleAchievement(achievement);
+                    UiComponents.SimpleAchievement(achievement, state);
                 }
             }
 
             if (it is UnlockableTieredAchievement tiered)
             {
-                UiComponents.MultiProgressBasedAchievement(tiered);
+                UiComponents.MultiProgressBasedAchievement(tiered, state);
             }
 
             if (it != state.CategoryUnlockables.Last())
@@ -158,58 +146,136 @@ public class MainWindow : Window, IDisposable
                 ImGui.Separator();
             }
         }
+    }
+
+    private void DrawMainContent()
+    {
+        if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail(), true))
+        {
+            return;
+        }
+
+        if (DrawWarnings() || state.SelectedAchievementCategory == null) // null is already checked but just doing that so that my ide stops screaming at me
+        {
+            ImGui.EndChild();
+            return;
+        }
+
+        DrawAchievementsMainContent();
 
         ImGui.EndChild();
     }
 
-    private void DrawSidebarLayout(AchievementLayout layout)
+    private void DrawPinnedAchievementsSidebarItem()
     {
-        if (layout is AchievementLayoutGroup group)
+        if (ImGui.TreeNodeEx("Pinned", ImGuiTreeNodeFlags.Leaf |
+                                       ImGuiTreeNodeFlags.NoTreePushOnOpen |
+                                       ImGuiTreeNodeFlags.SpanFullWidth |
+                                       (state.SelectedCategoryId == MainWindowState.PinnedAchievementsCategoryId ? ImGuiTreeNodeFlags.Selected : 0)))
         {
-            if (ImGui.TreeNodeEx(group.Name, ImGuiTreeNodeFlags.SpanFullWidth))
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
             {
-                foreach (var subLayout in group.Items)
-                {
-                    DrawSidebarLayout(subLayout);
-                }
-                ImGui.TreePop();
+                state.SetCategory(MainWindowState.PinnedAchievementsCategoryId);
             }
         }
-        else if (layout is AchievementLayoutCategory category)
+    }
+
+    private void DrawSidebarItem(string name, int categoryId)
+    {
+        if (ImGui.TreeNodeEx(name, ImGuiTreeNodeFlags.Leaf |
+                                   ImGuiTreeNodeFlags.NoTreePushOnOpen |
+                                   ImGuiTreeNodeFlags.SpanFullWidth |
+                                   (state.SelectedCategoryId == categoryId ? ImGuiTreeNodeFlags.Selected : 0)))
         {
-            if (ImGui.TreeNodeEx(category.Name, ImGuiTreeNodeFlags.Leaf |
-                                                ImGuiTreeNodeFlags.NoTreePushOnOpen |
-                                                ImGuiTreeNodeFlags.SpanFullWidth |
-                                                (state.SelectedCategory?.Id == category.Id ? ImGuiTreeNodeFlags.Selected : 0)))
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
             {
-                if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-                {
-                    state.SetCategory(category.Id);
-                }
+                state.SetCategory(categoryId);
             }
+        }
+    }
+
+    private void DrawSidebarAchievementLayout(AchievementLayout layout)
+    {
+        switch (layout)
+        {
+            case AchievementLayoutGroup group:
+                if (ImGui.TreeNodeEx(group.Name, ImGuiTreeNodeFlags.SpanFullWidth))
+                {
+                    foreach (var subLayout in group.Items)
+                    {
+                        DrawSidebarAchievementLayout(subLayout);
+                    }
+                    ImGui.TreePop();
+                }
+
+                break;
+
+            case AchievementLayoutCategory category:
+                DrawSidebarItem(category.Name, category.Id);
+
+                break;
         }
     }
 
     private void DrawSidebar()
     {
-        if (ImGui.BeginChild("Sidebar", ImGui.GetContentRegionAvail() with { X = 350 }, true))
+        using var sidebar = ImRaii.Child("Sidebar", ImGui.GetContentRegionAvail() with { X = 350 }, true);
+        if (!sidebar) return;
+
+        if (ImGui.CollapsingHeader("Achievements"))
         {
-            if (!ImGui.CollapsingHeader("Achievements"))
-            {
-                ImGui.EndChild();
-                return;
-            }
+            DrawPinnedAchievementsSidebarItem();
 
             foreach (var layout in state.FilteredLayout.AchievementLayout)
             {
-                DrawSidebarLayout(layout);
+                DrawSidebarAchievementLayout(layout);
             }
-            ImGui.EndChild();
+        }
+
+        if (ImGui.CollapsingHeader("Fishing"))
+        {
+            ImGui.TreeNodeEx("Fish Guide", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Spearfish Guide", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            using var regions = ImRaii.TreeNode("Regions", ImGuiTreeNodeFlags.SpanFullWidth);
+            if (regions.Success)
+            {
+                using var region = ImRaii.TreeNode("La Noscea", ImGuiTreeNodeFlags.SpanFullWidth);
+                if (region.Success)
+                {
+                    using var area = ImRaii.TreeNode("Middle La Noscea", ImGuiTreeNodeFlags.SpanFullWidth);
+                    if (area.Success)
+                    {
+                        ImGui.TreeNodeEx("Zephyr Drift", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("Summerfold", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("Rogue River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("West Agelyss River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("Nym River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("Woad Whisper Canyon", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+
+                    }
+                }
+            }
+        }
+
+        if (ImGui.CollapsingHeader("Collectibles"))
+        {
+            ImGui.TreeNodeEx("Mounts", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Minions", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Titles", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Triple Triad Cards", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Triple Triad NPCs", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Orchestrion Rolls", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Portraits", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Levequests", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Bardings", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Emotes", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+            ImGui.TreeNodeEx("Fashion Accessories", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
         }
     }
 
     public override void Draw()
     {
+        state.CheckForUiRefresh();
         DrawTopbarLayout();
         DrawSidebar();
         ImGui.SameLine();

@@ -24,7 +24,7 @@ public record AchievementLayoutGroup : AchievementLayout
 public record AchievementLayoutCategory : AchievementLayout
 {
     public required List<AchievementLayoutItem> Items { get; set; }
-    public required uint Id { get; set; }
+    public required int Id { get; set; }
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]

@@ -55,7 +55,7 @@ public sealed class Plugin : IDalamudPlugin
     private const string CommandAlias = "/bach";
     private const string CommandHelp = "Open the main achievements interface";
 
-    public Configuration Configuration { get; init; }
+    public static Configuration Configuration { get; private set; } = new();
 
     public readonly WindowSystem WindowSystem = new("BetterAchievements");
     private ConfigWindow ConfigWindow { get; init; }
@@ -93,8 +93,6 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
-
-        Log.Information(GetResourceFile("layout.json"));
     }
 
     public void Dispose()
@@ -114,13 +112,13 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
     }
 
-    private MainLayout LoadMainWindowLayout()
+    private static MainLayout LoadMainWindowLayout()
     {
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, };
-        return JsonSerializer.Deserialize<MainLayout>(GetResourceFile("layout.json"), options)!;
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, ReadCommentHandling = JsonCommentHandling.Skip };
+        return JsonSerializer.Deserialize<MainLayout>(GetResourceFile("layout.jsonc"), options)!;
     }
 
-    public string GetResourceFile(string fileName)
+    public static string GetResourceFile(string fileName)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = $"BetterAchievements.Resources.{fileName}";

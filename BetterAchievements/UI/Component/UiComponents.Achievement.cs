@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data.Unlockable;
+using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BetterAchievements.UI.Component;
 
@@ -9,12 +13,15 @@ public static partial class UiComponents
 {
     private static string ToRoman(int number)
     {
-        if (number >= 10) return "X" + ToRoman(number - 10);
-        if (number >= 9) return "IX" + ToRoman(number - 9);
-        if (number >= 5) return "V" + ToRoman(number - 5);
-        if (number >= 4) return "IV" + ToRoman(number - 4);
-        if (number >= 1) return "I" + ToRoman(number - 1);
-        return "";
+        return number switch
+        {
+            >= 10 => "X" + ToRoman(number - 10),
+            >= 9 => "IX" + ToRoman(number - 9),
+            >= 5 => "V" + ToRoman(number - 5),
+            >= 4 => "IV" + ToRoman(number - 4),
+            >= 1 => "I" + ToRoman(number - 1),
+            _ => ""
+        };
     }
 
     public static void SameLineRightTextColored(Vector4 color, string text)
@@ -25,8 +32,47 @@ public static partial class UiComponents
         ImGui.TextColored(color, text);
     }
 
-    private static void AchievementBase(UnlockableAchievement achievement)
+    private static void Pin(bool active, IEnumerable<uint> ids, MainWindowState mainWindowState)
     {
+        var color = active ? UiColors.ColorOrange() : UiColors.ColorGrey();
+        var hoverText = active ? "Unpin this achievement" : "Pin this achievement";
+        var icon = active ? FontAwesomeIcon.Thumbtack : FontAwesomeIcon.ThumbtackSlash;
+        var boxStart = ImGui.GetCursorScreenPos();
+        Vector2 boxEnd;
+
+        using (var _ = ImRaii.PushFont(UiBuilder.IconFont))
+        {
+            var iconText = icon.ToIconString(); // this one is bigger
+            var textSize = ImGui.CalcTextSize(iconText);
+            boxEnd = new(boxStart.X + textSize.X, boxStart.Y + textSize.Y);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 1); // for some reason it clips by 1px by default
+            ImGui.TextColored(color, iconText);
+            ImGui.SameLine();
+            if (active) ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3); // necessary readjustments
+        }
+        if (ImGui.IsMouseHoveringRect(boxStart, boxEnd))
+        {
+            ImGui.SetTooltip(hoverText);
+        }
+        if (ImGui.IsItemClicked())
+        {
+            if (active)
+            {
+                Plugin.Configuration.PinnedAchievements.RemoveAll(ids.Contains);
+            }
+            else
+            {
+                Plugin.Configuration.PinnedAchievements.Add(ids.Last());
+            }
+            Plugin.Configuration.Save();
+            mainWindowState.RefreshPinnedAchievements();
+        }
+    }
+
+    private static void AchievementBase(UnlockableAchievement achievement, MainWindowState mainWindowState)
+    {
+        Pin(Plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState);
+
         ImGui.TextColored(UiColors.ColorOrange(), achievement.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.ColorYellow(), $" {achievement.Points()} points");
@@ -44,20 +90,20 @@ public static partial class UiComponents
         ImGui.TextWrapped(achievement.Description());
     }
 
-    public static void SimpleAchievement(UnlockableAchievement achievement)
+    public static void SimpleAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState)
     {
         ImGui.BeginGroup();
 
-        AchievementBase(achievement);
+        AchievementBase(achievement, mainWindowState);
 
         ImGui.EndGroup();
     }
 
-    public static void ProgressBasedAchievement(UnlockableAchievement achievement)
+    public static void ProgressBasedAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState)
     {
         ImGui.BeginGroup();
 
-        AchievementBase(achievement);
+        AchievementBase(achievement, mainWindowState);
 
         var progress = achievement.Current();
         if (!achievement.Unlocked())
@@ -79,6 +125,7 @@ public static partial class UiComponents
 
     private static void MultiProgressBasedAchievementTiers(UnlockableTieredAchievement achievements)
     {
+
         var widthCalculationText = "";
         for (var i = 1; i <= achievements.Maximum(); i++) widthCalculationText += ToRoman(i);
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X - UiSize.Em(achievements.Maximum() - 1);
@@ -97,9 +144,11 @@ public static partial class UiComponents
         }
     }
 
-    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements)
+    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState)
     {
         ImGui.BeginGroup();
+
+        Pin(Plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState);
 
         ImGui.TextColored(UiColors.ColorOrange(), achievements.Name());
         ImGui.SameLine();
