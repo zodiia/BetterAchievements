@@ -18,6 +18,10 @@ namespace BetterAchievements;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    private const string CommandName = "/betterachievements";
+    private const string CommandAlias = "/bach";
+    private const string CommandHelp = "Open the main achievements interface";
+
     [PluginService]
     internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
 
@@ -47,15 +51,11 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static unsafe UIState* UiState { get; } = UIState.Instance();
 
-    internal static UnlockablesProgressService UnlockablesProgressService { get; private set; } = null!;
-    internal static UnlockablesService UnlockablesService { get; private set; } = null!;
-    internal static LalachievementsService LalachievementsService { get; private set; } = null!;
+    public UnlockablesProgressService UnlockablesProgressService { get; private set; }
+    public UnlockablesService UnlockablesService { get; private set; }
+    public LalachievementsService LalachievementsService { get; private set; }
 
-    private const string CommandName = "/betterachievements";
-    private const string CommandAlias = "/bach";
-    private const string CommandHelp = "Open the main achievements interface";
-
-    public static Configuration Configuration { get; private set; } = new();
+    public Configuration Configuration { get; private set; }
 
     public readonly WindowSystem WindowSystem = new("BetterAchievements");
     private ConfigWindow ConfigWindow { get; init; }
@@ -70,14 +70,14 @@ public sealed class Plugin : IDalamudPlugin
 
         try
         {
-            achievementProgressHook = new(GameInteropProvider);
+            achievementProgressHook = new AchievementProgressHook(this);
         } catch (Exception e) {
             Log.Warning(e, "Could not hook achievement progress. This feature will be disabled.");
         }
 
-        UnlockablesProgressService = new();
-        UnlockablesService = new();
-        LalachievementsService = new();
+        UnlockablesProgressService = new UnlockablesProgressService();
+        UnlockablesService = new UnlockablesService(this);
+        LalachievementsService = new LalachievementsService();
 
         MainLayout = LoadMainWindowLayout();
         
@@ -93,6 +93,8 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+
+        Log.Information("{T}", ClientState);
     }
 
     public void Dispose()

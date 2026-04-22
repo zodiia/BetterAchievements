@@ -13,18 +13,18 @@ public record MainLayout
 [JsonDerivedType(typeof(AchievementLayoutCategory), typeDiscriminator: "category")]
 public abstract record AchievementLayout
 {
-    public required string Name { get; set; }
+    public required string Name { get; init; }
 }
 
 public record AchievementLayoutGroup : AchievementLayout
 {
-    public required List<AchievementLayout> Items { get; set; }
+    public required List<AchievementLayout> Items { get; init; }
 }
 
 public record AchievementLayoutCategory : AchievementLayout
 {
-    public required List<AchievementLayoutItem> Items { get; set; }
-    public required int Id { get; set; }
+    public required List<AchievementLayoutItem> Items { get; init; }
+    public required int Id { get; init; }
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
@@ -35,15 +35,15 @@ public abstract record AchievementLayoutItem { }
 
 public record AchievementLayoutItemSimple : AchievementLayoutItem
 {
-    public required uint Id { get; set; }
+    public required uint Id { get; init; }
 }
 
 public record AchievementLayoutItemTiered : AchievementLayoutItem
 {
-    public required List<uint> Ids { get; set; }
+    public required List<uint> Ids { get; init; }
 }
 
 public record AchievementLayoutItemCombined : AchievementLayoutItem
 {
-    public required List<uint> Ids { get; set; }
+    public required List<uint> Ids { get; init; }
 }

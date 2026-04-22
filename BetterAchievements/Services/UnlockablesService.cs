@@ -1,17 +1,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using BetterAchievements.Data.Unlockable;
+using BetterAchievements.Helpers;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Services;
 
-public class UnlockablesService
+public class UnlockablesService(Plugin plugin)
 {
-    private const string AchievementNameReplaceRegex = " ?[\\dIVX]+$";
-
     private readonly ExcelSheet<Achievement> achievementSheet = Plugin.DataManager.GetExcelSheet<Achievement>();
 
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
@@ -24,7 +22,7 @@ public class UnlockablesService
             return it;
         }
 
-        var unlockable = new UnlockableAchievement(achievementSheet.GetRow(achievementId));
+        var unlockable = new UnlockableAchievement(achievementSheet.GetRow(achievementId), plugin);
         achievements[achievementId] = unlockable;
         return unlockable;
     }
@@ -37,8 +35,8 @@ public class UnlockablesService
         }
 
         var achievementList = achievementIds.Select(id => achievementSheet.GetRow(id)).ToList();
-        var title = Regex.Replace(achievementList.Last().Name.ToString(), AchievementNameReplaceRegex, "");
-        var unlockable = new UnlockableTieredAchievement(achievementList, title);
+        var title = CompiledRegexes.AchievementNameReplace().Replace(achievementList.Last().Name.ToString(), "");
+        var unlockable = new UnlockableTieredAchievement(achievementList, title, plugin);
         tieredAchievements[achievementIds.Last()] = unlockable;
         return unlockable;
     }

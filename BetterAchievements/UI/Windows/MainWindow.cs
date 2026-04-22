@@ -18,15 +18,15 @@ public class MainWindow : Window, IDisposable
     private const string NoCategorySelectedWarning = "Please select a category.";
 
     private readonly Plugin plugin;
-
-    private MainWindowState state;
+    private readonly MainWindowState state;
 
     public MainWindow(Plugin plugin)
         : base("Better Achievements")
     {
         this.plugin = plugin;
-        state = new(plugin.MainLayout);
-        SizeConstraints = new()
+        state = new MainWindowState(plugin);
+        plugin.UnlockablesProgressService.SetMainWindowStateToRefresh(state);
+        SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(900, 450),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -80,7 +80,7 @@ public class MainWindow : Window, IDisposable
             var iconSize = ImGui.CalcTextSize(icon);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - iconSize.X);
             ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - iconSize.Y) / 2);
-            ImGui.TextColored(UiColors.ColorOrange(), icon);
+            ImGui.TextColored(UiColors.Orange(), icon);
             ImGui.PopFont();
 
             ImGui.SameLine();
@@ -88,7 +88,7 @@ public class MainWindow : Window, IDisposable
             var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
             ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - achievementPointsSize.Y) / 2);
-            ImGui.TextColored(UiColors.ColorOrange(), achievementPointsText);
+            ImGui.TextColored(UiColors.Orange(), achievementPointsText);
             ImGui.EndChild();
         }
     }
@@ -102,7 +102,7 @@ public class MainWindow : Window, IDisposable
             var cursorPos = ImGui.GetCursorPos();
 
             ImGui.SetCursorPos(new() { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
-            ImGui.TextColored(UiColors.ColorRed(), AchievementListNotLoadedWarning);
+            ImGui.TextColored(UiColors.Red(), AchievementListNotLoadedWarning);
             return true;
         }
 
@@ -113,7 +113,7 @@ public class MainWindow : Window, IDisposable
             var cursorPos = ImGui.GetCursorPos();
 
             ImGui.SetCursorPos(new() { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
-            ImGui.TextColored(UiColors.ColorRed(), NoCategorySelectedWarning);
+            ImGui.TextColored(UiColors.Red(), NoCategorySelectedWarning);
             return true;
         }
 
@@ -128,17 +128,17 @@ public class MainWindow : Window, IDisposable
             {
                 if (achievement.Maximum() > 1)
                 {
-                    UiComponents.ProgressBasedAchievement(achievement, state);
+                    UiComponents.ProgressBasedAchievement(achievement, state, plugin);
                 }
                 else
                 {
-                    UiComponents.SimpleAchievement(achievement, state);
+                    UiComponents.SimpleAchievement(achievement, state, plugin);
                 }
             }
 
             if (it is UnlockableTieredAchievement tiered)
             {
-                UiComponents.MultiProgressBasedAchievement(tiered, state);
+                UiComponents.MultiProgressBasedAchievement(tiered, state, plugin);
             }
 
             if (it != state.CategoryUnlockables.Last())

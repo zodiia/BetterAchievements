@@ -6,18 +6,18 @@ namespace BetterAchievements.Data.Unlockable;
 
 public record UnlockableTieredAchievement : IUnlockable
 {
-    public UnlockableTieredAchievement(List<Achievement> excelAchievements, string name)
+    public UnlockableTieredAchievement(List<Achievement> excelAchievements, string name, Plugin plugin)
     {
         ExcelAchievements = excelAchievements;
         this.name = name;
         description = excelAchievements.Last().Description.ToString();
-        providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it)).ToList();
+        providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
         nameLowercase = name.ToLower();
         descriptionLowercase = string.Join(" ", providesAchievements.Select(it => it.Description().ToLower()).ToList());
         maximumPoints = (uint) ExcelAchievements.Select(it => (int) it.Points).Sum();
         currentPoints = (uint) ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
         current = (uint) providesAchievements.Count(it => it.Unlocked());
-        pinned = ExcelAchievements.Any(it => Plugin.Configuration.PinnedAchievements.Contains(it.RowId));
+        pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
         ids = ExcelAchievements.Select(it => it.RowId).ToList();
     }
 

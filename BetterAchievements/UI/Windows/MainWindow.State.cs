@@ -10,20 +10,19 @@ using Serilog;
 
 namespace BetterAchievements.UI.Windows;
 
-public class MainWindowState(MainLayout layout)
+public class MainWindowState(Plugin plugin)
 {
     private const int FishingCategoryIdShift = 10000;
     private const int SpecialCategoryIdShift = 20000;
     public const int PinnedAchievementsCategoryId = SpecialCategoryIdShift + 0;
     public const int NoCategoryId = int.MinValue;
 
-    private readonly MainLayout mainLayout = layout;
+    private readonly MainLayout mainLayout = plugin.MainLayout;
 
     private string currentSearch = "";
     private ulong bitArrayHash = 0ul;
-    private AchievementLayoutCategory pinnedAchievementsCategory;
-
-    public MainLayout FilteredLayout { get; private set; } = layout;
+    private AchievementLayoutCategory pinnedAchievementsCategory = new() { Items = [], Id = PinnedAchievementsCategoryId, Name = "Pinned" };
+    public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public int SelectedCategoryId = NoCategoryId;
     public AchievementLayoutCategory? SelectedAchievementCategory { get; private set; }
     public List<IUnlockable> CategoryUnlockables { get; private set; } = new();
@@ -64,25 +63,25 @@ public class MainWindowState(MainLayout layout)
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
     {
-        var achievement = Plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
+        var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement.NameLowercase(), achievement.DescriptionLowercase())
                && MatchUnlockFilter(achievement.Unlocked())
-               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item)
     {
-        var achievements = Plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids);
+        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids);
         return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
                && MatchUnlockFilter(achievements.Unlocked())
-               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemCombined item)
     {
-        var achievements = Plugin.UnlockablesService.GetUnlockableAchievement(item.Ids.Last());
+        var achievements = plugin.UnlockablesService.GetUnlockableAchievement(item.Ids.Last());
         return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
-               && MatchRankedFilter(Plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.Id()));
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.Id()));
         // && MatchUnlockFilter(achievements.Unlocked.All());
         // TODO
     }
@@ -131,11 +130,11 @@ public class MainWindowState(MainLayout layout)
             sortedItems = SelectedAchievementCategory.Items.OrderBy(it =>
             {
                 if (it is AchievementLayoutItemSimple simple)
-                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue);
+                    return plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue);
                 if (it is AchievementLayoutItemTiered tiered)
-                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue);
+                    return plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue);
                 if (it is AchievementLayoutItemCombined combined) // TODO: fix
-                    return Plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(combined.Ids.Last(), uint.MaxValue);
+                    return plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(combined.Ids.Last(), uint.MaxValue);
                 return uint.MaxValue;
             }).ToList();
             if (SortBy == SortBy.MostCommon)
@@ -151,11 +150,11 @@ public class MainWindowState(MainLayout layout)
         CategoryUnlockables = sortedItems.SelectMany<AchievementLayoutItem, IUnlockable>(it =>
         {
             if (it is AchievementLayoutItemSimple simple)
-                return [Plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
+                return [plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
             if (it is AchievementLayoutItemTiered tiered)
-                return [Plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids)];
+                return [plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids)];
             if (it is AchievementLayoutItemCombined combined) // TODO: fix
-                return combined.Ids.Select(simple => Plugin.UnlockablesService.GetUnlockableAchievement(simple)).ToList();
+                return combined.Ids.Select(id => plugin.UnlockablesService.GetUnlockableAchievement(id)).ToList();
             return [];
         }).ToList();
 
@@ -219,9 +218,9 @@ public class MainWindowState(MainLayout layout)
         {
             Id = PinnedAchievementsCategoryId,
             Name = "Pinned",
-            Items = Plugin.Configuration.PinnedAchievements.Select(it =>
+            Items = plugin.Configuration.PinnedAchievements.Select(it =>
             {
-                var unlockable = Plugin.UnlockablesService.GetExistingAchievement(it);
+                var unlockable = plugin.UnlockablesService.GetExistingAchievement(it);
                 AchievementLayoutItem? item = unlockable switch
                 {
                     UnlockableAchievement => new AchievementLayoutItemSimple { Id = it },
@@ -235,7 +234,7 @@ public class MainWindowState(MainLayout layout)
 
     public void Refresh()
     {
-        Plugin.UnlockablesService.Refresh();
+        plugin.UnlockablesService.Refresh();
         FilterAll();
         CalculateAchievementPoints();
         RefreshPinnedAchievements();

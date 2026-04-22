@@ -3,7 +3,7 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableAchievement(Achievement Achievement) : IUnlockable
+public sealed record UnlockableAchievement(Achievement Achievement, Plugin plugin) : IUnlockable
 {
     public uint Id() => Achievement.RowId;
     public UnlockableType Type() => UnlockableType.Achievement;
@@ -19,11 +19,11 @@ public sealed record UnlockableAchievement(Achievement Achievement) : IUnlockabl
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
-    private readonly uint? current = Plugin.UnlockablesProgressService.GetProgress(Achievement.RowId);
+    private readonly uint? current = plugin.UnlockablesProgressService.GetProgress(Achievement.RowId);
     public uint? Current() => current;
     private readonly bool unlocked = Plugin.UnlockState.IsAchievementComplete(Achievement);
     public bool Unlocked() => unlocked;
-    private readonly bool pinned = Plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
+    private readonly bool pinned = plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
     public bool Pinned() => pinned;
 
     public uint Maximum()

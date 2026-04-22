@@ -32,9 +32,9 @@ public static partial class UiComponents
         ImGui.TextColored(color, text);
     }
 
-    private static void Pin(bool active, IEnumerable<uint> ids, MainWindowState mainWindowState)
+    private static void Pin(bool active, IEnumerable<uint> ids, MainWindowState mainWindowState, Plugin plugin)
     {
-        var color = active ? UiColors.ColorOrange() : UiColors.ColorGrey();
+        var color = active ? UiColors.Orange() : UiColors.Grey();
         var hoverText = active ? "Unpin this achievement" : "Pin this achievement";
         var icon = active ? FontAwesomeIcon.Thumbtack : FontAwesomeIcon.ThumbtackSlash;
         var boxStart = ImGui.GetCursorScreenPos();
@@ -44,7 +44,7 @@ public static partial class UiComponents
         {
             var iconText = icon.ToIconString(); // this one is bigger
             var textSize = ImGui.CalcTextSize(iconText);
-            boxEnd = new(boxStart.X + textSize.X, boxStart.Y + textSize.Y);
+            boxEnd = new Vector2(boxStart.X + textSize.X, boxStart.Y + textSize.Y);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 1); // for some reason it clips by 1px by default
             ImGui.TextColored(color, iconText);
             ImGui.SameLine();
@@ -58,59 +58,59 @@ public static partial class UiComponents
         {
             if (active)
             {
-                Plugin.Configuration.PinnedAchievements.RemoveAll(ids.Contains);
+                plugin.Configuration.PinnedAchievements.RemoveAll(ids.Contains);
             }
             else
             {
-                Plugin.Configuration.PinnedAchievements.Add(ids.Last());
+                plugin.Configuration.PinnedAchievements.Add(ids.Last());
             }
-            Plugin.Configuration.Save();
+            plugin.Configuration.Save();
             mainWindowState.RefreshPinnedAchievements();
         }
     }
 
-    private static void AchievementBase(UnlockableAchievement achievement, MainWindowState mainWindowState)
+    private static void AchievementBase(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin)
     {
-        Pin(Plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState);
+        Pin(plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState, plugin);
 
-        ImGui.TextColored(UiColors.ColorOrange(), achievement.Name());
+        ImGui.TextColored(UiColors.Orange(), achievement.Name());
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.ColorYellow(), $" {achievement.Points()} points");
+        ImGui.TextColored(UiColors.Yellow(), $" {achievement.Points()} points");
         ImGui.SameLine();
         ImGui.TextDisabled(" #" + achievement.Id());
         ImGui.SameLine();
         if (achievement.Unlocked())
         {
-            SameLineRightTextColored(UiColors.ColorGreen(), "Unlocked");
+            SameLineRightTextColored(UiColors.Green(), "Unlocked");
         }
         else
         {
-            SameLineRightTextColored(UiColors.ColorRed(), "Locked");
+            SameLineRightTextColored(UiColors.Red(), "Locked");
         }
         ImGui.TextWrapped(achievement.Description());
     }
 
-    public static void SimpleAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState)
+    public static void SimpleAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin)
     {
         ImGui.BeginGroup();
 
-        AchievementBase(achievement, mainWindowState);
+        AchievementBase(achievement, mainWindowState, plugin);
 
         ImGui.EndGroup();
     }
 
-    public static void ProgressBasedAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState)
+    public static void ProgressBasedAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin)
     {
         ImGui.BeginGroup();
 
-        AchievementBase(achievement, mainWindowState);
+        AchievementBase(achievement, mainWindowState, plugin);
 
         var progress = achievement.Current();
         if (!achievement.Unlocked())
         {
             ProgressBar(
                 (progress ?? 1.0f) / achievement.Maximum(),
-                progress != null ? UiColors.ColorProgress().Brightness(0.5f) : UiColors.ColorRed(),
+                progress != null ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
                 insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progress != null,
@@ -136,7 +136,7 @@ public static partial class UiComponents
 
             ImGui.SameLine();
             ImGui.SetCursorPosX(position);
-            ImGui.TextColored(achievements.ProvidesAchievements()[i - 1].Unlocked() ? UiColors.ColorGreen() : UiColors.ColorRed(), text);
+            ImGui.TextColored(achievements.ProvidesAchievements()[i - 1].Unlocked() ? UiColors.Green() : UiColors.Red(), text);
             if (i != achievements.Maximum())
             {
                 position += UiSize.Em(1) + ImGui.CalcTextSize(text).X;
@@ -144,15 +144,15 @@ public static partial class UiComponents
         }
     }
 
-    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState)
+    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin)
     {
         ImGui.BeginGroup();
 
-        Pin(Plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState);
+        Pin(plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState, plugin);
 
-        ImGui.TextColored(UiColors.ColorOrange(), achievements.Name());
+        ImGui.TextColored(UiColors.Orange(), achievements.Name());
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.ColorYellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
+        ImGui.TextColored(UiColors.Yellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
         MultiProgressBasedAchievementTiers(achievements);
 
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
@@ -167,7 +167,7 @@ public static partial class UiComponents
             ImGui.TextDisabled(" (current level)");
             ProgressBar(
                 (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
-                progressLoaded ? UiColors.ColorProgress().Brightness(0.5f) : UiColors.ColorRed(),
+                progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
                 insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,
@@ -183,7 +183,7 @@ public static partial class UiComponents
         {
             ProgressBar(
                 (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
-                progressLoaded ? UiColors.ColorProgress().Brightness(0.5f) : UiColors.ColorRed(),
+                progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
                 insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
                 tooltip: "Click to refresh",
                 enabled: progressLoaded,

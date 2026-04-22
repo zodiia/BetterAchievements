@@ -22,12 +22,11 @@ public static partial class UiComponents
         var insideTextSize = insideText != null ? ImGui.CalcTextSize(insideText) : Vector2.Zero;
 
         // Background
-        Vector2 barStart = cursorPos;
-        Vector2 barEnd = new Vector2(barStart.X + width, barStart.Y + height);
-        drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), 4.0f);
+        var barEnd = new Vector2(cursorPos.X + width, cursorPos.Y + height);
+        drawList.AddRectFilled(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), 4.0f);
 
         // Tooltip & Click handling
-        if (ImGui.IsMouseHoveringRect(barStart, barEnd))
+        if (ImGui.IsMouseHoveringRect(cursorPos, barEnd))
         {
             if (tooltip != null)
             {
@@ -47,32 +46,35 @@ public static partial class UiComponents
         // Disabled bar
         if (!enabled)
         {
-            Vector2 textPosition = new() { X = barStart.X + ((width - insideTextSize.X) / 2), Y = barStart.Y + ((height - insideTextSize.Y) / 2) };
+            Vector2 textPosition = new() { X = cursorPos.X + ((width - insideTextSize.X) / 2), Y = cursorPos.Y + ((height - insideTextSize.Y) / 2) };
             ImGui.SetCursorScreenPos(textPosition);
             ImGui.TextColored(color, insideText ?? "Disabled");
+
+            ImGui.SetCursorScreenPos(cursorPos);
+            ImGui.Dummy(new Vector2(width, height));
             return;
         }
 
         // Filled
-        Vector2 fillEnd = new Vector2(barStart.X + (width * clampedProgress), barStart.Y + height);
-        drawList.AddRectFilled(barStart, fillEnd, ImGui.GetColorU32(color), 4.0f);
+        Vector2 fillEnd = new Vector2(cursorPos.X + (width * clampedProgress), cursorPos.Y + height);
+        drawList.AddRectFilled(cursorPos, fillEnd, ImGui.GetColorU32(color), 4.0f);
 
         // Inside Text
         if (insideText != null)
         {
             if (fillEnd.X + UiSize.Em(0.5f) + insideTextSize.X < barEnd.X - UiSize.Em(0.5f))
             {
-                ImGui.SetCursorScreenPos(new() { X = fillEnd.X + UiSize.Em(0.5f), Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
+                ImGui.SetCursorScreenPos(new() { X = fillEnd.X + UiSize.Em(0.5f), Y = cursorPos.Y + ((height - insideTextSize.Y) / 2) });
                 ImGui.TextColored(color, insideText);
             }
             else
             {
-                ImGui.SetCursorScreenPos(new() { X = fillEnd.X - UiSize.Em(0.5f) - insideTextSize.X, Y = barStart.Y + ((height - insideTextSize.Y) / 2) });
-                ImGui.TextColored(UiColors.ColorBlack(), insideText);
+                ImGui.SetCursorScreenPos(new() { X = fillEnd.X - UiSize.Em(0.5f) - insideTextSize.X, Y = cursorPos.Y + ((height - insideTextSize.Y) / 2) });
+                ImGui.TextColored(UiColors.Black(), insideText);
             }
         }
 
-        ImGui.SetCursorScreenPos(barStart);
+        ImGui.SetCursorScreenPos(cursorPos);
         ImGui.Dummy(new Vector2(width, height));
     }
 }
