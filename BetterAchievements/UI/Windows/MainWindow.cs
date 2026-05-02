@@ -37,60 +37,64 @@ public class MainWindow : Window, IDisposable
 
     private void DrawTopbarLayout()
     {
-        if (ImGui.BeginChild("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = 48 }, true))
+        var cellPadding = ImGui.GetStyle().CellPadding;   // outside search bar
+        var framePadding = ImGui.GetStyle().FramePadding; // inside search bar
+        var margin = ImGui.GetStyle().WindowPadding;
+        var childHeight = ImGui.GetTextLineHeight() + (cellPadding.Y * 2) + (framePadding.Y * 2) + (margin.Y * 2);
+        using var child = ImRaii.Child("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = childHeight }, true, ImGuiWindowFlags.AlwaysAutoResize);
+        if (!child.Success) return;
+
+        var startingY = ImGui.GetCursorPosY();
+
+        ImGui.SetCursorPosY(startingY + cellPadding.Y + framePadding.Y);
+        ImGui.Text("Search:");
+
+        ImGui.SameLine();
+        ImGui.SetCursorPosY(startingY + cellPadding.Y);
+        if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 }))
         {
-            var padding = ImGui.GetStyle().CellPadding;
-
-            ImGui.SameLine();
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + padding.Y + 1);
-            ImGui.Text("Search:");
-
-            ImGui.SameLine();
-            if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 }))
-            {
-                state.SetSearch(state.SearchBuffer); // do not recalculate ToLower many times per frames
-            }
-
-            ImGui.SameLine();
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH))
-            {
-                ImGui.OpenPopup(FilterPopup.FiltersPopupId);
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Filters and sorting options");
-            }
-
-
-            ImGui.SameLine();
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
-            {
-                state.Refresh();
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Refresh UI state");
-            }
-
-            FilterPopup.FiltersPopup(state);
-
-            ImGui.SameLine();
-            ImGui.PushFont(UiBuilder.IconFont);
-            var icon = FontAwesomeIcon.Trophy.ToIconString();
-            var iconSize = ImGui.CalcTextSize(icon);
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - iconSize.X);
-            ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - iconSize.Y) / 2);
-            ImGui.TextColored(UiColors.Orange(), icon);
-            ImGui.PopFont();
-
-            ImGui.SameLine();
-            var achievementPointsText = $"{state.AchievementPoints} ";
-            var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
-            ImGui.SetCursorPosY((ImGui.GetContentRegionAvail().Y - achievementPointsSize.Y) / 2);
-            ImGui.TextColored(UiColors.Orange(), achievementPointsText);
-            ImGui.EndChild();
+            state.SetSearch(state.SearchBuffer); // do not recalculate ToLower many times per frames
         }
+
+        ImGui.SameLine();
+        ImGui.SetCursorPosY(startingY + cellPadding.Y);
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH))
+        {
+            ImGui.OpenPopup(FilterPopup.FiltersPopupId);
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Filters and sorting options");
+        }
+
+        ImGui.SameLine();
+        ImGui.SetCursorPosY(startingY + cellPadding.Y);
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
+        {
+            state.Refresh();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Refresh UI state");
+        }
+
+        FilterPopup.FiltersPopup(state);
+
+        ImGui.SameLine();
+        ImGui.PushFont(UiBuilder.IconFont);
+        var icon = FontAwesomeIcon.Trophy.ToIconString();
+        var iconSize = ImGui.CalcTextSize(icon);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - iconSize.X);
+        ImGui.SetCursorPosY(startingY + cellPadding.Y - 1);
+        ImGui.TextColored(UiColors.Orange(), icon);
+        ImGui.PopFont();
+
+        ImGui.SameLine();
+        var achievementPointsText = $"{state.AchievementPoints} ";
+        var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
+        ImGui.SetCursorPosY(startingY + cellPadding.Y);
+        ImGui.TextColored(UiColors.Orange(), achievementPointsText);
     }
 
     private bool DrawWarnings()
@@ -101,7 +105,7 @@ public class MainWindow : Window, IDisposable
             var textSize = ImGui.CalcTextSize(AchievementListNotLoadedWarning);
             var cursorPos = ImGui.GetCursorPos();
 
-            ImGui.SetCursorPos(new() { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
+            ImGui.SetCursorPos(new Vector2 { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
             ImGui.TextColored(UiColors.Red(), AchievementListNotLoadedWarning);
             return true;
         }
@@ -138,7 +142,7 @@ public class MainWindow : Window, IDisposable
 
             if (it is UnlockableTieredAchievement tiered)
             {
-                UiComponents.MultiProgressBasedAchievement(tiered, state, plugin);
+                UiComponents.TieredAchievement(tiered, state, plugin);
             }
 
             if (it != state.CategoryUnlockables.Last())
