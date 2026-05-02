@@ -28,13 +28,21 @@ jobs:
         Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
         Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
-    - name: Build with dotnet
-      run: dotnet build --configuration Release
-
-    - name: Generate testing repo JSON
+    - name: Generate testing repo JSON and get current commit count
+      id: eval-vars
       shell: bash
       run: |
-        eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
+          eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
+          echo "commitcount=$(git rev-list --count main)" >> "$GITHUB_OUTPUT"
+
+    - name: Correctly set .csproj Version field
+      uses: vers-one/dotnet-project-version-updater@v1.8
+      with:
+        file: "**/*.csproj"
+        version: "*.*.*.${{ steps.eval-vars.outputs.commitcount }}"
+
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
 
     - name: Update Latest Release
       uses: softprops/action-gh-release@v2
