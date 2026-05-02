@@ -11,10 +11,14 @@ namespace BetterAchievements.UI.Component;
 
 public static partial class UiComponents
 {
+    private static string ToRoman(uint number) => ToRoman((int)number);
+
     private static string ToRoman(int number)
     {
         return number switch
         {
+            >= 50 => "L" + ToRoman(number - 50),
+            >= 40 => "XL" + ToRoman(number - 40),
             >= 10 => "X" + ToRoman(number - 10),
             >= 9 => "IX" + ToRoman(number - 9),
             >= 5 => "V" + ToRoman(number - 5),
@@ -123,9 +127,24 @@ public static partial class UiComponents
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
     }
 
-    private static void MultiProgressBasedAchievementTiers(UnlockableTieredAchievement achievements)
+    private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements)
     {
+        var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(ToRoman(achievements.Maximum())).X;
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(position);
+        ImGui.TextColored(achievements.ProvidesAchievements().Last().Unlocked() ? UiColors.Green() : UiColors.Red(), ToRoman(achievements.Maximum()));
+        position -= UiSize.Em(1) + ImGui.CalcTextSize("/").X;
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(position);
+        ImGui.TextDisabled("/");
+        position -= UiSize.Em(1) + ImGui.CalcTextSize(ToRoman(achievements.Current() ?? 1)).X;
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(position);
+        ImGui.TextColored(UiColors.Green(), ToRoman(achievements.Current() ?? 1));
+    }
 
+    private static void TieredAchievementTiers(UnlockableTieredAchievement achievements)
+    {
         var widthCalculationText = "";
         for (var i = 1; i <= achievements.Maximum(); i++) widthCalculationText += ToRoman(i);
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X - UiSize.Em(achievements.Maximum() - 1);
@@ -144,7 +163,7 @@ public static partial class UiComponents
         }
     }
 
-    public static void MultiProgressBasedAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin)
+    public static void TieredAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin)
     {
         ImGui.BeginGroup();
 
@@ -153,7 +172,14 @@ public static partial class UiComponents
         ImGui.TextColored(UiColors.Orange(), achievements.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.Yellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
-        MultiProgressBasedAchievementTiers(achievements);
+        if (achievements.Maximum() >= 14)
+        {
+            TieredAchievementSimpleTiers(achievements);
+        }
+        else
+        {
+            TieredAchievementTiers(achievements);
+        }
 
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
         var maxLevel = achievements.ProvidesAchievements().Last();
@@ -165,13 +191,16 @@ public static partial class UiComponents
             ImGui.Text(currentLevel.Description());
             ImGui.SameLine();
             ImGui.TextDisabled(" (current level)");
-            ProgressBar(
-                (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
-                progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
-                insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
-                tooltip: "Click to refresh",
-                enabled: progressLoaded,
-                onClick: RequestAchievementProgress);
+            if (maxLevel.Maximum() > 1)
+            {
+                ProgressBar(
+                    (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
+                    progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
+                    insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
+                    tooltip: "Click to refresh",
+                    enabled: progressLoaded,
+                    onClick: RequestAchievementProgress);
+            }
         }
 
         // Max level
@@ -179,7 +208,7 @@ public static partial class UiComponents
         ImGui.SameLine();
         ImGui.TextDisabled(" (max level)");
 
-        if (!maxLevel.Unlocked())
+        if (!maxLevel.Unlocked() && maxLevel.Maximum() > 1)
         {
             ProgressBar(
                 (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),

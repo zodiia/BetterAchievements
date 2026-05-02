@@ -1,17 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
+using BetterAchievements.Helpers;
 using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
 
 public record UnlockableTieredAchievement : IUnlockable
 {
-    public UnlockableTieredAchievement(List<Achievement> excelAchievements, string name, Plugin plugin)
+    public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin)
     {
         ExcelAchievements = excelAchievements;
-        this.name = name;
-        description = excelAchievements.Last().Description.ToString();
         providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
+        name = spoilers switch
+        {
+            false => CompiledRegexes.AchievementNameReplace().Replace(providesAchievements.Last().Name(), ""),
+            true => CompiledRegexes.AchievementNameReplace().Replace((providesAchievements.Find(it => !it.Unlocked()) ?? providesAchievements.Last()).Name(), "")
+        };
+        this.spoilers = spoilers;
+        description = excelAchievements.Last().Description.ToString();
         nameLowercase = name.ToLower();
         descriptionLowercase = string.Join(" ", providesAchievements.Select(it => it.Description().ToLower()).ToList());
         maximumPoints = (uint) ExcelAchievements.Select(it => (int) it.Points).Sum();
@@ -23,6 +29,7 @@ public record UnlockableTieredAchievement : IUnlockable
 
     public readonly List<Achievement> ExcelAchievements;
 
+    private readonly bool spoilers;
     private readonly string name;
     private readonly string description;
     private readonly uint maximumPoints;
@@ -30,7 +37,7 @@ public record UnlockableTieredAchievement : IUnlockable
     private readonly List<UnlockableAchievement> providesAchievements;
 
     public uint Id() => ExcelAchievements.Last().RowId;
-    private List<uint> ids;
+    private readonly List<uint> ids;
     public List<uint> Ids() => ids;
     public UnlockableType Type() => UnlockableType.Achievement;
     public string Name() => name;
@@ -45,6 +52,7 @@ public record UnlockableTieredAchievement : IUnlockable
     public bool Unlocked() => Current() == Maximum();
     private readonly bool pinned;
     public bool Pinned() => pinned;
+    public bool Spoilers() => spoilers;
 
     public uint CurrentPoints() => currentPoints;
     public uint MaximumPoints() => maximumPoints;

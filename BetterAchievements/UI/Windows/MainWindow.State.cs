@@ -71,7 +71,7 @@ public class MainWindowState(Plugin plugin)
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item)
     {
-        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids);
+        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
                && MatchUnlockFilter(achievements.Unlocked())
                && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
@@ -152,7 +152,7 @@ public class MainWindowState(Plugin plugin)
             if (it is AchievementLayoutItemSimple simple)
                 return [plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
             if (it is AchievementLayoutItemTiered tiered)
-                return [plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids)];
+                return [plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers)];
             if (it is AchievementLayoutItemCombined combined) // TODO: fix
                 return combined.Ids.Select(id => plugin.UnlockablesService.GetUnlockableAchievement(id)).ToList();
             return [];
@@ -224,7 +224,7 @@ public class MainWindowState(Plugin plugin)
                 AchievementLayoutItem? item = unlockable switch
                 {
                     UnlockableAchievement => new AchievementLayoutItemSimple { Id = it },
-                    UnlockableTieredAchievement tiered => new AchievementLayoutItemTiered { Ids = tiered.Ids() },
+                    UnlockableTieredAchievement tiered => new AchievementLayoutItemTiered { Ids = tiered.Ids(), Spoilers = tiered.Spoilers() },
                     _ => null,
                 };
                 return item;
@@ -246,12 +246,10 @@ public class MainWindowState(Plugin plugin)
         var newHash = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievementsBitArray.ComputeHash();
         if (newHash.Equals(bitArrayHash))
         {
-            Log.Information("{Ms}ms", stopwatch.Elapsed.TotalMilliseconds);
             return;
         }
         Refresh();
         bitArrayHash = newHash;
-        Log.Information("{Ms}ms", stopwatch.Elapsed.TotalMilliseconds);
     }
 
     public void SetCategory(int categoryId)

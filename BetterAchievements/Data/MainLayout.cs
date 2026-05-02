@@ -41,6 +41,7 @@ public record AchievementLayoutItemSimple : AchievementLayoutItem
 public record AchievementLayoutItemTiered : AchievementLayoutItem
 {
     public required List<uint> Ids { get; init; }
+    public bool Spoilers { get; init; } = false;
 }
 
 public record AchievementLayoutItemCombined : AchievementLayoutItem

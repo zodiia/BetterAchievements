@@ -27,7 +27,7 @@ public class UnlockablesService(Plugin plugin)
         return unlockable;
     }
 
-    public UnlockableTieredAchievement GetUnlockableTieredAchievement(List<uint> achievementIds)
+    public UnlockableTieredAchievement GetUnlockableTieredAchievement(List<uint> achievementIds, bool spoilers)
     {
         if (tieredAchievements.TryGetValue(achievementIds.Last(), out var it))
         {
@@ -35,8 +35,7 @@ public class UnlockablesService(Plugin plugin)
         }
 
         var achievementList = achievementIds.Select(id => achievementSheet.GetRow(id)).ToList();
-        var title = CompiledRegexes.AchievementNameReplace().Replace(achievementList.Last().Name.ToString(), "");
-        var unlockable = new UnlockableTieredAchievement(achievementList, title, plugin);
+        var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
         tieredAchievements[achievementIds.Last()] = unlockable;
         return unlockable;
     }
