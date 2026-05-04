@@ -14,7 +14,7 @@ public record UnlockableTieredAchievement : IUnlockable
         name = spoilers switch
         {
             false => CompiledRegexes.AchievementNameReplace().Replace(providesAchievements.Last().Name(), ""),
-            true => CompiledRegexes.AchievementNameReplace().Replace((providesAchievements.Find(it => !it.Unlocked()) ?? providesAchievements.Last()).Name(), "")
+            true => CompiledRegexes.AchievementNameReplace().Replace((providesAchievements.FindLast(it => it.Unlocked()) ?? providesAchievements.First()).Name(), "")
         };
         this.spoilers = spoilers;
         description = excelAchievements.Last().Description.ToString();

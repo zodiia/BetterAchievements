@@ -204,19 +204,22 @@ public static partial class UiComponents
         }
 
         // Max level
-        ImGui.Text(maxLevel.Description());
-        ImGui.SameLine();
-        ImGui.TextDisabled(" (max level)");
-
-        if (!maxLevel.Unlocked() && maxLevel.Maximum() > 1)
+        if (!achievements.Spoilers())
         {
-            ProgressBar(
-                (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
-                progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
-                insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
-                tooltip: "Click to refresh",
-                enabled: progressLoaded,
-                onClick: RequestAchievementProgress);
+            ImGui.Text(maxLevel.Description());
+            ImGui.SameLine();
+            ImGui.TextDisabled(" (max level)");
+
+            if (!maxLevel.Unlocked() && maxLevel.Maximum() > 1)
+            {
+                ProgressBar(
+                    (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
+                    progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
+                    insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
+                    tooltip: "Click to refresh",
+                    enabled: progressLoaded,
+                    onClick: RequestAchievementProgress);
+            }
         }
 
         ImGui.EndGroup();
