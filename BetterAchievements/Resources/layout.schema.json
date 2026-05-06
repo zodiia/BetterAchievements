@@ -1,0 +1,88 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "MainLayout",
+	"type": "object",
+	"required": ["achievementLayout"],
+	"properties": {
+		"achievementLayout": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/AchievementLayout"
+			}
+		}
+	},
+	"$defs": {
+		"AchievementLayout": {
+			"anyOf": [{ "$ref": "#/$defs/AchievementLayoutGroup" }, { "$ref": "#/$defs/AchievementLayoutCategory" }]
+		},
+		"AchievementLayoutGroup": {
+			"type": "object",
+			"required": ["type", "name", "items"],
+			"properties": {
+				"type": {
+					"const": "group"
+				},
+				"name": {
+					"type": "string"
+				},
+				"items": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/AchievementLayout"
+					}
+				}
+			}
+		},
+		"AchievementLayoutCategory": {
+			"type": "object",
+			"required": ["type", "id", "name", "items"],
+			"properties": {
+				"type": {
+					"const": "category"
+				},
+				"id": {
+					"type": "number"
+				},
+				"name": {
+					"type": "string"
+				},
+				"items": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/AchievementLayoutItem"
+					}
+				}
+			}
+		},
+		"AchievementLayoutItem": {
+			"anyOf": [{ "$ref": "#/$defs/AchievementLayoutItemSimple" }, { "$ref": "#/$defs/AchievementLayoutItemTiered" }]
+		},
+		"AchievementLayoutItemSimple": {
+			"type": "object",
+			"required": ["type", "id"],
+			"properties": {
+				"type": {
+					"const": "simple"
+				},
+				"id": {
+					"type": "number"
+				}
+			}
+		},
+		"AchievementLayoutItemTiered": {
+			"type": "object",
+			"required": ["type", "ids"],
+			"properties": {
+				"type": {
+					"const": "tiered"
+				},
+				"ids": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					}
+				}
+			}
+		}
+	}
+}

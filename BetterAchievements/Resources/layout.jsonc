@@ -1,6 +1,7 @@
 // This file is formatted using @biomejs/biome:
 // bunx @biomejs/biome format --line-width=120 --write ./BetterAchievements/Resources/layout.jsonc
 {
+    "$schema": "./layout.schema.json",
 	"achievementLayout": [
 		{
 			"type": "group",
@@ -12,7 +13,7 @@
 					"name": "General",
 					"items": [
 						{ "type": "tiered", "ids": [1, 2, 3, 4, 5, 6, 7, 1336] },
-						{ "type": "simple", "id": 728 },
+						{ "type": "simple", "id": 728, "query": "from item in items where item." },
 						{ "type": "simple", "id": 729 },
 						{ "type": "simple", "id": 730 },
 						{ "type": "simple", "id": 731 },
@@ -240,6 +241,7 @@
 						{ "type": "simple", "id": 3626 },
 						{ "type": "simple", "id": 3805 },
 						{ "type": "simple", "id": 3889 },
+						{ "type": "simple", "id": 3979 },
 						{ "type": "simple", "id": 2109 },
 						{ "type": "simple", "id": 3823 },
 						{ "type": "simple", "id": 2586 }
@@ -310,7 +312,8 @@
 						{ "type": "tiered", "ids": [3630, 3631, 3632] },
 						{ "type": "simple", "id": 3806 },
 						{ "type": "tiered", "ids": [3865, 3866, 3867] },
-						{ "type": "tiered", "ids": [3868, 3869, 3870] }
+						{ "type": "tiered", "ids": [3868, 3869, 3870] },
+                        { "type": "simple", "id": 3980 }
 					]
 				},
 				{
@@ -497,7 +500,10 @@
 						{ "type": "tiered", "ids": [3746, 3745, 3744] },
 						{ "type": "tiered", "ids": [3749, 3748, 3747] },
 						{ "type": "tiered", "ids": [3827, 3826, 3825] },
-						{ "type": "tiered", "ids": [3830, 3829, 3828] }
+                        { "type": "tiered", "ids": [3830, 3829, 3828] },
+                        { "type": "tiered", "ids": [3926, 3927, 3928] },
+                        { "type": "tiered", "ids": [3929, 3930, 3931] },
+                        { "type": "tiered", "ids": [3932, 3933, 3934] }
 					]
 				},
 				{
@@ -515,6 +521,11 @@
 						{ "type": "simple", "id": 3278 },
 						{ "type": "simple", "id": 3279 },
 						{ "type": "simple", "id": 3280 },
+						{ "type": "simple", "id": 3837 },
+						{ "type": "simple", "id": 3838 },
+						{ "type": "simple", "id": 3839 },
+						{ "type": "simple", "id": 3840 },
+						{ "type": "simple", "id": 3841 },
 						{ "type": "tiered", "ids": [843, 844, 845, 846, 847, 848] },
 						{ "type": "tiered", "ids": [849, 850, 851, 852, 853, 854] },
 						{ "type": "tiered", "ids": [1435, 1436, 1437, 1438, 1439, 1440] },
@@ -796,7 +807,8 @@
 						{ "type": "simple", "id": 3900 },
 						{ "type": "simple", "id": 2161 },
 						{ "type": "simple", "id": 2820 },
-						{ "type": "simple", "id": 3412 }
+                        { "type": "simple", "id": 3412 },
+                        { "type": "simple", "id": 3944 }
 					]
 				},
 				{
@@ -1661,7 +1673,7 @@
 						{ "type": "simple", "id": 2289 },
 						{ "type": "simple", "id": 2937 },
 						{ "type": "simple", "id": 3476 },
-						{ "type": "tiered", "ids": [719, 720, 721, 1286, 1729, 2174, 2830, 3375] },
+						{ "type": "tiered", "ids": [719, 720, 721, 1286, 1729, 2174, 2830, 3375, 3981] },
 						{ "type": "tiered", "ids": [774, 775, 776, 1329] },
 						{ "type": "tiered", "ids": [2513, 2514, 2515] },
 						{ "type": "tiered", "ids": [2541, 2542, 2543] },
@@ -1698,7 +1710,7 @@
 						{ "type": "simple", "id": 2288 },
 						{ "type": "simple", "id": 2936 },
 						{ "type": "simple", "id": 3475 },
-						{ "type": "tiered", "ids": [722, 723, 724, 1287, 1730, 2175, 2831, 3376] },
+						{ "type": "tiered", "ids": [722, 723, 724, 1287, 1730, 2175, 2831, 3376, 3982] },
 						{ "type": "tiered", "ids": [777, 778, 779, 1330] },
 						{ "type": "tiered", "ids": [2516, 2517, 2518] },
 						{ "type": "tiered", "ids": [2544, 2545, 2546] },
@@ -1735,7 +1747,7 @@
 						{ "type": "simple", "id": 2290 },
 						{ "type": "simple", "id": 2938 },
 						{ "type": "simple", "id": 3477 },
-						{ "type": "tiered", "ids": [725, 726, 727, 1288, 1731, 2176, 2832, 3377] },
+						{ "type": "tiered", "ids": [725, 726, 727, 1288, 1731, 2176, 2832, 3377, 3983] },
 						{ "type": "tiered", "ids": [780, 781, 782, 1331] },
 						{
 							"type": "tiered",
@@ -1773,9 +1785,13 @@
 						{ "type": "simple", "id": 3262 },
 						{ "type": "simple", "id": 3259 },
 						{ "type": "simple", "id": 3263 },
+						{ "type": "simple", "id": 3970 },
+						{ "type": "simple", "id": 3972 },
+						{ "type": "simple", "id": 3971 },
+						{ "type": "simple", "id": 3973 },
 						{ "type": "tiered", "ids": [2557, 2558, 2559, 2757, 2758] },
 						{ "type": "tiered", "ids": [2560, 2561, 2562, 2759] },
-						{ "type": "tiered", "ids": [3264, 3265, 3266] },
+						{ "type": "tiered", "ids": [3264, 3265, 3266, 3974] },
 						{ "type": "simple", "id": 2563 },
 						{ "type": "simple", "id": 2564 },
 						{ "type": "simple", "id": 2565 },
@@ -1786,6 +1802,8 @@
 						{ "type": "simple", "id": 3267 },
 						{ "type": "simple", "id": 3268 },
 						{ "type": "simple", "id": 3269 },
+						{ "type": "simple", "id": 3975 },
+						{ "type": "simple", "id": 3976 },
 						{ "type": "simple", "id": 2888 },
 						{ "type": "simple", "id": 2889 },
 						{ "type": "tiered", "ids": [3732, 3733, 3734] }
@@ -1873,7 +1891,8 @@
 						{ "type": "simple", "id": 3408 },
 						{ "type": "simple", "id": 3282 },
 						{ "type": "simple", "id": 2108 },
-						{ "type": "simple", "id": 3822 }
+						{ "type": "simple", "id": 3822 },
+                        { "type": "simple", "id": 3940 }
 					]
 				},
 				{
@@ -1891,7 +1910,7 @@
 								1387, 1493, 1594, 1630, 1690, 1691, 1787, 1788, 1789, 1790, 1791, 1792, 1793, 1794, 1990, 2013, 2098,
 								2124, 2160, 2233, 2293, 2294, 2295, 2296, 2297, 2298, 2424, 2587, 2642, 2714, 2850, 2851, 2952, 2953,
 								2954, 2955, 2956, 2957, 2958, 3075, 3105, 3157, 3244, 3413, 3414, 3491, 3492, 3493, 3494, 3495, 3496,
-								3607, 3633, 3773, 3863
+								3607, 3633, 3773, 3863, 3942
 							],
 							"spoilers": true
 						}
@@ -2177,7 +2196,11 @@
 						{ "type": "simple", "id": 2615 },
 						{ "type": "simple", "id": 2616 },
 						{ "type": "simple", "id": 2617 },
-						{ "type": "simple", "id": 3409 }
+                        { "type": "simple", "id": 3409 },
+                        { "type": "simple", "id": 3873 },
+                        { "type": "simple", "id": 3874 },
+                        { "type": "simple", "id": 3945 },
+                        { "type": "simple", "id": 3946 }
 					]
 				}
 			]
@@ -2442,6 +2465,7 @@
 						{ "type": "simple", "id": 3625 },
 						{ "type": "simple", "id": 3803 },
 						{ "type": "simple", "id": 3888 },
+						{ "type": "simple", "id": 3977 },
 						{ "type": "simple", "id": 884 },
 						{ "type": "simple", "id": 996 },
 						{ "type": "simple", "id": 1069 },
@@ -2477,6 +2501,7 @@
 						{ "type": "simple", "id": 3401 },
 						{ "type": "simple", "id": 3604 },
 						{ "type": "simple", "id": 3804 },
+						{ "type": "simple", "id": 3978 },
 						{ "type": "simple", "id": 1404 },
 						{ "type": "tiered", "ids": [1419, 1420, 1421] },
 						{ "type": "tiered", "ids": [1422, 1423, 1424] },
