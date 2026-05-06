@@ -2189,68 +2189,51 @@
                         { "type": "simple", "id": 316 },
                         { "type": "simple", "id": 317 },
                         { "type": "simple", "id": 318 },
-                        { "type": "simple", "id": 407 },
-                        { "type": "simple", "id": 1141 },
-                        { "type": "simple", "id": 1797 },
-                        { "type": "simple", "id": 2306 },
-                        { "type": "simple", "id": 408 },
-                        { "type": "simple", "id": 1142 },
-                        { "type": "simple", "id": 1798 },
-                        { "type": "simple", "id": 2307 },
-                        { "type": "simple", "id": 409 },
-                        { "type": "simple", "id": 1143 },
-                        { "type": "simple", "id": 1799 },
-                        { "type": "simple", "id": 2308 },
-                        { "type": "simple", "id": 410 },
-                        { "type": "simple", "id": 1144 },
-                        { "type": "simple", "id": 1800 },
-                        { "type": "simple", "id": 2309 },
-                        { "type": "simple", "id": 411 },
-                        { "type": "simple", "id": 1145 },
-                        { "type": "simple", "id": 1801 },
-                        { "type": "simple", "id": 2310 },
-                        { "type": "simple", "id": 1052 },
-                        { "type": "simple", "id": 1150 },
-                        { "type": "simple", "id": 1806 },
-                        { "type": "simple", "id": 2315 },
-                        { "type": "simple", "id": 412 },
-                        { "type": "simple", "id": 1146 },
-                        { "type": "simple", "id": 1802 },
-                        { "type": "simple", "id": 2311 },
-                        { "type": "simple", "id": 413 },
-                        { "type": "simple", "id": 1147 },
-                        { "type": "simple", "id": 1803 },
-                        { "type": "simple", "id": 2312 },
-                        { "type": "simple", "id": 599 },
-                        { "type": "simple", "id": 1148 },
-                        { "type": "simple", "id": 1804 },
-                        { "type": "simple", "id": 2313 },
-                        { "type": "simple", "id": 600 },
-                        { "type": "simple", "id": 1149 },
-                        { "type": "simple", "id": 1805 },
-                        { "type": "simple", "id": 2314 },
-                        { "type": "simple", "id": 1151 },
-                        { "type": "simple", "id": 1154 },
-                        { "type": "simple", "id": 1807 },
-                        { "type": "simple", "id": 2316 },
-                        { "type": "simple", "id": 1152 },
-                        { "type": "simple", "id": 1155 },
-                        { "type": "simple", "id": 1808 },
-                        { "type": "simple", "id": 2317 },
-                        { "type": "simple", "id": 1153 },
-                        { "type": "simple", "id": 1156 },
-                        { "type": "simple", "id": 1809 },
-                        { "type": "simple", "id": 2318 },
-                        { "type": "simple", "id": 1810 },
-                        { "type": "simple", "id": 1811 },
-                        { "type": "simple", "id": 2319 },
-                        { "type": "simple", "id": 1812 },
-                        { "type": "simple", "id": 1813 },
-                        { "type": "simple", "id": 2320 },
-                        { "type": "simple", "id": 2299 },
-                        { "type": "simple", "id": 2321 },
-                        { "type": "simple", "id": 2300 },
-                        { "type": "simple", "id": 2322 },
+                        { "type": "tiered", "ids": [407,1141
+                        ,1797
+                        ,2306] },
+                        { "type": "tiered", "ids": [408,1142
+                        ,1798
+                        ,2307] },
+                        { "type": "tiered", "ids": [409,1143
+                        ,1799
+                        ,2308] },
+                        { "type": "tiered", "ids": [410,1144
+                        ,1800
+                        ,2309] },
+                        { "type": "tiered", "ids": [411,1145
+                        ,1801
+                        ,2310] },
+                        { "type": "tiered", "ids": [1052,1150
+                        ,1806
+                        ,2315] },
+                        { "type": "tiered", "ids": [412,1146
+                        ,1802
+                        ,2311] },
+                        { "type": "tiered", "ids": [413,1147
+                        ,1803
+                        ,2312] },
+                        { "type": "tiered", "ids": [599,1148
+                        ,1804
+                        ,2313] },
+                        { "type": "tiered", "ids": [600,1149
+                        ,1805
+                        ,2314] },
+                        { "type": "tiered", "ids": [1151,1154
+                        ,1807
+                        ,2316] },
+                        { "type": "tiered", "ids": [1152,1155
+                        ,1808
+                        ,2317] },
+                        { "type": "tiered", "ids": [1153,1156
+                        ,1809
+                        ,2318] },
+                        { "type": "tiered", "ids": [1810,1811
+                        ,2319] },
+                        { "type": "tiered", "ids": [1812,1813
+                        ,2320] },
+                        { "type": "tiered", "ids": [2299,2321] },
+                        { "type": "tiered", "ids": [2300,2322] },
                         { "type": "simple", "id": 2959 },
                         { "type": "simple", "id": 2960 },
                         { "type": "simple", "id": 3497 },
@@ -2299,122 +2282,107 @@
                     "id": 50,
                     "name": "Levequests",
                     "items": [
-                        { "type": "simple", "id": 323 },
-                        { "type": "simple", "id": 324 },
-                        { "type": "simple", "id": 325 },
-                        { "type": "simple", "id": 326 },
-                        { "type": "simple", "id": 327 },
-                        { "type": "simple", "id": 328 },
-                        { "type": "simple", "id": 329 },
-                        { "type": "simple", "id": 1338 },
-                        { "type": "simple", "id": 330 },
-                        { "type": "simple", "id": 331 },
-                        { "type": "simple", "id": 332 },
-                        { "type": "simple", "id": 333 },
-                        { "type": "simple", "id": 334 },
-                        { "type": "simple", "id": 335 },
-                        { "type": "simple", "id": 336 },
-                        { "type": "simple", "id": 1339 },
-                        { "type": "simple", "id": 601 },
-                        { "type": "simple", "id": 602 },
-                        { "type": "simple", "id": 603 },
-                        { "type": "simple", "id": 604 },
-                        { "type": "simple", "id": 605 },
-                        { "type": "simple", "id": 606 },
-                        { "type": "simple", "id": 607 },
-                        { "type": "simple", "id": 1340 },
-                        { "type": "simple", "id": 608 },
-                        { "type": "simple", "id": 609 },
-                        { "type": "simple", "id": 610 },
-                        { "type": "simple", "id": 1341 },
-                        { "type": "simple", "id": 611 },
-                        { "type": "simple", "id": 612 },
-                        { "type": "simple", "id": 613 },
-                        { "type": "simple", "id": 1342 },
-                        { "type": "simple", "id": 1859 },
-                        { "type": "simple", "id": 2357 },
-                        { "type": "simple", "id": 2941 },
-                        { "type": "simple", "id": 3480 },
-                        { "type": "simple", "id": 614 },
-                        { "type": "simple", "id": 615 },
-                        { "type": "simple", "id": 616 },
-                        { "type": "simple", "id": 1343 },
-                        { "type": "simple", "id": 1860 },
-                        { "type": "simple", "id": 2358 },
-                        { "type": "simple", "id": 2942 },
-                        { "type": "simple", "id": 3481 },
-                        { "type": "simple", "id": 617 },
-                        { "type": "simple", "id": 618 },
-                        { "type": "simple", "id": 619 },
-                        { "type": "simple", "id": 1344 },
-                        { "type": "simple", "id": 1861 },
-                        { "type": "simple", "id": 2359 },
-                        { "type": "simple", "id": 2943 },
-                        { "type": "simple", "id": 3482 },
-                        { "type": "simple", "id": 620 },
-                        { "type": "simple", "id": 621 },
-                        { "type": "simple", "id": 622 },
-                        { "type": "simple", "id": 1345 },
-                        { "type": "simple", "id": 1862 },
-                        { "type": "simple", "id": 2360 },
-                        { "type": "simple", "id": 2944 },
-                        { "type": "simple", "id": 3483 },
-                        { "type": "simple", "id": 623 },
-                        { "type": "simple", "id": 624 },
-                        { "type": "simple", "id": 625 },
-                        { "type": "simple", "id": 1346 },
-                        { "type": "simple", "id": 1863 },
-                        { "type": "simple", "id": 2361 },
-                        { "type": "simple", "id": 2945 },
-                        { "type": "simple", "id": 3484 },
-                        { "type": "simple", "id": 626 },
-                        { "type": "simple", "id": 627 },
-                        { "type": "simple", "id": 628 },
-                        { "type": "simple", "id": 1347 },
-                        { "type": "simple", "id": 1864 },
-                        { "type": "simple", "id": 2362 },
-                        { "type": "simple", "id": 2946 },
-                        { "type": "simple", "id": 3485 },
-                        { "type": "simple", "id": 629 },
-                        { "type": "simple", "id": 630 },
-                        { "type": "simple", "id": 631 },
-                        { "type": "simple", "id": 1348 },
-                        { "type": "simple", "id": 1865 },
-                        { "type": "simple", "id": 2363 },
-                        { "type": "simple", "id": 2947 },
-                        { "type": "simple", "id": 3486 },
-                        { "type": "simple", "id": 632 },
-                        { "type": "simple", "id": 633 },
-                        { "type": "simple", "id": 634 },
-                        { "type": "simple", "id": 1349 },
-                        { "type": "simple", "id": 1866 },
-                        { "type": "simple", "id": 2364 },
-                        { "type": "simple", "id": 2948 },
-                        { "type": "simple", "id": 3487 },
-                        { "type": "simple", "id": 635 },
-                        { "type": "simple", "id": 636 },
-                        { "type": "simple", "id": 637 },
-                        { "type": "simple", "id": 1350 },
-                        { "type": "simple", "id": 1868 },
-                        { "type": "simple", "id": 2366 },
-                        { "type": "simple", "id": 2950 },
-                        { "type": "simple", "id": 3489 },
-                        { "type": "simple", "id": 638 },
-                        { "type": "simple", "id": 639 },
-                        { "type": "simple", "id": 640 },
-                        { "type": "simple", "id": 1351 },
-                        { "type": "simple", "id": 1867 },
-                        { "type": "simple", "id": 2365 },
-                        { "type": "simple", "id": 2949 },
-                        { "type": "simple", "id": 3488 },
-                        { "type": "simple", "id": 641 },
-                        { "type": "simple", "id": 642 },
-                        { "type": "simple", "id": 643 },
-                        { "type": "simple", "id": 1352 },
-                        { "type": "simple", "id": 1869 },
-                        { "type": "simple", "id": 2367 },
-                        { "type": "simple", "id": 2951 },
-                        { "type": "simple", "id": 3490 }
+                        { "type": "tiered", "ids": [323,324
+                        ,325
+                        ,326
+                        ,327
+                        ,328
+                        ,329
+                        ,1338] },
+                        { "type": "tiered", "ids": [330,331
+                        ,332
+                        ,333
+                        ,334
+                        ,335
+                        ,336
+                        ,1339] },
+                        { "type": "tiered", "ids": [601,602
+                        ,603
+                        ,604
+                        ,605
+                        ,606
+                        ,607
+                        ,1340] },
+                        { "type": "tiered", "ids": [608,609
+                        ,610
+                        ,1341] },
+                        { "type": "tiered", "ids": [611,612
+                        ,613
+                        ,1342
+                        ,1859
+                        ,2357
+                        ,2941
+                        ,3480] },
+                        { "type": "tiered", "ids": [614,615
+                        ,616
+                        ,1343
+                        ,1860
+                        ,2358
+                        ,2942
+                        ,3481] },
+                        { "type": "tiered", "ids": [617,618
+                        ,619
+                        ,1344
+                        ,1861
+                        ,2359
+                        ,2943
+                        ,3482] },
+                        { "type": "tiered", "ids": [620,621
+                        ,622
+                        ,1345
+                        ,1862
+                        ,2360
+                        ,2944
+                        ,3483] },
+                        { "type": "tiered", "ids": [623,624
+                        ,625
+                        ,1346
+                        ,1863
+                        ,2361
+                        ,2945
+                        ,3484] },
+                        { "type": "tiered", "ids": [626,627
+                        ,628
+                        ,1347
+                        ,1864
+                        ,2362
+                        ,2946
+                        ,3485] },
+                        { "type": "tiered", "ids": [629,630
+                        ,631
+                        ,1348
+                        ,1865
+                        ,2363
+                        ,2947
+                        ,3486] },
+                        { "type": "tiered", "ids": [632,633
+                        ,634
+                        ,1349
+                        ,1866
+                        ,2364
+                        ,2948
+                        ,3487] },
+                        { "type": "tiered", "ids": [635,636
+                        ,637
+                        ,1350
+                        ,1868
+                        ,2366
+                        ,2950
+                        ,3489] },
+                        { "type": "tiered", "ids": [638,639
+                        ,640
+                        ,1351
+                        ,1867
+                        ,2365
+                        ,2949
+                        ,3488] },
+                        { "type": "tiered", "ids": [641,642
+                        ,643
+                        ,1352
+                        ,1869
+                        ,2367
+                        ,2951
+                        ,3490] }
                     ]
                 },
                 {
@@ -2422,90 +2390,70 @@
                     "id": 51,
                     "name": "Allied Society Quests",
                     "items": [
-                        { "type": "simple", "id": 863 },
-                        { "type": "simple", "id": 864 },
-                        { "type": "simple", "id": 865 },
-                        { "type": "simple", "id": 866 },
-                        { "type": "simple", "id": 867 },
-                        { "type": "simple", "id": 868 },
-                        { "type": "simple", "id": 869 },
-                        { "type": "simple", "id": 870 },
-                        { "type": "simple", "id": 904 },
-                        { "type": "simple", "id": 905 },
-                        { "type": "simple", "id": 906 },
-                        { "type": "simple", "id": 907 },
-                        { "type": "simple", "id": 908 },
-                        { "type": "simple", "id": 909 },
-                        { "type": "simple", "id": 910 },
-                        { "type": "simple", "id": 911 },
-                        { "type": "simple", "id": 1022 },
-                        { "type": "simple", "id": 1023 },
-                        { "type": "simple", "id": 1024 },
-                        { "type": "simple", "id": 1025 },
+                        { "type": "tiered", "ids": [863,864
+                        ,865
+                        ,866] },
+                        { "type": "tiered", "ids": [867,868
+                        ,869
+                        ,870] },
+                        { "type": "tiered", "ids": [904,905
+                        ,906
+                        ,907] },
+                        { "type": "tiered", "ids": [908,909
+                        ,910
+                        ,911] },
+                        { "type": "tiered", "ids": [1022,1023
+                        ,1024
+                        ,1025] },
                         { "type": "simple", "id": 1026 },
-                        { "type": "simple", "id": 1395 },
-                        { "type": "simple", "id": 1396 },
-                        { "type": "simple", "id": 1397 },
-                        { "type": "simple", "id": 1398 },
-                        { "type": "simple", "id": 1495 },
-                        { "type": "simple", "id": 1496 },
-                        { "type": "simple", "id": 1497 },
-                        { "type": "simple", "id": 1498 },
-                        { "type": "simple", "id": 1618 },
-                        { "type": "simple", "id": 1619 },
-                        { "type": "simple", "id": 1620 },
-                        { "type": "simple", "id": 1621 },
+                        { "type": "tiered", "ids": [1395,1396
+                        ,1397
+                        ,1398] },
+                        { "type": "tiered", "ids": [1495,1496
+                        ,1497
+                        ,1498] },
+                        { "type": "tiered", "ids": [1618,1619
+                        ,1620
+                        ,1621] },
                         { "type": "simple", "id": 1627 },
-                        { "type": "simple", "id": 1997 },
-                        { "type": "simple", "id": 1998 },
-                        { "type": "simple", "id": 1999 },
-                        { "type": "simple", "id": 2000 },
-                        { "type": "simple", "id": 2014 },
-                        { "type": "simple", "id": 2015 },
-                        { "type": "simple", "id": 2016 },
-                        { "type": "simple", "id": 2017 },
-                        { "type": "simple", "id": 2099 },
-                        { "type": "simple", "id": 2100 },
-                        { "type": "simple", "id": 2101 },
-                        { "type": "simple", "id": 2102 },
+                        { "type": "tiered", "ids": [1997,1998
+                        ,1999
+                        ,2000] },
+                        { "type": "tiered", "ids": [2014,2015
+                        ,2016
+                        ,2017] },
+                        { "type": "tiered", "ids": [2099,2100
+                        ,2101
+                        ,2102] },
                         { "type": "simple", "id": 2235 },
-                        { "type": "simple", "id": 2436 },
-                        { "type": "simple", "id": 2437 },
-                        { "type": "simple", "id": 2438 },
-                        { "type": "simple", "id": 2439 },
-                        { "type": "simple", "id": 2597 },
-                        { "type": "simple", "id": 2598 },
-                        { "type": "simple", "id": 2599 },
-                        { "type": "simple", "id": 2600 },
-                        { "type": "simple", "id": 2638 },
-                        { "type": "simple", "id": 2639 },
-                        { "type": "simple", "id": 2640 },
-                        { "type": "simple", "id": 2641 },
-                        { "type": "simple", "id": 3055 },
-                        { "type": "simple", "id": 3056 },
-                        { "type": "simple", "id": 3057 },
-                        { "type": "simple", "id": 3058 },
-                        { "type": "simple", "id": 3123 },
-                        { "type": "simple", "id": 3124 },
-                        { "type": "simple", "id": 3125 },
-                        { "type": "simple", "id": 3126 },
-                        { "type": "simple", "id": 3188 },
-                        { "type": "simple", "id": 3189 },
-                        { "type": "simple", "id": 3190 },
-                        { "type": "simple", "id": 3191 },
+                        { "type": "tiered", "ids": [2436,2437
+                        ,2438
+                        ,2439] },
+                        { "type": "tiered", "ids": [2597,2598
+                        ,2599
+                        ,2600] },
+                        { "type": "tiered", "ids": [2638,2639
+                        ,2640
+                        ,2641] },
+                        { "type": "tiered", "ids": [3055,3056
+                        ,3057
+                        ,3058] },
+                        { "type": "tiered", "ids": [3123,3124
+                        ,3125
+                        ,3126] },
+                        { "type": "tiered", "ids": [3188,3189
+                        ,3190
+                        ,3191] },
                         { "type": "simple", "id": 3411 },
-                        { "type": "simple", "id": 3588 },
-                        { "type": "simple", "id": 3589 },
-                        { "type": "simple", "id": 3590 },
-                        { "type": "simple", "id": 3591 },
-                        { "type": "simple", "id": 3621 },
-                        { "type": "simple", "id": 3622 },
-                        { "type": "simple", "id": 3623 },
-                        { "type": "simple", "id": 3624 },
-                        { "type": "simple", "id": 3774 },
-                        { "type": "simple", "id": 3775 },
-                        { "type": "simple", "id": 3776 },
-                        { "type": "simple", "id": 3777 }
+                        { "type": "tiered", "ids": [3588,3589
+                        ,3590
+                        ,3591] },
+                        { "type": "tiered", "ids": [3621,3622
+                        ,3623
+                        ,3624] },
+                        { "type": "tiered", "ids": [3774,3775
+                        ,3776
+                        ,3777] }
                     ]
                 },
                 {
@@ -2678,12 +2626,9 @@
                     "id": 53,
                     "name": "Sightseeing Log",
                     "items": [
-                        { "type": "simple", "id": 928 },
-                        { "type": "simple", "id": 929 },
-                        { "type": "simple", "id": 1312 },
-                        { "type": "simple", "id": 1386 },
-                        { "type": "simple", "id": 1903 },
-                        { "type": "simple", "id": 1965 },
+                        { "type": "tiered", "ids": [928,929] },
+                        { "type": "tiered", "ids": [1312,1386] },
+                        { "type": "tiered", "ids": [1903,1965] },
                         { "type": "simple", "id": 2370 },
                         { "type": "simple", "id": 2973 },
                         { "type": "simple", "id": 3510 }
@@ -2984,27 +2929,21 @@
                         { "type": "simple", "id": 3604 },
                         { "type": "simple", "id": 3804 },
                         { "type": "simple", "id": 1404 },
-                        { "type": "simple", "id": 1419 },
-                        { "type": "simple", "id": 1420 },
-                        { "type": "simple", "id": 1421 },
-                        { "type": "simple", "id": 1422 },
-                        { "type": "simple", "id": 1423 },
-                        { "type": "simple", "id": 1424 },
-                        { "type": "simple", "id": 1425 },
-                        { "type": "simple", "id": 1426 },
-                        { "type": "simple", "id": 1427 },
-                        { "type": "simple", "id": 1428 },
-                        { "type": "simple", "id": 1429 },
-                        { "type": "simple", "id": 1430 },
-                        { "type": "simple", "id": 1431 },
-                        { "type": "simple", "id": 1432 },
-                        { "type": "simple", "id": 1734 },
-                        { "type": "simple", "id": 1735 },
-                        { "type": "simple", "id": 1736 },
-                        { "type": "simple", "id": 1737 },
-                        { "type": "simple", "id": 1743 },
-                        { "type": "simple", "id": 1744 },
-                        { "type": "simple", "id": 1745 },
+                        { "type": "tiered", "ids": [1419,1420
+                        ,1421] },
+                        { "type": "tiered", "ids": [1422,1423
+                        ,1424] },
+                        { "type": "tiered", "ids": [1425,1426
+                        ,1427] },
+                        { "type": "tiered", "ids": [1428,1429
+                        ,1430
+                        ,1431
+                        ,1432] },
+                        { "type": "tiered", "ids": [1734,1735
+                        ,1736
+                        ,1737] },
+                        { "type": "tiered", "ids": [1743,1744
+                        ,1745] },
                         { "type": "simple", "id": 1746 },
                         { "type": "simple", "id": 2046 },
                         { "type": "simple", "id": 2059 },
@@ -3050,12 +2989,10 @@
                         { "type": "simple", "id": 589 },
                         { "type": "simple", "id": 590 },
                         { "type": "simple", "id": 591 },
-                        { "type": "simple", "id": 1556 },
-                        { "type": "simple", "id": 1557 },
-                        { "type": "simple", "id": 1558 },
-                        { "type": "simple", "id": 1966 },
-                        { "type": "simple", "id": 1967 },
-                        { "type": "simple", "id": 1968 }
+                        { "type": "tiered", "ids": [1556,1557
+                        ,1558] },
+                        { "type": "tiered", "ids": [1966,1967
+                        ,1968] }
                     ]
                 },
                 {
@@ -3064,25 +3001,20 @@
                     "name": "Maelstrom",
                     "items": [
                         { "type": "simple", "id": 527 },
-                        { "type": "simple", "id": 530 },
-                        { "type": "simple", "id": 531 },
-                        { "type": "simple", "id": 532 },
-                        { "type": "simple", "id": 533 },
-                        { "type": "simple", "id": 542 },
-                        { "type": "simple", "id": 543 },
-                        { "type": "simple", "id": 544 },
-                        { "type": "simple", "id": 545 },
-                        { "type": "simple", "id": 554 },
-                        { "type": "simple", "id": 555 },
-                        { "type": "simple", "id": 556 },
-                        { "type": "simple", "id": 557 },
-                        { "type": "simple", "id": 566 },
-                        { "type": "simple", "id": 567 },
-                        { "type": "simple", "id": 568 },
-                        { "type": "simple", "id": 569 },
-                        { "type": "simple", "id": 686 },
-                        { "type": "simple", "id": 687 },
-                        { "type": "simple", "id": 688 },
+                        { "type": "tiered", "ids": [530,531
+                        ,532
+                        ,533] },
+                        { "type": "tiered", "ids": [542,543
+                        ,544
+                        ,545] },
+                        { "type": "tiered", "ids": [554,555
+                        ,556
+                        ,557] },
+                        { "type": "tiered", "ids": [566,567
+                        ,568
+                        ,569] },
+                        { "type": "tiered", "ids": [686,687
+                        ,688] },
                         { "type": "simple", "id": 736 }
                     ]
                 },
@@ -3092,25 +3024,20 @@
                     "name": "Order of the Twin Adder",
                     "items": [
                         { "type": "simple", "id": 528 },
-                        { "type": "simple", "id": 534 },
-                        { "type": "simple", "id": 535 },
-                        { "type": "simple", "id": 536 },
-                        { "type": "simple", "id": 537 },
-                        { "type": "simple", "id": 546 },
-                        { "type": "simple", "id": 547 },
-                        { "type": "simple", "id": 548 },
-                        { "type": "simple", "id": 549 },
-                        { "type": "simple", "id": 558 },
-                        { "type": "simple", "id": 559 },
-                        { "type": "simple", "id": 560 },
-                        { "type": "simple", "id": 561 },
-                        { "type": "simple", "id": 570 },
-                        { "type": "simple", "id": 571 },
-                        { "type": "simple", "id": 572 },
-                        { "type": "simple", "id": 573 },
-                        { "type": "simple", "id": 689 },
-                        { "type": "simple", "id": 690 },
-                        { "type": "simple", "id": 691 },
+                        { "type": "tiered", "ids": [534,535
+                        ,536
+                        ,537] },
+                        { "type": "tiered", "ids": [546,547
+                        ,548
+                        ,549] },
+                        { "type": "tiered", "ids": [558,559
+                        ,560
+                        ,561] },
+                        { "type": "tiered", "ids": [570,571
+                        ,572
+                        ,573] },
+                        { "type": "tiered", "ids": [689,690
+                        ,691] },
                         { "type": "simple", "id": 737 }
                     ]
                 },
@@ -3120,25 +3047,20 @@
                     "name": "Immortal Flames",
                     "items": [
                         { "type": "simple", "id": 529 },
-                        { "type": "simple", "id": 538 },
-                        { "type": "simple", "id": 539 },
-                        { "type": "simple", "id": 540 },
-                        { "type": "simple", "id": 541 },
-                        { "type": "simple", "id": 550 },
-                        { "type": "simple", "id": 551 },
-                        { "type": "simple", "id": 552 },
-                        { "type": "simple", "id": 553 },
-                        { "type": "simple", "id": 562 },
-                        { "type": "simple", "id": 563 },
-                        { "type": "simple", "id": 564 },
-                        { "type": "simple", "id": 565 },
-                        { "type": "simple", "id": 574 },
-                        { "type": "simple", "id": 575 },
-                        { "type": "simple", "id": 576 },
-                        { "type": "simple", "id": 577 },
-                        { "type": "simple", "id": 692 },
-                        { "type": "simple", "id": 693 },
-                        { "type": "simple", "id": 694 },
+                        { "type": "tiered", "ids": [538,539
+                        ,540
+                        ,541] },
+                        { "type": "tiered", "ids": [550,551
+                        ,552
+                        ,553] },
+                        { "type": "tiered", "ids": [562,563
+                        ,564
+                        ,565] },
+                        { "type": "tiered", "ids": [574,575
+                        ,576
+                        ,577] },
+                        { "type": "tiered", "ids": [692,693
+                        ,694] },
                         { "type": "simple", "id": 738 }
                     ]
                 }
