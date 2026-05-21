@@ -93,6 +93,8 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+
+        HandleWarnings();
     }
 
     public void Dispose()
@@ -131,6 +133,11 @@ public sealed class Plugin : IDalamudPlugin
     private void OnCommand(string command, string args)
     {
         MainWindow.Toggle();
+    }
+
+    private void HandleWarnings()
+    {
+        MainLayout.CheckMissingAchievements(DataManager.Excel.GetSheet<Achievement>());
     }
     
     public void ToggleConfigUi() => ConfigWindow.Toggle();
