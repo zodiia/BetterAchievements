@@ -110,6 +110,7 @@ public static partial class UiComponents
         AchievementBase(achievement, mainWindowState, plugin);
 
         var progress = achievement.Current();
+        // if (true)
         if (!achievement.Unlocked())
         {
             ProgressBar(
@@ -172,6 +173,8 @@ public static partial class UiComponents
         ImGui.TextColored(UiColors.Orange(), achievements.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.Yellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
+        ImGui.SameLine();
+        ImGui.TextDisabled(" #" + achievements.ProvidesAchievements().Last().Id());
         if (achievements.Maximum() >= 14)
         {
             TieredAchievementSimpleTiers(achievements);
@@ -210,6 +213,7 @@ public static partial class UiComponents
             ImGui.SameLine();
             ImGui.TextDisabled(" (max level)");
 
+            // if (true)
             if (!maxLevel.Unlocked() && maxLevel.Maximum() > 1)
             {
                 ProgressBar(
