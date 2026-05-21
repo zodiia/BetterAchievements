@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Data.Unlockable;
-using BetterAchievements.Helpers;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 

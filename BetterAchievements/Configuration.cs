@@ -12,6 +12,7 @@ public class Configuration : IPluginConfiguration
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
 
+    // Not shown in the config UI
     public List<uint> PinnedAchievements { get; set; } = new();
 
     // The below exists just to make saving less cumbersome
