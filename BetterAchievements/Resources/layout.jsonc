@@ -13,7 +13,7 @@
 					"name": "General",
 					"items": [
 						{ "type": "tiered", "ids": [1, 2, 3, 4, 5, 6, 7, 1336] },
-						{ "type": "simple", "id": 728, "query": "from item in items where item." },
+						{ "type": "simple", "id": 728 },
 						{ "type": "simple", "id": 729 },
 						{ "type": "simple", "id": 730 },
 						{ "type": "simple", "id": 731 },
@@ -1429,7 +1429,8 @@
 						{ "type": "simple", "id": 2829 },
 						{ "type": "tiered", "ids": [3735, 3737] },
 						{ "type": "tiered", "ids": [3736, 3738] },
-						{ "type": "tiered", "ids": [3739, 3740, 3741] },
+                        { "type": "simple", "id": 3739 },
+						{ "type": "tiered", "ids": [3740, 3741] },
 						{ "type": "simple", "id": 3742 },
 						{ "type": "simple", "id": 3690 },
 						{ "type": "simple", "id": 3791 },
