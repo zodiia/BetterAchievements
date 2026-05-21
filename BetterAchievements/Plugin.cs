@@ -13,6 +13,7 @@ using BetterAchievements.UI.Windows;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Achievement = Lumina.Excel.Sheets.Achievement;
 
 namespace BetterAchievements;
 
@@ -29,12 +30,6 @@ public sealed class Plugin : IDalamudPlugin
     internal static ICommandManager CommandManager { get; private set; } = null!;
 
     [PluginService]
-    internal static IClientState ClientState { get; private set; } = null!;
-
-    [PluginService]
-    internal static IPlayerState PlayerState { get; private set; } = null!;
-
-    [PluginService]
     internal static IDataManager DataManager { get; private set; } = null!;
 
     [PluginService]
@@ -47,13 +42,20 @@ public sealed class Plugin : IDalamudPlugin
     internal static IUnlockState UnlockState { get; private set; } = null!;
 
     [PluginService]
-    internal static IAddonEventManager AddonEventManager { get; private set; } = null!;
+    internal static IDutyState DutyState { get; private set; } = null!;
+
+    [PluginService]
+    internal static IObjectTable ObjectTable { get; private set; } = null!;
+
+    [PluginService]
+    internal static IPartyList PartyList { get; private set; } = null!;
 
     internal static unsafe UIState* UiState { get; } = UIState.Instance();
 
     public UnlockablesProgressService UnlockablesProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
     public LalachievementsService LalachievementsService { get; private set; }
+    public ProgressTrackerService ProgressTrackerService { get; private set; }
 
     public Configuration Configuration { get; private set; }
 
@@ -62,7 +64,8 @@ public sealed class Plugin : IDalamudPlugin
     private MainWindow MainWindow { get; init; }
     public MainLayout MainLayout { get; init; }
 
-    private readonly AchievementProgressHook? achievementProgressHook;
+    public ReceiveAchievementProgressHook ReceiveAchievementProgressHook { get; private set; } = null!;
+    public SetModeHook SetModeHook { get; private set; } = null!;
 
     public Plugin()
     {
@@ -70,14 +73,16 @@ public sealed class Plugin : IDalamudPlugin
 
         try
         {
-            achievementProgressHook = new AchievementProgressHook(this);
+            ReceiveAchievementProgressHook = new ReceiveAchievementProgressHook();
+            SetModeHook = new SetModeHook();
         } catch (Exception e) {
-            Log.Warning(e, "Could not hook achievement progress. This feature will be disabled.");
+            Log.Error(e, "Hooks failed. If you see this, please contact the plugin author.");
         }
 
-        UnlockablesProgressService = new UnlockablesProgressService();
+        UnlockablesProgressService = new UnlockablesProgressService(this);
         UnlockablesService = new UnlockablesService(this);
         LalachievementsService = new LalachievementsService();
+        ProgressTrackerService = new ProgressTrackerService(this);
 
         MainLayout = LoadMainWindowLayout();
         
@@ -109,7 +114,8 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         MainWindow.Dispose();
         
-        achievementProgressHook?.Dispose();
+        ReceiveAchievementProgressHook?.Dispose();
+        SetModeHook?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
     }
