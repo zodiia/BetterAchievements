@@ -25,7 +25,6 @@ public class MainWindow : Window, IDisposable
     {
         this.plugin = plugin;
         state = new MainWindowState(plugin);
-        plugin.UnlockablesProgressService.SetMainWindowStateToRefresh(state);
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(900, 450),

@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.Helpers;
 using Lumina.Excel.Sheets;
-using Serilog;
 
 namespace BetterAchievements.UI.Windows;
 
@@ -20,7 +18,7 @@ public class MainWindowState(Plugin plugin)
     private readonly MainLayout mainLayout = plugin.MainLayout;
 
     private string currentSearch = "";
-    private ulong bitArrayHash = 0ul;
+    private ulong achievementArrayHash = 0ul;
     private AchievementLayoutCategory pinnedAchievementsCategory = new() { Items = [], Id = PinnedAchievementsCategoryId, Name = "Pinned" };
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public int SelectedCategoryId = NoCategoryId;
@@ -242,14 +240,13 @@ public class MainWindowState(Plugin plugin)
 
     public unsafe void CheckForUiRefresh()
     {
-        var stopwatch = Stopwatch.StartNew();
-        var newHash = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievementsBitArray.ComputeHash();
-        if (newHash.Equals(bitArrayHash))
+        var newAchievementArrayHash = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievementsBitArray.ComputeHash();
+        if (newAchievementArrayHash.Equals(achievementArrayHash) && !plugin.UnlockablesProgressService.CheckUpdated())
         {
             return;
         }
         Refresh();
-        bitArrayHash = newHash;
+        achievementArrayHash = newAchievementArrayHash;
     }
 
     public void SetCategory(int categoryId)

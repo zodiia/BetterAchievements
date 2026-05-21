@@ -1,12 +1,23 @@
 using System.Collections.Concurrent;
-using BetterAchievements.UI.Windows;
 
 namespace BetterAchievements.Services;
 
 public class UnlockablesProgressService
 {
+    private readonly Plugin plugin;
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
-    private MainWindowState? stateToRefresh;
+    private bool updated = false;
+
+    public UnlockablesProgressService(Plugin plugin)
+    {
+        this.plugin = plugin;
+        SetupEvent();
+    }
+
+    private unsafe void SetupEvent()
+    {
+        plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, _) => SetProgress(id, current);
+    }
 
     public uint? GetProgress(uint achievementId)
     {
@@ -21,7 +32,7 @@ public class UnlockablesProgressService
     public void SetProgress(uint achievementId, uint progress)
     {
         progressCache[achievementId] = progress;
-        stateToRefresh?.Refresh();
+        updated = true;
     }
 
     public uint? IncrementProgress(uint achievementId, int amount)
@@ -30,15 +41,21 @@ public class UnlockablesProgressService
         {
             current = (uint) (current + amount); // man i hate c#
             progressCache[achievementId] = current;
-            stateToRefresh?.Refresh();
+            updated = true;
             return current;
         }
 
         return null;
     }
 
-    public void SetMainWindowStateToRefresh(MainWindowState state)
+    public bool CheckUpdated()
     {
-        stateToRefresh = state;
+        if (updated)
+        {
+            updated = false;
+            return true;
+        }
+
+        return false;
     }
 }

@@ -2,24 +2,21 @@ using System;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Serilog;
 
 #pragma warning disable CS0649 // for the hook
 
 namespace BetterAchievements.Hooks;
 
-public sealed unsafe class AchievementProgressHook : IDisposable
+public sealed unsafe class ReceiveAchievementProgressHook : IDisposable
 {
-    private readonly Plugin plugin;
+    public delegate void ReceiveAchievementProgressDelegate(Achievement* achievement, uint id, uint current, uint max);
+    public event ReceiveAchievementProgressDelegate? OnDetour;
 
-    private delegate void ReceiveAchievementProgressDelegate(Achievement* achievement, uint id, uint current, uint max);
-    
     [Signature("C7 81 ?? ?? ?? ?? ?? ?? ?? ?? 89 91 ?? ?? ?? ?? 44 89 81", DetourName = nameof(ReceiveAchievementProgressDetour))]
     private readonly Hook<ReceiveAchievementProgressDelegate>? hook;
 
-    public AchievementProgressHook(Plugin plugin)
+    public ReceiveAchievementProgressHook()
     {
-        this.plugin = plugin;
         Plugin.GameInteropProvider.InitializeFromAttributes(this);
         hook?.Enable();
     }
@@ -27,10 +24,7 @@ public sealed unsafe class AchievementProgressHook : IDisposable
     private void ReceiveAchievementProgressDetour(Achievement* achievement, uint id, uint current, uint max)
     {
         hook?.Original(achievement, id, current, max);
-
-        Log.Information("[AchievementProgressHook] Received achievement progress for id {Id} at {Current}/{Max}", id, current, max);
-
-        plugin.UnlockablesProgressService.SetProgress(id, current);
+        OnDetour?.Invoke(achievement, id, current, max);
     }
 
     public void Dispose()
