@@ -58,3 +58,5 @@ jobs:
           tag: latest
           release-notes: "Latest build from main"
           release-dir: dist/forgejo-release/
+          override: true
+          prerelease: true
