@@ -40,7 +40,7 @@ public class MainWindow : Window, IDisposable
         var framePadding = ImGui.GetStyle().FramePadding; // inside search bar
         var margin = ImGui.GetStyle().WindowPadding;
         var childHeight = ImGui.GetTextLineHeight() + (cellPadding.Y * 2) + (framePadding.Y * 2) + (margin.Y * 2);
-        using var child = ImRaii.Child("TopbarLayout", ImGui.GetContentRegionAvail() with { Y = childHeight }, true, ImGuiWindowFlags.AlwaysAutoResize);
+        using var child = ImRaii.Child("TopbarLayout##Topbar", ImGui.GetContentRegionAvail() with { Y = childHeight }, true, ImGuiWindowFlags.AlwaysAutoResize);
         if (!child.Success) return;
 
         var startingY = ImGui.GetCursorPosY();
