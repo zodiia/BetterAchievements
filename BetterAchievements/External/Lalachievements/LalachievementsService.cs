@@ -26,7 +26,7 @@ public class LalachievementsService
 
             if (response is not null)
             {
-                response.Rarity.Sort((a, b) => a.Percentile.CompareTo(b.Percentile));
+                response.Rarity.Sort((a, b) => (a.Percentile ?? 0.0).CompareTo(b.Percentile ?? 0.0));
                 var idx = 0u;
                 foreach (var it in response.Rarity)
                 {

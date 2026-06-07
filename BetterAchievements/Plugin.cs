@@ -60,7 +60,6 @@ public sealed class Plugin : IDalamudPlugin
     public Configuration Configuration { get; private set; }
 
     public readonly WindowSystem WindowSystem = new("BetterAchievements");
-    private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
     public MainLayout MainLayout { get; init; }
 
@@ -86,10 +85,8 @@ public sealed class Plugin : IDalamudPlugin
 
         MainLayout = LoadMainWindowLayout();
         
-        ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(this);
 
-        WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) { HelpMessage = CommandHelp });
@@ -111,7 +108,6 @@ public sealed class Plugin : IDalamudPlugin
         
         WindowSystem.RemoveAllWindows();
 
-        ConfigWindow.Dispose();
         MainWindow.Dispose();
         
         ReceiveAchievementProgressHook?.Dispose();
@@ -146,6 +142,6 @@ public sealed class Plugin : IDalamudPlugin
         MainLayout.CheckMissingAchievements(DataManager.Excel.GetSheet<Achievement>());
     }
     
-    public void ToggleConfigUi() => ConfigWindow.Toggle();
+    public void ToggleConfigUi() => MainWindow.Toggle();
     public void ToggleMainUi() => MainWindow.Toggle();
 }

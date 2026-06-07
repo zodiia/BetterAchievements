@@ -80,8 +80,11 @@ public static partial class UiComponents
         ImGui.TextColored(UiColors.Orange(), achievement.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.Yellow(), $" {achievement.Points()} points");
-        ImGui.SameLine();
-        ImGui.TextDisabled(" #" + achievement.Id());
+        if (mainWindowState.Configuration.DisplayIds)
+        {
+            ImGui.SameLine();
+            ImGui.TextDisabled(" #" + achievement.Id());
+        }
         ImGui.SameLine();
         if (achievement.Unlocked())
         {
@@ -173,8 +176,11 @@ public static partial class UiComponents
         ImGui.TextColored(UiColors.Orange(), achievements.Name());
         ImGui.SameLine();
         ImGui.TextColored(UiColors.Yellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
-        ImGui.SameLine();
-        ImGui.TextDisabled(" #" + achievements.ProvidesAchievements().Last().Id());
+        if (mainWindowState.Configuration.DisplayIds)
+        {
+            ImGui.SameLine();
+            ImGui.TextDisabled(" #" + achievements.ProvidesAchievements().Last().Id());
+        }
         if (achievements.Maximum() >= 14)
         {
             TieredAchievementSimpleTiers(achievements);
@@ -207,14 +213,14 @@ public static partial class UiComponents
         }
 
         // Max level
-        if (!achievements.Spoilers())
+        if (!achievements.Spoilers() || currentLevel == null)
         {
             ImGui.Text(maxLevel.Description());
             ImGui.SameLine();
             ImGui.TextDisabled(" (max level)");
 
             // if (true)
-            if (!maxLevel.Unlocked() && maxLevel.Maximum() > 1)
+            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (mainWindowState.Configuration.NeverHideProgressBars))
             {
                 ProgressBar(
                     (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),

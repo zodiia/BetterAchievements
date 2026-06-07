@@ -59,11 +59,11 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosY(startingY + cellPadding.Y);
         if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH))
         {
-            ImGui.OpenPopup(FilterPopup.FiltersPopupId);
+            ImGui.OpenPopup(ConfigPopup.FiltersPopupId);
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Filters and sorting options");
+            ImGui.SetTooltip("Settings");
         }
 
         ImGui.SameLine();
@@ -77,7 +77,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SetTooltip("Refresh UI state");
         }
 
-        FilterPopup.FiltersPopup(state);
+        ConfigPopup.FiltersPopup(state);
 
         ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);

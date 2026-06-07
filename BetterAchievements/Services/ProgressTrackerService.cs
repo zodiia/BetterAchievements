@@ -43,14 +43,11 @@ public class ProgressTrackerService
             case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead):
                 try
                 {
-                    Log.Information("trying");
                     var combatTagger = Plugin.ObjectTable.CharacterManagerObjects.FirstOrDefault(it => it.GameObjectId == chara->CombatTaggerId.Id);
                     if (combatTagger == null) break;
-                    Log.Information("found combat tagger: {N}", combatTagger.Name.ToString());
                     if (Plugin.ObjectTable.LocalPlayer?.EntityId == combatTagger.EntityId
                         || Plugin.PartyList.Any(it => it.EntityId == combatTagger.EntityId))
                     {
-                        Log.Information("combat tagger IS either player or party!");
                         plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                     }
                 }

@@ -16,6 +16,7 @@ public class MainWindowState(Plugin plugin)
     public const int NoCategoryId = int.MinValue;
 
     private readonly MainLayout mainLayout = plugin.MainLayout;
+    public Configuration Configuration = plugin.Configuration;
 
     private string currentSearch = "";
     private ulong achievementArrayHash = 0ul;
@@ -25,12 +26,6 @@ public class MainWindowState(Plugin plugin)
     public AchievementLayoutCategory? SelectedAchievementCategory { get; private set; }
     public List<IUnlockable> CategoryUnlockables { get; private set; } = new();
     public string SearchBuffer = "";
-    public UnlockStatusFilter UnlockStatusFilter { get; private set; } = UnlockStatusFilter.All;
-    public ContainsRewardsFilter ContainsRewardsFilter { get; private set; } = ContainsRewardsFilter.All;
-    public RankedFilter RankedFilter { get; private set; } = RankedFilter.All;
-    public AreaFilter AreaFilter { get; private set; } = AreaFilter.All;
-    public SortBy SortBy { get; private set; } = SortBy.Default;
-    public GroupBy GroupBy { get; private set; } = GroupBy.Default;
     public int AchievementPoints = 0;
 
     private bool MatchSearch(string name, string desc)
@@ -40,23 +35,23 @@ public class MainWindowState(Plugin plugin)
 
     private bool MatchUnlockFilter(bool unlocked)
     {
-        switch (UnlockStatusFilter)
+        switch (Configuration.UnlockStatusFilter)
         {
             case UnlockStatusFilter.All: return true;
             case UnlockStatusFilter.Unlocked: return unlocked;
             case UnlockStatusFilter.Locked: return !unlocked;
         }
-        throw new ArgumentOutOfRangeException($"{UnlockStatusFilter} not implemented.");
+        throw new ArgumentOutOfRangeException($"{Configuration.UnlockStatusFilter} not implemented.");
     }
 
     private bool MatchRankedFilter(bool lalachievements)
     {
-        switch (RankedFilter)
+        switch (Configuration.RankedFilter)
         {
             case RankedFilter.All: return true;
             case RankedFilter.Lalachievements: return lalachievements;
         }
-        throw new ArgumentOutOfRangeException($"{RankedFilter} not implemented.");
+        throw new ArgumentOutOfRangeException($"{Configuration.RankedFilter} not implemented.");
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item)
@@ -123,7 +118,7 @@ public class MainWindowState(Plugin plugin)
         if (SelectedAchievementCategory == null) return;
         List<AchievementLayoutItem> sortedItems;
 
-        if (SortBy is SortBy.MostCommon or SortBy.Rarest)
+        if (Configuration.SortBy is SortBy.MostCommon or SortBy.Rarest)
         {
             sortedItems = SelectedAchievementCategory.Items.OrderBy(it =>
             {
@@ -135,7 +130,7 @@ public class MainWindowState(Plugin plugin)
                     return plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(combined.Ids.Last(), uint.MaxValue);
                 return uint.MaxValue;
             }).ToList();
-            if (SortBy == SortBy.MostCommon)
+            if (Configuration.SortBy == SortBy.MostCommon)
             {
                 sortedItems.Reverse();
             }
@@ -156,7 +151,7 @@ public class MainWindowState(Plugin plugin)
             return [];
         }).ToList();
 
-        if (SortBy == SortBy.Alphabetically)
+        if (Configuration.SortBy == SortBy.Alphabetically)
         {
             CategoryUnlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
         }
@@ -268,36 +263,54 @@ public class MainWindowState(Plugin plugin)
 
     public void SetUnlockStatusFilter(UnlockStatusFilter unlockStatusFilter)
     {
-        UnlockStatusFilter = unlockStatusFilter;
+        Configuration.UnlockStatusFilter = unlockStatusFilter;
+        Configuration.Save();
         FilterAll();
     }
 
     public void SetContainsRewardsFilter(ContainsRewardsFilter containsRewardsFilter)
     {
-        ContainsRewardsFilter = containsRewardsFilter;
+        Configuration.ContainsRewardsFilter = containsRewardsFilter;
+        Configuration.Save();
         FilterAll();
     }
 
     public void SetRankedFilter(RankedFilter rankedFilter)
     {
-        RankedFilter = rankedFilter;
+        Configuration.RankedFilter = rankedFilter;
+        Configuration.Save();
         FilterAll();
     }
 
     public void SetAreaFilter(AreaFilter areaFilter)
     {
-        AreaFilter = areaFilter;
+        Configuration.AreaFilter = areaFilter;
+        Configuration.Save();
         FilterAll();
     }
 
     public void SetSortBy(SortBy sortBy)
     {
-        SortBy = sortBy;
+        Configuration.SortBy = sortBy;
+        Configuration.Save();
         SortCategory();
     }
 
     public void SetGroupBy(GroupBy groupBy)
     {
-        GroupBy = groupBy;
+        Configuration.GroupBy = groupBy;
+        Configuration.Save();
+    }
+
+    public void SetDisplayIds(bool displayIds)
+    {
+        Configuration.DisplayIds = displayIds;
+        Configuration.Save();
+    }
+
+    public void SetNeverHideProgressBars(bool neverHideProgressBars)
+    {
+        Configuration.NeverHideProgressBars = neverHideProgressBars;
+        Configuration.Save();
     }
 }

@@ -1,16 +1,23 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using BetterAchievements.Data;
 
 namespace BetterAchievements;
 
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
-    public int Version { get; set; } = 1;
+    public int Version { get; set; } = 4;
 
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
+    public UnlockStatusFilter UnlockStatusFilter { get; set; } = UnlockStatusFilter.All;
+    public ContainsRewardsFilter ContainsRewardsFilter { get; set; } = ContainsRewardsFilter.All;
+    public RankedFilter RankedFilter { get; set; } = RankedFilter.All;
+    public AreaFilter AreaFilter { get; set; } = AreaFilter.All;
+    public SortBy SortBy { get; set; } = SortBy.Default;
+    public GroupBy GroupBy { get; set; } = GroupBy.Default;
+    public bool DisplayIds { get; set; } = false;
+    public bool NeverHideProgressBars { get; set; } = false;
 
     // Not shown in the config UI
     public List<uint> PinnedAchievements { get; set; } = new();
