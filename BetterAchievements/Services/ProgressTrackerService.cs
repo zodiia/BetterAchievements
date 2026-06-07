@@ -10,12 +10,10 @@ using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace BetterAchievements.Services;
 
-public class ProgressTrackerService
-{
+public class ProgressTrackerService {
     private readonly Plugin plugin;
 
-    public ProgressTrackerService(Plugin plugin)
-    {
+    public ProgressTrackerService(Plugin plugin) {
         this.plugin = plugin;
         SetupEvents();
     }
@@ -23,44 +21,36 @@ public class ProgressTrackerService
     private uint GetLastAchievementInSeries(AchievementIdMap achievement) =>
         plugin.UnlockablesService.GetExistingAchievement((uint)achievement)?.Id() ?? 0;
 
-    public unsafe void SetupEvents()
-    {
+    public unsafe void SetupEvents() {
         Plugin.DutyState.DutyCompleted += OnDutyCompleted;
         plugin.SetModeHook.OnDetour += OnSetMode;
     }
 
-    private void OnDutyCompleted(IDutyStateEventArgs args)
-    {
+    private void OnDutyCompleted(IDutyStateEventArgs args) {
         Log.Information("Territory type: {T}", args.TerritoryType.Value.Name.ToString());
         Log.Information("Content finder condition: {C}", args.ContentFinderCondition.Value.Name.ToString());
     }
 
-    private unsafe void OnSetMode(Character* chara, CharacterModes mode, byte modeParam)
-    {
+    private unsafe void OnSetMode(Character* chara, CharacterModes mode, byte modeParam) {
         if (chara == null) return;
-        switch (chara->ObjectKind, chara->BattleNpcSubKind, mode)
-        {
+        switch (chara->ObjectKind, chara->BattleNpcSubKind, mode) {
             case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead):
-                try
-                {
+                try {
                     var combatTagger = Plugin.ObjectTable.CharacterManagerObjects.FirstOrDefault(it => it.GameObjectId == chara->CombatTaggerId.Id);
                     if (combatTagger == null) break;
                     if (Plugin.ObjectTable.LocalPlayer?.EntityId == combatTagger.EntityId
-                        || Plugin.PartyList.Any(it => it.EntityId == combatTagger.EntityId))
-                    {
+                        || Plugin.PartyList.Any(it => it.EntityId == combatTagger.EntityId)) {
                         plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     Log.Error(ex, "Error!");
                 }
+
                 break;
         }
     }
 
-    private void OnEnemyKilled(IBattleNpc npc)
-    {
+    private void OnEnemyKilled(IBattleNpc npc) {
         // if (!dead) return;
         // Log.Information("is dead");
         // // self counts as party member

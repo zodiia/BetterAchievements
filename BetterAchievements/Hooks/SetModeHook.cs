@@ -7,28 +7,25 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace BetterAchievements.Hooks;
 
-public sealed unsafe class SetModeHook : IDisposable
-{
+public sealed unsafe class SetModeHook : IDisposable {
     public delegate void SetModeDelegate(Character* chara, CharacterModes mode, byte modeParam);
+
     public event SetModeDelegate? OnDetour;
 
     [Signature("E8 ?? ?? ?? ?? 45 84 FF 75 40", DetourName = nameof(SetModeDetour))]
     private readonly Hook<SetModeDelegate>? hook;
 
-    public SetModeHook()
-    {
+    public SetModeHook() {
         Plugin.GameInteropProvider.InitializeFromAttributes(this);
         hook?.Enable();
     }
 
-    private void SetModeDetour(Character* chara, CharacterModes mode, byte modeParam)
-    {
+    private void SetModeDetour(Character* chara, CharacterModes mode, byte modeParam) {
         hook?.Original(chara, mode, modeParam);
         OnDetour?.Invoke(chara, mode, modeParam);
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         hook?.Disable();
         hook?.Dispose();
     }

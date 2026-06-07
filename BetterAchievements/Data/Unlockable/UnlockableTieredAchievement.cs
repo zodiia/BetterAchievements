@@ -5,24 +5,22 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public record UnlockableTieredAchievement : IUnlockable
-{
-    public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin)
-    {
+public record UnlockableTieredAchievement : IUnlockable {
+    public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin) {
         ExcelAchievements = excelAchievements;
         providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
-        name = spoilers switch
-        {
+        name = spoilers switch {
             false => CompiledRegexes.AchievementNameReplace().Replace(providesAchievements.Last().Name(), ""),
-            true => CompiledRegexes.AchievementNameReplace().Replace((providesAchievements.FindLast(it => it.Unlocked()) ?? providesAchievements.First()).Name(), "")
+            true => CompiledRegexes.AchievementNameReplace()
+                                   .Replace((providesAchievements.FindLast(it => it.Unlocked()) ?? providesAchievements.First()).Name(), "")
         };
         this.spoilers = spoilers;
         description = excelAchievements.Last().Description.ToString();
         nameLowercase = name.ToLower();
         descriptionLowercase = string.Join(" ", providesAchievements.Select(it => it.Description().ToLower()).ToList());
-        maximumPoints = (uint) ExcelAchievements.Select(it => (int) it.Points).Sum();
-        currentPoints = (uint) ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
-        current = (uint) providesAchievements.Count(it => it.Unlocked());
+        maximumPoints = (uint)ExcelAchievements.Select(it => (int)it.Points).Sum();
+        currentPoints = (uint)ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
+        current = (uint)providesAchievements.Count(it => it.Unlocked());
         pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
         ids = ExcelAchievements.Select(it => it.RowId).ToList();
     }
@@ -48,7 +46,7 @@ public record UnlockableTieredAchievement : IUnlockable
     public string DescriptionLowercase() => descriptionLowercase;
     private readonly uint current;
     public uint? Current() => current;
-    public uint Maximum() => (uint) providesAchievements.Count;
+    public uint Maximum() => (uint)providesAchievements.Count;
     public bool Unlocked() => Current() == Maximum();
     private readonly bool pinned;
     public bool Pinned() => pinned;

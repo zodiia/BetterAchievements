@@ -17,8 +17,7 @@ using Achievement = Lumina.Excel.Sheets.Achievement;
 
 namespace BetterAchievements;
 
-public sealed class Plugin : IDalamudPlugin
-{
+public sealed class Plugin : IDalamudPlugin {
     private const string CommandName = "/betterachievements";
     private const string CommandAlias = "/bach";
     private const string CommandHelp = "Open the main achievements interface";
@@ -66,12 +65,10 @@ public sealed class Plugin : IDalamudPlugin
     public ReceiveAchievementProgressHook ReceiveAchievementProgressHook { get; private set; } = null!;
     public SetModeHook SetModeHook { get; private set; } = null!;
 
-    public Plugin()
-    {
+    public Plugin() {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        try
-        {
+        try {
             ReceiveAchievementProgressHook = new ReceiveAchievementProgressHook();
             SetModeHook = new SetModeHook();
         } catch (Exception e) {
@@ -84,7 +81,7 @@ public sealed class Plugin : IDalamudPlugin
         ProgressTrackerService = new ProgressTrackerService(this);
 
         MainLayout = LoadMainWindowLayout();
-        
+
         MainWindow = new MainWindow(this);
 
         WindowSystem.AddWindow(MainWindow);
@@ -99,49 +96,44 @@ public sealed class Plugin : IDalamudPlugin
         HandleWarnings();
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         // Unregister all actions to not leak anything during disposal of plugin
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
-        
+
         WindowSystem.RemoveAllWindows();
 
         MainWindow.Dispose();
-        
+
         ReceiveAchievementProgressHook?.Dispose();
         SetModeHook?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
     }
 
-    private static MainLayout LoadMainWindowLayout()
-    {
+    private static MainLayout LoadMainWindowLayout() {
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, ReadCommentHandling = JsonCommentHandling.Skip };
         return JsonSerializer.Deserialize<MainLayout>(GetResourceFile("layout.jsonc"), options)!;
     }
 
-    public static string GetResourceFile(string fileName)
-    {
+    public static string GetResourceFile(string fileName) {
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = $"BetterAchievements.Resources.{fileName}";
-        
+
         using Stream? stream = assembly.GetManifestResourceStream(resourceName);
         using StreamReader reader = new(stream ?? throw new InvalidOperationException());
         return reader.ReadToEnd();
     }
 
-    private void OnCommand(string command, string args)
-    {
+    private void OnCommand(string command, string args) {
         MainWindow.Toggle();
     }
 
-    private void HandleWarnings()
-    {
+    private void HandleWarnings() {
         MainLayout.CheckMissingAchievements(DataManager.Excel.GetSheet<Achievement>());
     }
-    
+
     public void ToggleConfigUi() => MainWindow.Toggle();
     public void ToggleMainUi() => MainWindow.Toggle();
 }

@@ -6,8 +6,7 @@ using BetterAchievements.Data;
 namespace BetterAchievements;
 
 [Serializable]
-public class Configuration : IPluginConfiguration
-{
+public class Configuration : IPluginConfiguration {
     public int Version { get; set; } = 4;
 
     public UnlockStatusFilter UnlockStatusFilter { get; set; } = UnlockStatusFilter.All;
@@ -23,8 +22,7 @@ public class Configuration : IPluginConfiguration
     public List<uint> PinnedAchievements { get; set; } = new();
 
     // The below exists just to make saving less cumbersome
-    public void Save()
-    {
+    public void Save() {
         Plugin.PluginInterface.SavePluginConfig(this);
     }
 }

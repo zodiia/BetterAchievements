@@ -7,17 +7,14 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Services;
 
-public class UnlockablesService(Plugin plugin)
-{
+public class UnlockablesService(Plugin plugin) {
     private readonly ExcelSheet<Achievement> achievementSheet = Plugin.DataManager.GetExcelSheet<Achievement>();
 
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
 
-    public UnlockableAchievement GetUnlockableAchievement(uint achievementId)
-    {
-        if (achievements.TryGetValue(achievementId, out var it))
-        {
+    public UnlockableAchievement GetUnlockableAchievement(uint achievementId) {
+        if (achievements.TryGetValue(achievementId, out var it)) {
             return it;
         }
 
@@ -26,10 +23,8 @@ public class UnlockablesService(Plugin plugin)
         return unlockable;
     }
 
-    public UnlockableTieredAchievement GetUnlockableTieredAchievement(List<uint> achievementIds, bool spoilers)
-    {
-        if (tieredAchievements.TryGetValue(achievementIds.Last(), out var it))
-        {
+    public UnlockableTieredAchievement GetUnlockableTieredAchievement(List<uint> achievementIds, bool spoilers) {
+        if (tieredAchievements.TryGetValue(achievementIds.Last(), out var it)) {
             return it;
         }
 
@@ -39,13 +34,11 @@ public class UnlockablesService(Plugin plugin)
         return unlockable;
     }
 
-    public IUnlockable? GetExistingAchievement(uint achievementId)
-    {
+    public IUnlockable? GetExistingAchievement(uint achievementId) {
         return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
     }
 
-    public void Refresh()
-    {
+    public void Refresh() {
         achievements.Clear();
         tieredAchievements.Clear();
     }

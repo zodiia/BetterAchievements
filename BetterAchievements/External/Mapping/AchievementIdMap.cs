@@ -1,11 +1,9 @@
-
 // This is a generated file, DO NOT EDIT MANUALLY
 // Generated on 2026-05-12T14:37:47.102Z
 
 namespace BetterAchievements.External.Mapping;
 
-public enum AchievementIdMap : uint
-{
+public enum AchievementIdMap : uint {
     ToCrushYourEnemiesI = 1,
     ToCrushYourEnemiesIi = 2,
     ToCrushYourEnemiesIii = 3,

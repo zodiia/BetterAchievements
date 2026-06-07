@@ -7,36 +7,28 @@ using Serilog;
 
 namespace BetterAchievements.External.Lalachievements;
 
-public class LalachievementsService
-{
+public class LalachievementsService {
     public ConcurrentDictionary<uint, uint> AchievementRarity = new();
 
-    public LalachievementsService()
-    {
+    public LalachievementsService() {
         GetAchievementRarity();
     }
 
-    public async void GetAchievementRarity()
-    {
-        try
-        {
+    public async void GetAchievementRarity() {
+        try {
             var client = new HttpClient();
             var response = await client.GetFromJsonAsync<RarityResponse>("https://lalachievements.com/api/rarity/achievements/global",
                                                                          new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-            if (response is not null)
-            {
+            if (response is not null) {
                 response.Rarity.Sort((a, b) => (a.Percentile ?? 0.0).CompareTo(b.Percentile ?? 0.0));
                 var idx = 0u;
-                foreach (var it in response.Rarity)
-                {
+                foreach (var it in response.Rarity) {
                     AchievementRarity[it.Id] = idx;
                     idx++;
                 }
             }
-        }
-        catch (Exception exception)
-        {
+        } catch (Exception exception) {
             Log.Error(exception, "Error requesting Lalachievements for achievement rarity");
         }
     }
