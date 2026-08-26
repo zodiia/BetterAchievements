@@ -55,6 +55,8 @@ jobs:
         with:
           direction: upload
           token: ${{ secrets.RELEASE_TOKEN }}
+          repo: xiv/BetterAchievements
+          url: https://git.zodiia.moe
           tag: latest
           release-notes: "Latest build from main"
           release-dir: dist/forgejo-release/

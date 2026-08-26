@@ -30,7 +30,7 @@ public class UnlockablesService(Plugin plugin) {
 
         var achievementList = achievementIds.Select(id => achievementSheet.GetRow(id)).ToList();
         var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
-        tieredAchievements[achievementIds.Last()] = unlockable;
+        achievementIds.ForEach(id => tieredAchievements[id] = unlockable);
         return unlockable;
     }
 

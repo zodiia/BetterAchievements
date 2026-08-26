@@ -3,11 +3,14 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Dalamud.Plugin.Services;
 using Serilog;
 
 namespace BetterAchievements.External.Lalachievements;
 
 public class LalachievementsService {
+    public static readonly IPluginLog Log = Plugin.GetLogger<LalachievementsService>();
+
     public ConcurrentDictionary<uint, uint> AchievementRarity = new();
 
     public LalachievementsService() {

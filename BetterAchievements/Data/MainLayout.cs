@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Dalamud.Plugin.Services;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
-using Serilog;
 
 namespace BetterAchievements.Data;
 
 public record MainLayout {
+    public static readonly IPluginLog Log = Plugin.GetLogger<MainLayout>();
+
     private const string AchievementCategoryLegacy = "Legacy";
 
     public required List<AchievementLayout> AchievementLayout { get; set; }

@@ -1,9 +1,13 @@
 using System;
+using System.Collections;
 using System.Linq;
+using BetterAchievements.Data;
 using BetterAchievements.External.Mapping;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.DutyState;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using Lumina.Excel.Sheets;
 using Serilog;
 using BattleNpcSubKind = FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind;
 using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
@@ -11,6 +15,8 @@ using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 namespace BetterAchievements.Services;
 
 public class ProgressTrackerService {
+    public static readonly IPluginLog Log = Plugin.GetLogger<ProgressTrackerService>();
+
     private readonly Plugin plugin;
 
     public ProgressTrackerService(Plugin plugin) {
@@ -23,7 +29,8 @@ public class ProgressTrackerService {
 
     public unsafe void SetupEvents() {
         Plugin.DutyState.DutyCompleted += OnDutyCompleted;
-        plugin.SetModeHook.OnDetour += OnSetMode;
+        plugin.SetModeHook.OnDetour += OnCharacterSetMode;
+        plugin.AddonLifecycleService.OnFateCompleted += OnFateCompleted;
     }
 
     private void OnDutyCompleted(IDutyStateEventArgs args) {
@@ -31,7 +38,7 @@ public class ProgressTrackerService {
         Log.Information("Content finder condition: {C}", args.ContentFinderCondition.Value.Name.ToString());
     }
 
-    private unsafe void OnSetMode(Character* chara, CharacterModes mode, byte modeParam) {
+    private unsafe void OnCharacterSetMode(Character* chara, CharacterModes mode, byte modeParam) {
         if (chara == null) return;
         switch (chara->ObjectKind, chara->BattleNpcSubKind, mode) {
             case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead):
@@ -50,18 +57,9 @@ public class ProgressTrackerService {
         }
     }
 
-    private void OnEnemyKilled(IBattleNpc npc) {
-        // if (!dead) return;
-        // Log.Information("is dead");
-        // // self counts as party member
-        // if (!npc.StatusFlags.HasFlag(StatusFlags.PartyMember) || npc.StatusFlags.HasFlag(StatusFlags.AllianceMember)) return;
-        // Log.Information("is party member");
-        //
-        // var zone = Plugin.DataManager.GetExcelSheet<TerritoryType>().GetRow(Plugin.ClientState.TerritoryType);
-        // var bnpcName = Plugin.DataManager.GetExcelSheet<BNpcName>().GetRow(npc.BaseId);
-        //
-        // Log.Information("Kind: {Kind}, Zone: {Zone}, PlaceName: {PN}, PlaceNameRegion: {PNR}, PlaceNameZone: {PNZ}, BnpcName: {Bnpc}",
-        //                 npc.BattleNpcKind, zone.Name.ToString(), zone.PlaceName.Value.Name.ToString(), zone.PlaceNameRegion.Value.Name.ToString(),
-        //                 zone.PlaceNameZone.Value.Name.ToString(), bnpcName.Singular.ToString());
+    private void OnFateCompleted(Fate fate, FateMedal medal) {
+        if (medal == FateMedal.Gold) {
+            plugin.UnlockablesProgressService.IncrementProgress((uint)AchievementIdMap.DateWithDestinyI, 1);
+        }
     }
 }
