@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -5,6 +6,7 @@ using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
+using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 
 namespace BetterAchievements.UI.Component;
@@ -67,56 +69,97 @@ public static partial class UiComponents {
         }
     }
 
-    private static void AchievementBase(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin) {
-        Pin(plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState, plugin);
+    private static float AchievementIconSize() => ImGui.GetTextLineHeightWithSpacing() * 2;
 
-        ImGui.TextColored(UiColors.Orange(), achievement.Name());
-        ImGui.SameLine();
-        ImGui.TextColored(UiColors.Yellow(), $" {achievement.Points()} points");
-        if (mainWindowState.Configuration.DisplayIds) {
+    private static void AchievementIcon(uint iconId, float size) {
+        var wrap = Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(iconId)).GetWrapOrEmpty();
+        ImGui.Image(wrap.Handle, new Vector2(size, size));
+    }
+
+    private static void AchievementHeaderLine1(string name, uint? displayId, Action drawRightSide) {
+        ImGui.TextColored(UiColors.Orange(), name);
+        if (displayId.HasValue) {
             ImGui.SameLine();
-            ImGui.TextDisabled(" #" + achievement.Id());
+            ImGui.TextDisabled(" #" + displayId.Value);
         }
 
-        ImGui.SameLine();
-        if (achievement.Unlocked()) {
-            SameLineRightTextColored(UiColors.Green(), "Unlocked");
+        drawRightSide();
+    }
+
+    private static void AchievementRightHeaderTiered(UnlockableTieredAchievement achievements) {
+        if (achievements.Maximum() >= 14) {
+            TieredAchievementSimpleTiers(achievements);
         } else {
-            SameLineRightTextColored(UiColors.Red(), "Locked");
+            TieredAchievementTiers(achievements);
         }
+    }
 
+    private static void AchievementHeaderLine2(string pointsText) {
+        // placeholder for later features?
+        ImGui.Dummy(Vector2.Zero);
+        SameLineRightTextColored(UiColors.Orange(), pointsText);
+    }
+
+    private static void AchievementDescriptionSimple(UnlockableAchievement achievement) {
         ImGui.TextWrapped(achievement.Description());
-    }
 
-    public static void SimpleAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin) {
-        ImGui.BeginGroup();
-
-        AchievementBase(achievement, mainWindowState, plugin);
-
-        ImGui.EndGroup();
-    }
-
-    public static void ProgressBasedAchievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin) {
-        ImGui.BeginGroup();
-
-        AchievementBase(achievement, mainWindowState, plugin);
+        if (achievement.Maximum() <= 1 || achievement.Unlocked()) return;
 
         var progress = achievement.Current();
-        // if (true)
-        if (!achievement.Unlocked()) {
-            ProgressBar(
-                (progress ?? 1.0f) / achievement.Maximum(),
-                progress != null ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
-                insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
-                tooltip: "Click to refresh",
-                enabled: progress != null,
-                onClick: RequestAchievementProgress);
-        }
 
-        ImGui.EndGroup();
+        ProgressBar(
+            (progress ?? 1.0f) / achievement.Maximum(),
+            progress != null ? UiColors.Progress() : UiColors.Red(),
+            insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
+            tooltip: "Click to refresh",
+            enabled: progress != null,
+            onClick: RequestAchievementProgress);
         return;
 
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
+    }
+
+    private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, MainWindowState mainWindowState) {
+        var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
+        var maxLevel = achievements.ProvidesAchievements().Last();
+        var progressLoaded = maxLevel.Current() != null;
+
+        // Current level
+        if (currentLevel != null && currentLevel != maxLevel) {
+            ImGui.Text(currentLevel.Description());
+            ImGui.SameLine();
+            ImGui.TextDisabled(" (current level)");
+            if (maxLevel.Maximum() > 1) {
+                ProgressBar(
+                    (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
+                    progressLoaded ? UiColors.Progress() : UiColors.Red(),
+                    insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
+                    tooltip: "Click to refresh",
+                    enabled: progressLoaded,
+                    onClick: RequestAchievementProgress);
+            }
+        }
+
+        // Max level
+        if (!achievements.Spoilers() || currentLevel == null) {
+            ImGui.Text(maxLevel.Description());
+            ImGui.SameLine();
+            ImGui.TextDisabled(" (max level)");
+
+            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (mainWindowState.Configuration.NeverHideProgressBars)) {
+                ProgressBar(
+                    (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
+                    progressLoaded ? UiColors.Progress() : UiColors.Red(),
+                    insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
+                    tooltip: "Click to refresh",
+                    enabled: progressLoaded,
+                    onClick: RequestAchievementProgress);
+            }
+        }
+
+        return;
+
+        unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(maxLevel.Id());
     }
 
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements) {
@@ -152,66 +195,42 @@ public static partial class UiComponents {
         }
     }
 
-    public static void TieredAchievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin) {
+    public static void Achievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin) {
         ImGui.BeginGroup();
 
-        Pin(plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState, plugin);
-
-        ImGui.TextColored(UiColors.Orange(), achievements.Name());
+        AchievementIcon(achievement.Icon(), AchievementIconSize());
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.Yellow(), $" {achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
-        if (mainWindowState.Configuration.DisplayIds) {
-            ImGui.SameLine();
-            ImGui.TextDisabled(" #" + achievements.ProvidesAchievements().Last().Id());
-        }
+        ImGui.BeginGroup();
+        AchievementHeaderLine1(
+            achievement.Name(),
+            mainWindowState.Configuration.DisplayIds ? achievement.Id() : null,
+            () => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(), achievement.Unlocked() ? "Unlocked" : "Locked"));
+        Pin(plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState, plugin);
+        AchievementHeaderLine2($"{achievement.Points()} points");
+        ImGui.EndGroup();
 
-        if (achievements.Maximum() >= 14) {
-            TieredAchievementSimpleTiers(achievements);
-        } else {
-            TieredAchievementTiers(achievements);
-        }
-
-        var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
-        var maxLevel = achievements.ProvidesAchievements().Last();
-        var progressLoaded = maxLevel.Current() != null;
-
-        // Current level
-        if (currentLevel != null && currentLevel != maxLevel) {
-            ImGui.Text(currentLevel.Description());
-            ImGui.SameLine();
-            ImGui.TextDisabled(" (current level)");
-            if (maxLevel.Maximum() > 1) {
-                ProgressBar(
-                    (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
-                    progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
-                    insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
-                    tooltip: "Click to refresh",
-                    enabled: progressLoaded,
-                    onClick: RequestAchievementProgress);
-            }
-        }
-
-        // Max level
-        if (!achievements.Spoilers() || currentLevel == null) {
-            ImGui.Text(maxLevel.Description());
-            ImGui.SameLine();
-            ImGui.TextDisabled(" (max level)");
-
-            // if (true)
-            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (mainWindowState.Configuration.NeverHideProgressBars)) {
-                ProgressBar(
-                    (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
-                    progressLoaded ? UiColors.Progress().Brightness(0.5f) : UiColors.Red(),
-                    insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
-                    tooltip: "Click to refresh",
-                    enabled: progressLoaded,
-                    onClick: RequestAchievementProgress);
-            }
-        }
+        AchievementDescriptionSimple(achievement);
 
         ImGui.EndGroup();
-        return;
+    }
 
-        unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(maxLevel.Id());
+    public static void Achievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin) {
+        ImGui.BeginGroup();
+
+        var maxLevel = achievements.ProvidesAchievements().Last();
+        AchievementIcon(maxLevel.Icon(), AchievementIconSize());
+        ImGui.SameLine();
+        ImGui.BeginGroup();
+        AchievementHeaderLine1(
+            achievements.Name(),
+            mainWindowState.Configuration.DisplayIds ? maxLevel.Id() : null,
+            () => AchievementRightHeaderTiered(achievements));
+        Pin(plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState, plugin);
+        AchievementHeaderLine2($"{achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
+        ImGui.EndGroup();
+
+        AchievementDescriptionTiered(achievements, mainWindowState);
+
+        ImGui.EndGroup();
     }
 }

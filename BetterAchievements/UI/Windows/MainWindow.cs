@@ -115,16 +115,13 @@ public class MainWindow : Window, IDisposable {
 
     private void DrawAchievementsMainContent() {
         foreach (var it in state.CategoryUnlockables) {
-            if (it is UnlockableAchievement achievement) {
-                if (achievement.Maximum() > 1) {
-                    UiComponents.ProgressBasedAchievement(achievement, state, plugin);
-                } else {
-                    UiComponents.SimpleAchievement(achievement, state, plugin);
-                }
-            }
-
-            if (it is UnlockableTieredAchievement tiered) {
-                UiComponents.TieredAchievement(tiered, state, plugin);
+            switch (it) {
+                case UnlockableAchievement achievement:
+                    UiComponents.Achievement(achievement, state, plugin);
+                    break;
+                case UnlockableTieredAchievement tiered:
+                    UiComponents.Achievement(tiered, state, plugin);
+                    break;
             }
 
             if (it != state.CategoryUnlockables.Last()) {
