@@ -11,6 +11,7 @@ using BetterAchievements.External.Lalachievements;
 using BetterAchievements.Services;
 using BetterAchievements.UI.Windows;
 using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Achievement = Lumina.Excel.Sheets.Achievement;
@@ -68,6 +69,8 @@ public sealed class Plugin : IDalamudPlugin {
 
     internal static unsafe UIState* UiState { get; } = UIState.Instance();
 
+    public IPluginManifest PluginManifest { get; private set; } = null!;
+
     public UnlockablesProgressService UnlockablesProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
     public LalachievementsService LalachievementsService { get; private set; }
@@ -86,10 +89,9 @@ public sealed class Plugin : IDalamudPlugin {
     public Plugin() {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        foreach (var plugin in PluginInterface.InstalledPlugins)
-        {
+        foreach (var plugin in PluginInterface.InstalledPlugins) {
             if (plugin.Name == "BetterAchievements" || plugin.InternalName == "BetterAchievements") {
-                Log.Info($"{plugin.Name}, {plugin.InternalName}, {plugin.Version}, {plugin.Manifest.AssemblyVersion}, {plugin.Manifest.Description}");
+                PluginManifest = plugin.Manifest;
             }
         }
 

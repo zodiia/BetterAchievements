@@ -12,8 +12,7 @@ using Dalamud.Interface.Windowing;
 
 namespace BetterAchievements.UI.Windows;
 
-public class MainWindow : Window, IDisposable
-{
+public class MainWindow : Window, IDisposable {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
 
@@ -21,12 +20,10 @@ public class MainWindow : Window, IDisposable
     private readonly MainWindowState state;
 
     public MainWindow(Plugin plugin)
-        : base("Better Achievements")
-    {
+        : base($"Better Achievements v{plugin.PluginManifest.AssemblyVersion}") {
         this.plugin = plugin;
         state = new MainWindowState(plugin);
-        SizeConstraints = new WindowSizeConstraints
-        {
+        SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(900, 450),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
@@ -34,8 +31,7 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose() { }
 
-    private void DrawTopbarLayout()
-    {
+    private void DrawTopbarLayout() {
         var cellPadding = ImGui.GetStyle().CellPadding;   // outside search bar
         var framePadding = ImGui.GetStyle().FramePadding; // inside search bar
         var margin = ImGui.GetStyle().WindowPadding;
@@ -50,30 +46,27 @@ public class MainWindow : Window, IDisposable
 
         ImGui.SameLine();
         ImGui.SetCursorPosY(startingY + cellPadding.Y);
-        if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 }))
-        {
+        if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, default(Vector2) with { X = 400 })) {
             state.SetSearch(state.SearchBuffer); // do not recalculate ToLower many times per frames
         }
 
         ImGui.SameLine();
         ImGui.SetCursorPosY(startingY + cellPadding.Y);
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH))
-        {
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH)) {
             ImGui.OpenPopup(ConfigPopup.FiltersPopupId);
         }
-        if (ImGui.IsItemHovered())
-        {
+
+        if (ImGui.IsItemHovered()) {
             ImGui.SetTooltip("Settings");
         }
 
         ImGui.SameLine();
         ImGui.SetCursorPosY(startingY + cellPadding.Y);
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
-        {
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt)) {
             state.Refresh();
         }
-        if (ImGui.IsItemHovered())
-        {
+
+        if (ImGui.IsItemHovered()) {
             ImGui.SetTooltip("Refresh UI state");
         }
 
@@ -96,10 +89,8 @@ public class MainWindow : Window, IDisposable
         ImGui.TextColored(UiColors.Orange(), achievementPointsText);
     }
 
-    private bool DrawWarnings()
-    {
-        if (!Plugin.UnlockState.IsAchievementListLoaded)
-        {
+    private bool DrawWarnings() {
+        if (!Plugin.UnlockState.IsAchievementListLoaded) {
             var available = ImGui.GetContentRegionAvail();
             var textSize = ImGui.CalcTextSize(AchievementListNotLoadedWarning);
             var cursorPos = ImGui.GetCursorPos();
@@ -109,8 +100,7 @@ public class MainWindow : Window, IDisposable
             return true;
         }
 
-        if (state.SelectedCategoryId == MainWindowState.NoCategoryId)
-        {
+        if (state.SelectedCategoryId == MainWindowState.NoCategoryId) {
             var available = ImGui.GetContentRegionAvail();
             var textSize = ImGui.CalcTextSize(NoCategorySelectedWarning);
             var cursorPos = ImGui.GetCursorPos();
@@ -123,38 +113,29 @@ public class MainWindow : Window, IDisposable
         return false;
     }
 
-    private void DrawAchievementsMainContent()
-    {
-        foreach (var it in state.CategoryUnlockables)
-        {
-            if (it is UnlockableAchievement achievement)
-            {
-                if (achievement.Maximum() > 1)
-                {
+    private void DrawAchievementsMainContent() {
+        foreach (var it in state.CategoryUnlockables) {
+            if (it is UnlockableAchievement achievement) {
+                if (achievement.Maximum() > 1) {
                     UiComponents.ProgressBasedAchievement(achievement, state, plugin);
-                }
-                else
-                {
+                } else {
                     UiComponents.SimpleAchievement(achievement, state, plugin);
                 }
             }
 
-            if (it is UnlockableTieredAchievement tiered)
-            {
+            if (it is UnlockableTieredAchievement tiered) {
                 UiComponents.TieredAchievement(tiered, state, plugin);
             }
 
-            if (it != state.CategoryUnlockables.Last())
-            {
+            if (it != state.CategoryUnlockables.Last()) {
                 ImGui.Separator();
             }
         }
     }
 
-    private void DrawMainContent()
-    {
-        if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail(), true))
-        {
+    private void DrawMainContent() {
+        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+        if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }
 
@@ -169,45 +150,36 @@ public class MainWindow : Window, IDisposable
         ImGui.EndChild();
     }
 
-    private void DrawPinnedAchievementsSidebarItem()
-    {
+    private void DrawPinnedAchievementsSidebarItem() {
         if (ImGui.TreeNodeEx("Pinned", ImGuiTreeNodeFlags.Leaf |
                                        ImGuiTreeNodeFlags.NoTreePushOnOpen |
                                        ImGuiTreeNodeFlags.SpanFullWidth |
-                                       (state.SelectedCategoryId == MainWindowState.PinnedAchievementsCategoryId ? ImGuiTreeNodeFlags.Selected : 0)))
-        {
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-            {
+                                       (state.SelectedCategoryId == MainWindowState.PinnedAchievementsCategoryId ? ImGuiTreeNodeFlags.Selected : 0))) {
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left)) {
                 state.SetCategory(MainWindowState.PinnedAchievementsCategoryId);
             }
         }
     }
 
-    private void DrawSidebarItem(string name, int categoryId)
-    {
+    private void DrawSidebarItem(string name, int categoryId) {
         if (ImGui.TreeNodeEx(name, ImGuiTreeNodeFlags.Leaf |
                                    ImGuiTreeNodeFlags.NoTreePushOnOpen |
                                    ImGuiTreeNodeFlags.SpanFullWidth |
-                                   (state.SelectedCategoryId == categoryId ? ImGuiTreeNodeFlags.Selected : 0)))
-        {
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-            {
+                                   (state.SelectedCategoryId == categoryId ? ImGuiTreeNodeFlags.Selected : 0))) {
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Left)) {
                 state.SetCategory(categoryId);
             }
         }
     }
 
-    private void DrawSidebarAchievementLayout(AchievementLayout layout)
-    {
-        switch (layout)
-        {
+    private void DrawSidebarAchievementLayout(AchievementLayout layout) {
+        switch (layout) {
             case AchievementLayoutGroup group:
-                if (ImGui.TreeNodeEx(group.Name, ImGuiTreeNodeFlags.SpanFullWidth))
-                {
-                    foreach (var subLayout in group.Items)
-                    {
+                if (ImGui.TreeNodeEx(group.Name, ImGuiTreeNodeFlags.SpanFullWidth)) {
+                    foreach (var subLayout in group.Items) {
                         DrawSidebarAchievementLayout(subLayout);
                     }
+
                     ImGui.TreePop();
                 }
 
@@ -220,48 +192,42 @@ public class MainWindow : Window, IDisposable
         }
     }
 
-    private void DrawSidebar()
-    {
-        using var sidebar = ImRaii.Child("Sidebar", ImGui.GetContentRegionAvail() with { X = 350 }, true);
+    private void DrawSidebar() {
+        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+        using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = 350, Y = ySize }, true);
         if (!sidebar) return;
 
-        if (ImGui.CollapsingHeader("Achievements"))
-        {
+        if (ImGui.CollapsingHeader("Achievements")) {
             DrawPinnedAchievementsSidebarItem();
 
-            foreach (var layout in state.FilteredLayout.AchievementLayout)
-            {
+            foreach (var layout in state.FilteredLayout.AchievementLayout) {
                 DrawSidebarAchievementLayout(layout);
             }
         }
 
-        if (ImGui.CollapsingHeader("Fishing"))
-        {
+        if (ImGui.CollapsingHeader("Fishing")) {
             ImGui.TreeNodeEx("Fish Guide", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
             ImGui.TreeNodeEx("Spearfish Guide", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
             using var regions = ImRaii.TreeNode("Regions", ImGuiTreeNodeFlags.SpanFullWidth);
-            if (regions.Success)
-            {
+            if (regions.Success) {
                 using var region = ImRaii.TreeNode("La Noscea", ImGuiTreeNodeFlags.SpanFullWidth);
-                if (region.Success)
-                {
+                if (region.Success) {
                     using var area = ImRaii.TreeNode("Middle La Noscea", ImGuiTreeNodeFlags.SpanFullWidth);
-                    if (area.Success)
-                    {
+                    if (area.Success) {
                         ImGui.TreeNodeEx("Zephyr Drift", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
                         ImGui.TreeNodeEx("Summerfold", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
                         ImGui.TreeNodeEx("Rogue River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
-                        ImGui.TreeNodeEx("West Agelyss River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
+                        ImGui.TreeNodeEx("West Agelyss River",
+                                         ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
                         ImGui.TreeNodeEx("Nym River", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
-                        ImGui.TreeNodeEx("Woad Whisper Canyon", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
-
+                        ImGui.TreeNodeEx("Woad Whisper Canyon",
+                                         ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
                     }
                 }
             }
         }
 
-        if (ImGui.CollapsingHeader("Collectibles"))
-        {
+        if (ImGui.CollapsingHeader("Collectibles")) {
             ImGui.TreeNodeEx("Mounts", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
             ImGui.TreeNodeEx("Minions", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
             ImGui.TreeNodeEx("Titles", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.SpanFullWidth);
@@ -276,12 +242,23 @@ public class MainWindow : Window, IDisposable
         }
     }
 
-    public override void Draw()
-    {
+    private void DrawStatusBar() {
+        if (!state.Configuration.DebugMode) return;
+
+        using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = 32 }, true);
+        if (!statusBar) return;
+
+        ImGui.Text($"frame time {state.DebugStopwatch.Elapsed.Microseconds / 1000.0}ms/f");
+    }
+
+    public override void Draw() {
+        state.DebugStart();
         state.CheckForUiRefresh();
         DrawTopbarLayout();
         DrawSidebar();
         ImGui.SameLine();
         DrawMainContent();
+        DrawStatusBar();
+        state.DebugEnd();
     }
 }

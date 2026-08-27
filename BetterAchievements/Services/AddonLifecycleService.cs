@@ -42,6 +42,7 @@ public class AddonLifecycleService {
             Log.Warning("Fate {Name} could not be matched to an existing Fate line in the excel sheet", name);
             return;
         }
+
         Log.Debug("Fate {Name} completed with {Medal} medal, matched with #{Fate} in {Area}", name, medal, fate.Value.RowId, fate.Value.Location);
         OnFateCompleted?.Invoke(fate!.Value, medal);
     }
@@ -65,6 +66,8 @@ public static class AddonLifecycleExtensions {
 
     public static unsafe string GetStringAt(this IEnumerable<AtkValuePtr> enumerable, int index) {
         var atkValue = (AtkValue*)enumerable.Skip(index).First().Address;
-        return atkValue->Type != AtkValueType.String ? throw new ArgumentException("AtkValuePtr is of wrong type at index " + index) : atkValue->String.ToString();
+        return atkValue->Type != AtkValueType.String
+                   ? throw new ArgumentException("AtkValuePtr is of wrong type at index " + index)
+                   : atkValue->String.ToString();
     }
 }

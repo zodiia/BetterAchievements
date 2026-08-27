@@ -17,6 +17,7 @@ public class Configuration : IPluginConfiguration {
     public GroupBy GroupBy { get; set; } = GroupBy.Default;
     public bool DisplayIds { get; set; } = false;
     public bool NeverHideProgressBars { get; set; } = false;
+    public bool DebugMode { get; set; } = false;
 
     // Not shown in the config UI
     public List<uint> PinnedAchievements { get; set; } = new();
