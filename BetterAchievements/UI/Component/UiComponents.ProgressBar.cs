@@ -22,7 +22,7 @@ public static partial class UiComponents {
 
         // Background
         var barEnd = new Vector2(cursorPos.X + width, cursorPos.Y + height);
-        drawList.AddRectFilled(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), 4.0f);
+        drawList.AddRectFilled(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), ImGui.GetStyle().FrameRounding);
 
         // Tooltip & Click handling
         if (ImGui.IsMouseHoveringRect(cursorPos, barEnd)) {
@@ -52,7 +52,7 @@ public static partial class UiComponents {
 
         // Filled
         Vector2 fillEnd = new Vector2(cursorPos.X + (width * clampedProgress), cursorPos.Y + height);
-        drawList.AddRectFilled(cursorPos, fillEnd, ImGui.GetColorU32(color), 4.0f);
+        drawList.AddRectFilled(cursorPos, fillEnd, ImGui.GetColorU32(color), ImGui.GetStyle().FrameRounding);
 
         // Inside Text
         if (insideText != null) {

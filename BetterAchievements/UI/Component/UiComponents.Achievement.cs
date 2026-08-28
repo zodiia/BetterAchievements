@@ -76,7 +76,7 @@ public static partial class UiComponents {
     }
 
     private static void AchievementHeaderLine1(string name, uint? displayId, Action drawRightSide) {
-        ImGui.TextColored(UiColors.Orange(), name);
+        using (UiFonts.FontSize110().Push()) ImGui.TextColored(UiColors.Orange(), name);
         if (displayId.HasValue) {
             ImGui.SameLine();
             ImGui.TextDisabled(" #" + displayId.Value);
