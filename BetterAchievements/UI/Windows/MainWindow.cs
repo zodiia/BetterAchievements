@@ -16,8 +16,11 @@ public class MainWindow : Window, IDisposable {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
     private const string NoCategorySelectedWarning = "Please select a category.";
 
+    private const float MinSidebarWidth = 350;
+
     private readonly Plugin plugin;
     private readonly MainWindowState state;
+    private float sidebarWidth = MinSidebarWidth;
 
     public MainWindow(Plugin plugin)
         : base($"Better Achievements v{plugin.PluginManifest.AssemblyVersion}") {
@@ -191,7 +194,7 @@ public class MainWindow : Window, IDisposable {
 
     private void DrawSidebar() {
         var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
-        using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = 350, Y = ySize }, true);
+        using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = sidebarWidth, Y = ySize }, true);
         if (!sidebar) return;
 
         if (ImGui.CollapsingHeader("Achievements")) {
@@ -252,8 +255,13 @@ public class MainWindow : Window, IDisposable {
         state.DebugStart();
         state.CheckForUiRefresh();
         DrawTopbarLayout();
+
+        var maxSidebarWidth = MinSidebarWidth + Math.Max(0, ImGui.GetWindowWidth() - (SizeConstraints!.Value.MinimumSize.X * 1.5f)); // todo: find out where the scale is stored
+        sidebarWidth = Math.Clamp(sidebarWidth, MinSidebarWidth, maxSidebarWidth);
+        var sidebarHeight = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+
         DrawSidebar();
-        ImGui.SameLine();
+        UiComponents.VerticalSplitter("##SidebarSplitter", ref sidebarWidth, MinSidebarWidth, maxSidebarWidth, sidebarHeight, 16F);
         DrawMainContent();
         DrawStatusBar();
         state.DebugEnd();
