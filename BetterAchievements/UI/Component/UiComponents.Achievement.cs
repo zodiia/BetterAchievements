@@ -119,6 +119,40 @@ public static partial class UiComponents {
         unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
     }
 
+    private static void WrappedColoredText(params (string Text, Vector4? Color)[] segments) {
+        var wrapWidth = ImGui.GetContentRegionAvail().X;
+        var spaceWidth = ImGui.CalcTextSize(" ").X;
+        var lineWidth = 0f;
+        var first = true;
+
+        foreach (var (text, color) in segments) {
+            var lines = text.Replace("\r\n", "\n").Split('\n');
+            for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++) {
+                if (lineIndex > 0) {
+                    if (lines[lineIndex].Length == 0) ImGui.NewLine();
+                    lineWidth = 0f;
+                    first = true;
+                }
+
+                foreach (var word in lines[lineIndex].Split(' ', StringSplitOptions.RemoveEmptyEntries)) {
+                    var wordWidth = ImGui.CalcTextSize(word).X;
+
+                    if (!first && lineWidth + spaceWidth + wordWidth <= wrapWidth) {
+                        ImGui.SameLine(0, spaceWidth);
+                        lineWidth += spaceWidth + wordWidth;
+                    } else {
+                        lineWidth = wordWidth;
+                    }
+
+                    if (color.HasValue) ImGui.TextColored(color.Value, word);
+                    else ImGui.Text(word);
+
+                    first = false;
+                }
+            }
+        }
+    }
+
     private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, MainWindowState mainWindowState) {
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
         var maxLevel = achievements.ProvidesAchievements().Last();
@@ -126,9 +160,7 @@ public static partial class UiComponents {
 
         // Current level
         if (currentLevel != null && currentLevel != maxLevel) {
-            ImGui.Text(currentLevel.Description());
-            ImGui.SameLine();
-            ImGui.TextDisabled(" (current level)");
+            WrappedColoredText((currentLevel.Description(), null), ("(current level)", UiColors.Grey()));
             if (maxLevel.Maximum() > 1) {
                 ProgressBar(
                     (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
@@ -142,9 +174,7 @@ public static partial class UiComponents {
 
         // Max level
         if (!achievements.Spoilers() || currentLevel == null) {
-            ImGui.Text(maxLevel.Description());
-            ImGui.SameLine();
-            ImGui.TextDisabled(" (max level)");
+            WrappedColoredText((maxLevel.Description(), null), ("(max level)", UiColors.Grey()));
 
             if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (mainWindowState.Configuration.NeverHideProgressBars)) {
                 ProgressBar(
