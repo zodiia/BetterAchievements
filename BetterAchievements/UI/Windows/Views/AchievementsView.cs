@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
@@ -7,7 +6,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class AchievementsView(int categoryId, List<IUnlockable> unlockables, Configuration configuration) : IView {
+public class AchievementsView(int categoryId, List<IUnlockable> unlockables, Configuration configuration, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     public int CategoryId => categoryId;
@@ -27,8 +26,10 @@ public class AchievementsView(int categoryId, List<IUnlockable> unlockables, Con
     }
 
     private void DrawAchievementsMainContent() {
-        foreach (var it in unlockables) {
-            switch (it) {
+        // using (UiFonts.FontSize125().Push()) ImGui.TextColoredWrapped(UiColors.Purple(), "Battle / Field Operations");
+
+        clipper.Draw(unlockables.Count, i => {
+            switch (unlockables[i]) {
                 case UnlockableAchievement achievement:
                     UiComponents.Achievement(achievement, configuration);
                     break;
@@ -37,10 +38,10 @@ public class AchievementsView(int categoryId, List<IUnlockable> unlockables, Con
                     break;
             }
 
-            if (it != unlockables.Last()) {
+            if (i != unlockables.Count - 1) {
                 ImGui.Separator();
             }
-        }
+        });
     }
 
     public void Draw() {

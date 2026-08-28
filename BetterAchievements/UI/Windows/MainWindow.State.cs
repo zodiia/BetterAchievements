@@ -5,6 +5,7 @@ using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.Helpers;
+using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows.Views;
 using Lumina.Excel.Sheets;
 
@@ -21,6 +22,9 @@ public class MainWindowState(Plugin plugin) {
 
     private string currentSearch = "";
     private ulong achievementArrayHash = 0ul;
+
+    private readonly Dictionary<int, VariableHeightClipper> achievementClippers = new();
+
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public int SelectedCategoryId = NoCategoryId;
     public IView CurrentView { get; private set; } = new OverviewView(plugin.Configuration);
@@ -198,7 +202,7 @@ public class MainWindowState(Plugin plugin) {
             .Where(it => it != null)
             .Select(it => it!)
             .ToList();
-        CurrentView = new AchievementsView(PinnedAchievementsCategoryId, unlockables, Configuration);
+        CurrentView = new AchievementsView(PinnedAchievementsCategoryId, unlockables, Configuration, ClipperFor(PinnedAchievementsCategoryId));
     }
 
     public void Refresh() {
@@ -226,7 +230,7 @@ public class MainWindowState(Plugin plugin) {
         }
 
         SelectedCategoryId = categoryId;
-        CurrentView = new AchievementsView(categoryId, SortedUnlockables(category), Configuration);
+        CurrentView = new AchievementsView(categoryId, SortedUnlockables(category), Configuration, ClipperFor(categoryId));
     }
 
     public void SetSearch(string search) {
@@ -295,5 +299,14 @@ public class MainWindowState(Plugin plugin) {
 
         AverageFrameTimeMs = frameTimesMs.Average();
         WorstFrameTimeMs = frameTimesMs.Max();
+    }
+
+    private VariableHeightClipper ClipperFor(int categoryId) {
+        if (!achievementClippers.TryGetValue(categoryId, out var clipper)) {
+            clipper = new VariableHeightClipper();
+            achievementClippers[categoryId] = clipper;
+        }
+
+        return clipper;
     }
 }

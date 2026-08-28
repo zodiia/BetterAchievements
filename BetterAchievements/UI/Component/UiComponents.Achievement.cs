@@ -54,6 +54,7 @@ public static partial class UiComponents {
 
         if (ImGui.IsMouseHoveringRect(boxStart, boxEnd)) {
             ImGui.SetTooltip(hoverText);
+            ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
         }
 
         if (ImGui.IsItemClicked()) {

@@ -22,6 +22,7 @@ public static class UiColors {
     public static Vector4 Grey() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudGrey ?? DefaultGrey;
     public static Vector4 Black() => DefaultBlack; // dalamud doesn't have a black so i guess i'm making my own
     public static Vector4 Progress() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudOrange ?? DefaultProgress;
+    public static Vector4 Purple() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudViolet ?? DefaultGrey;
 
     public static Vector4 Brightness(this Vector4 v, float brightness) {
         brightness = Math.Clamp(brightness, -1.0f, 1.0f);

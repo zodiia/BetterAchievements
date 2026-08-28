@@ -9,6 +9,7 @@ using BetterAchievements.Data;
 using BetterAchievements.Hooks;
 using BetterAchievements.External.Lalachievements;
 using BetterAchievements.Services;
+using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Internal.Types.Manifest;
@@ -113,6 +114,8 @@ public sealed class Plugin : IDalamudPlugin {
 
         MainLayout = LoadMainWindowLayout();
 
+        UiFonts.Initialize();
+
         MainWindow = new MainWindow(this);
 
         WindowSystem.AddWindow(MainWindow);
@@ -139,6 +142,8 @@ public sealed class Plugin : IDalamudPlugin {
 
         ReceiveAchievementProgressHook.Dispose();
         SetModeHook.Dispose();
+
+        UiFonts.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
     }
