@@ -5,6 +5,7 @@ using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.Helpers;
+using BetterAchievements.UI.Windows.Views;
 using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.UI.Windows;
@@ -20,15 +21,18 @@ public class MainWindowState(Plugin plugin) {
 
     private string currentSearch = "";
     private ulong achievementArrayHash = 0ul;
-    private AchievementLayoutCategory pinnedAchievementsCategory = new() { Items = [], Id = PinnedAchievementsCategoryId, Name = "Pinned" };
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public int SelectedCategoryId = NoCategoryId;
-    public AchievementLayoutCategory? SelectedAchievementCategory { get; private set; }
-    public List<IUnlockable> CategoryUnlockables { get; private set; } = new();
+    public IView CurrentView { get; private set; } = new OverviewView(plugin.Configuration);
     public string SearchBuffer = "";
     public int AchievementPoints = 0;
 
     public Stopwatch DebugStopwatch = new();
+
+    private const int FrameTimeHistorySize = 100;
+    private readonly Queue<double> frameTimesMs = new(FrameTimeHistorySize);
+    public double AverageFrameTimeMs { get; private set; }
+    public double WorstFrameTimeMs { get; private set; }
 
     private bool MatchSearch(string name, string desc) {
         return name.Contains(currentSearch) || desc.Contains(currentSearch);
@@ -104,12 +108,11 @@ public class MainWindowState(Plugin plugin) {
         return null;
     }
 
-    private void SortCategory() {
-        if (SelectedAchievementCategory == null) return;
+    private List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
         List<AchievementLayoutItem> sortedItems;
 
         if (Configuration.SortBy is SortBy.MostCommon or SortBy.Rarest) {
-            sortedItems = SelectedAchievementCategory.Items.OrderBy(it => {
+            sortedItems = category.Items.OrderBy(it => {
                 if (it is AchievementLayoutItemSimple simple)
                     return plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue);
                 if (it is AchievementLayoutItemTiered tiered)
@@ -122,10 +125,10 @@ public class MainWindowState(Plugin plugin) {
                 sortedItems.Reverse();
             }
         } else {
-            sortedItems = SelectedAchievementCategory.Items;
+            sortedItems = category.Items;
         }
 
-        CategoryUnlockables = sortedItems.SelectMany<AchievementLayoutItem, IUnlockable>(it => {
+        var unlockables = sortedItems.SelectMany<AchievementLayoutItem, IUnlockable>(it => {
             if (it is AchievementLayoutItemSimple simple)
                 return [plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)];
             if (it is AchievementLayoutItemTiered tiered)
@@ -136,8 +139,10 @@ public class MainWindowState(Plugin plugin) {
         }).ToList();
 
         if (Configuration.SortBy == SortBy.Alphabetically) {
-            CategoryUnlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
+            unlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
         }
+
+        return unlockables;
     }
 
     private void CalculateAchievementPoints() {
@@ -158,12 +163,17 @@ public class MainWindowState(Plugin plugin) {
             return [res];
         }).ToList();
         FilteredLayout = new MainLayout { AchievementLayout = items };
-        SetCategory(SelectedCategoryId);
+
+        if (SelectedCategoryId == PinnedAchievementsCategoryId) {
+            OpenPinnedAchievements();
+        } else {
+            SetCategory(SelectedCategoryId);
+        }
+
         CalculateAchievementPoints();
     }
 
     private AchievementLayoutCategory? FindCategory(IEnumerable<AchievementLayout> group, int id) {
-        if (id == PinnedAchievementsCategoryId) return pinnedAchievementsCategory;
         foreach (var item in group) {
             switch (item) {
                 case AchievementLayoutGroup subgroup:
@@ -181,27 +191,20 @@ public class MainWindowState(Plugin plugin) {
         return null;
     }
 
-    public void RefreshPinnedAchievements() {
-        pinnedAchievementsCategory = new AchievementLayoutCategory {
-            Id = PinnedAchievementsCategoryId,
-            Name = "Pinned",
-            Items = plugin.Configuration.PinnedAchievements.Select(it => {
-                var unlockable = plugin.UnlockablesService.GetExistingAchievement(it);
-                AchievementLayoutItem? item = unlockable switch {
-                    UnlockableAchievement => new AchievementLayoutItemSimple { Id = it },
-                    UnlockableTieredAchievement tiered => new AchievementLayoutItemTiered { Ids = tiered.Ids(), Spoilers = tiered.Spoilers() },
-                    _ => null,
-                };
-                return item;
-            }).Where(it => it is not null).ToList()!,
-        };
+    public void OpenPinnedAchievements() {
+        SelectedCategoryId = PinnedAchievementsCategoryId;
+        var unlockables = plugin.Configuration.PinnedAchievements
+            .Select(id => plugin.UnlockablesService.GetExistingAchievement(id))
+            .Where(it => it != null)
+            .Select(it => it!)
+            .ToList();
+        CurrentView = new AchievementsView(PinnedAchievementsCategoryId, unlockables, Configuration);
     }
 
     public void Refresh() {
         plugin.UnlockablesService.Refresh();
         FilterAll();
         CalculateAchievementPoints();
-        RefreshPinnedAchievements();
     }
 
     public unsafe void CheckForUiRefresh() {
@@ -215,13 +218,15 @@ public class MainWindowState(Plugin plugin) {
     }
 
     public void SetCategory(int categoryId) {
-        SelectedCategoryId = categoryId;
-        SelectedAchievementCategory = FindCategory(FilteredLayout.AchievementLayout, categoryId);
-        if (SelectedAchievementCategory == null) {
+        var category = FindCategory(FilteredLayout.AchievementLayout, categoryId);
+        if (category == null) {
             SelectedCategoryId = NoCategoryId;
+            CurrentView = new OverviewView(Configuration);
+            return;
         }
 
-        SortCategory();
+        SelectedCategoryId = categoryId;
+        CurrentView = new AchievementsView(categoryId, SortedUnlockables(category), Configuration);
     }
 
     public void SetSearch(string search) {
@@ -256,7 +261,9 @@ public class MainWindowState(Plugin plugin) {
     public void SetSortBy(SortBy sortBy) {
         Configuration.SortBy = sortBy;
         Configuration.Save();
-        SortCategory();
+        if (SelectedCategoryId != NoCategoryId && SelectedCategoryId != PinnedAchievementsCategoryId) {
+            SetCategory(SelectedCategoryId);
+        }
     }
 
     public void SetGroupBy(GroupBy groupBy) {
@@ -276,10 +283,17 @@ public class MainWindowState(Plugin plugin) {
 
     public void DebugStart() {
         if (!Configuration.DebugMode) return;
-        DebugStopwatch.Start();
+        DebugStopwatch.Restart();
     }
 
     public void DebugEnd() {
         if (!Configuration.DebugMode) return;
+        DebugStopwatch.Stop();
+
+        if (frameTimesMs.Count == FrameTimeHistorySize) frameTimesMs.Dequeue();
+        frameTimesMs.Enqueue(DebugStopwatch.Elapsed.TotalMilliseconds);
+
+        AverageFrameTimeMs = frameTimesMs.Average();
+        WorstFrameTimeMs = frameTimesMs.Max();
     }
 }

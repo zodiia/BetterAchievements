@@ -13,7 +13,7 @@ public static partial class UiComponents {
                                        ImGuiTreeNodeFlags.SpanFullWidth |
                                        (state.SelectedCategoryId == MainWindowState.PinnedAchievementsCategoryId ? ImGuiTreeNodeFlags.Selected : 0))) {
             if (ImGui.IsItemClicked(ImGuiMouseButton.Left)) {
-                state.SetCategory(MainWindowState.PinnedAchievementsCategoryId);
+                state.OpenPinnedAchievements();
             }
         }
     }

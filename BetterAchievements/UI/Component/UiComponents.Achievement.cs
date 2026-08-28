@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data.Unlockable;
-using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures;
@@ -36,7 +35,7 @@ public static partial class UiComponents {
         ImGui.TextColored(color, text);
     }
 
-    private static void Pin(bool active, IEnumerable<uint> ids, MainWindowState mainWindowState, Plugin plugin) {
+    private static void Pin(bool active, IEnumerable<uint> ids, Configuration configuration) {
         var color = active ? UiColors.Orange() : UiColors.Grey();
         var hoverText = active ? "Unpin this achievement" : "Pin this achievement";
         var icon = active ? FontAwesomeIcon.Thumbtack : FontAwesomeIcon.ThumbtackSlash;
@@ -59,13 +58,12 @@ public static partial class UiComponents {
 
         if (ImGui.IsItemClicked()) {
             if (active) {
-                plugin.Configuration.PinnedAchievements.RemoveAll(ids.Contains);
+                configuration.PinnedAchievements.RemoveAll(ids.Contains);
             } else {
-                plugin.Configuration.PinnedAchievements.Add(ids.Last());
+                configuration.PinnedAchievements.Add(ids.Last());
             }
 
-            plugin.Configuration.Save();
-            mainWindowState.RefreshPinnedAchievements();
+            configuration.Save();
         }
     }
 
@@ -153,7 +151,7 @@ public static partial class UiComponents {
         }
     }
 
-    private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, MainWindowState mainWindowState) {
+    private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, Configuration configuration) {
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
         var maxLevel = achievements.ProvidesAchievements().Last();
         var progressLoaded = maxLevel.Current() != null;
@@ -176,7 +174,7 @@ public static partial class UiComponents {
         if (!achievements.Spoilers() || currentLevel == null) {
             WrappedColoredText((maxLevel.Description(), null), ("(max level)", UiColors.Grey()));
 
-            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (mainWindowState.Configuration.NeverHideProgressBars)) {
+            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (configuration.NeverHideProgressBars)) {
                 ProgressBar(
                     (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
                     progressLoaded ? UiColors.Progress() : UiColors.Red(),
@@ -225,7 +223,7 @@ public static partial class UiComponents {
         }
     }
 
-    public static void Achievement(UnlockableAchievement achievement, MainWindowState mainWindowState, Plugin plugin) {
+    public static void Achievement(UnlockableAchievement achievement, Configuration configuration) {
         ImGui.BeginGroup();
 
         AchievementIcon(achievement.Icon(), AchievementIconSize());
@@ -233,9 +231,9 @@ public static partial class UiComponents {
         ImGui.BeginGroup();
         AchievementHeaderLine1(
             achievement.Name(),
-            mainWindowState.Configuration.DisplayIds ? achievement.Id() : null,
+            configuration.DisplayIds ? achievement.Id() : null,
             () => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(), achievement.Unlocked() ? "Unlocked" : "Locked"));
-        Pin(plugin.Configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], mainWindowState, plugin);
+        Pin(configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], configuration);
         AchievementHeaderLine2($"{achievement.Points()} points");
         ImGui.EndGroup();
 
@@ -244,7 +242,7 @@ public static partial class UiComponents {
         ImGui.EndGroup();
     }
 
-    public static void Achievement(UnlockableTieredAchievement achievements, MainWindowState mainWindowState, Plugin plugin) {
+    public static void Achievement(UnlockableTieredAchievement achievements, Configuration configuration) {
         ImGui.BeginGroup();
 
         var maxLevel = achievements.ProvidesAchievements().Last();
@@ -253,13 +251,13 @@ public static partial class UiComponents {
         ImGui.BeginGroup();
         AchievementHeaderLine1(
             achievements.Name(),
-            mainWindowState.Configuration.DisplayIds ? maxLevel.Id() : null,
+            configuration.DisplayIds ? maxLevel.Id() : null,
             () => AchievementRightHeaderTiered(achievements));
-        Pin(plugin.Configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), mainWindowState, plugin);
+        Pin(configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), configuration);
         AchievementHeaderLine2($"{achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
         ImGui.EndGroup();
 
-        AchievementDescriptionTiered(achievements, mainWindowState);
+        AchievementDescriptionTiered(achievements, configuration);
 
         ImGui.EndGroup();
     }

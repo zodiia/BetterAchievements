@@ -70,6 +70,7 @@ public record AchievementLayoutGroup : AchievementLayout {
 public record AchievementLayoutCategory : AchievementLayout {
     public required List<AchievementLayoutItem> Items { get; init; }
     public required int Id { get; init; }
+    public List<string> AdditionalViews { get; init; } = new();
 
     public override List<uint> GetAllAchievementIds() {
         return Items.SelectMany(it => it switch {

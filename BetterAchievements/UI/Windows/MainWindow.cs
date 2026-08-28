@@ -4,7 +4,6 @@ using System.Numerics;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
-using BetterAchievements.UI.Windows.Views;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -20,8 +19,6 @@ public class MainWindow : Window, IDisposable {
     private readonly MainWindowState state;
     private float sidebarWidth = MinSidebarWidth;
 
-    private AchievementsView achievementsView;
-
     public MainWindow(Plugin plugin)
         : base($"Better Achievements v{plugin.PluginManifest.AssemblyVersion}") {
         this.plugin = plugin;
@@ -30,7 +27,6 @@ public class MainWindow : Window, IDisposable {
             MinimumSize = new Vector2(900, 450),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-        achievementsView = new AchievementsView(state, plugin);
     }
 
     public void Dispose() { }
@@ -41,7 +37,7 @@ public class MainWindow : Window, IDisposable {
         using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = 32 }, true);
         if (!statusBar) return;
 
-        ImGui.Text($"frame time {state.DebugStopwatch.Elapsed.Microseconds / 1000.0}ms/f");
+        ImGui.Text($"frame time {state.AverageFrameTimeMs:F3}ms/f (highest {state.WorstFrameTimeMs:F3}ms/f)");
     }
 
     public override void Draw() {
@@ -55,7 +51,7 @@ public class MainWindow : Window, IDisposable {
 
         UiComponents.Sidebar(state, sidebarWidth);
         UiComponents.VerticalSplitter("##SidebarSplitter", ref sidebarWidth, MinSidebarWidth, maxSidebarWidth, sidebarHeight, 16F);
-        achievementsView.Draw();
+        state.CurrentView.Draw();
         DrawStatusBar();
         state.DebugEnd();
     }
