@@ -59,12 +59,16 @@ public abstract record AchievementLayout {
     public required string Name { get; init; }
 
     public abstract List<uint> GetAllAchievementIds();
+    public abstract AchievementLayoutCategory? FindFirstCategory();
 }
 
 public record AchievementLayoutGroup : AchievementLayout {
     public required List<AchievementLayout> Items { get; init; }
+    public string? Color { get; init; }
+    public string? Icon { get; init; }
 
     public override List<uint> GetAllAchievementIds() => Items.SelectMany(it => it.GetAllAchievementIds()).ToList();
+    public override AchievementLayoutCategory? FindFirstCategory() => Items.Select(it => it.FindFirstCategory()).FirstOrDefault(it => it != null);
 }
 
 public record AchievementLayoutCategory : AchievementLayout {
@@ -80,6 +84,8 @@ public record AchievementLayoutCategory : AchievementLayout {
             _ => throw new ArgumentOutOfRangeException(nameof(it), it, null)
         }).ToList();
     }
+
+    public override AchievementLayoutCategory? FindFirstCategory() => this;
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]

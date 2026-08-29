@@ -1,12 +1,12 @@
+using System.Linq;
 using System.Numerics;
 using BetterAchievements.UI.Component;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class OverviewView(Configuration configuration) : IView {
+public class OverviewView(MainWindowState state) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
-    private const string NoCategorySelectedWarning = "Please select a category.";
 
     private static void DrawCenteredWarning(string text) {
         var available = ImGui.GetContentRegionAvail();
@@ -17,13 +17,29 @@ public class OverviewView(Configuration configuration) : IView {
         ImGui.TextColored(UiColors.Red(), text);
     }
 
+    private void DrawTestNavigationButton() {
+        var target = state.FilteredLayout.AchievementLayout.FirstOrDefault()?.FindFirstCategory();
+        if (target == null) return;
+
+        if (ImGui.Button($"Go to \"{target.Name}\" (test)")) {
+            state.SetCategory(target.Id);
+        }
+    }
+
     public void Draw() {
-        var ySize = ImGui.GetContentRegionAvail().Y - (configuration.DebugMode ? 32 : 0);
+        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }
 
-        DrawCenteredWarning(!Plugin.UnlockState.IsAchievementListLoaded ? AchievementListNotLoadedWarning : NoCategorySelectedWarning);
+        if (!Plugin.UnlockState.IsAchievementListLoaded) {
+            DrawCenteredWarning(AchievementListNotLoadedWarning);
+            ImGui.EndChild();
+            return;
+        }
+
+        UiComponents.SeparatorText("Overview");
+        DrawTestNavigationButton();
 
         ImGui.EndChild();
     }

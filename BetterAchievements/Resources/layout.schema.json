@@ -30,7 +30,13 @@
 					"items": {
 						"$ref": "#/$defs/AchievementLayout"
 					}
-				}
+				},
+                "color": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                }
 			}
 		},
 		"AchievementLayoutCategory": {
@@ -51,7 +57,13 @@
 					"items": {
 						"$ref": "#/$defs/AchievementLayoutItem"
 					}
-				}
+				},
+                "additionalViews": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
 			}
 		},
 		"AchievementLayoutItem": {

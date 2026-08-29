@@ -25,9 +25,17 @@ public class MainWindowState(Plugin plugin) {
 
     private readonly Dictionary<int, VariableHeightClipper> achievementClippers = new();
 
+    private readonly Dictionary<AchievementLayout, (uint Obtained, uint Total)> progressCache = new(ReferenceEqualityComparer.Instance);
+
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public int SelectedCategoryId = NoCategoryId;
-    public IView CurrentView { get; private set; } = new OverviewView(plugin.Configuration);
+    public string? OpenTopLevelGroupName { get; private set; }
+
+    public IView CurrentView {
+        get => field ??= new OverviewView(this);
+        private set;
+    }
+
     public string SearchBuffer = "";
     public int AchievementPoints = 0;
 
@@ -167,6 +175,7 @@ public class MainWindowState(Plugin plugin) {
             return [res];
         }).ToList();
         FilteredLayout = new MainLayout { AchievementLayout = items };
+        progressCache.Clear();
 
         if (SelectedCategoryId == PinnedAchievementsCategoryId) {
             OpenPinnedAchievements();
@@ -197,12 +206,59 @@ public class MainWindowState(Plugin plugin) {
 
     public void OpenPinnedAchievements() {
         SelectedCategoryId = PinnedAchievementsCategoryId;
+        OpenTopLevelGroupName = null;
         var unlockables = plugin.Configuration.PinnedAchievements
             .Select(id => plugin.UnlockablesService.GetExistingAchievement(id))
             .Where(it => it != null)
             .Select(it => it!)
             .ToList();
         CurrentView = new AchievementsView(PinnedAchievementsCategoryId, "Pinned", unlockables, Configuration, ClipperFor(PinnedAchievementsCategoryId));
+    }
+
+    public void OpenOverview() {
+        SelectedCategoryId = NoCategoryId;
+        OpenTopLevelGroupName = null;
+        CurrentView = new OverviewView(this);
+    }
+
+    public void OpenAchievementCategoryGroup(AchievementLayoutGroup group) {
+        SelectedCategoryId = NoCategoryId;
+        OpenTopLevelGroupName = group.Name;
+        CurrentView = new AchievementCategoryView(group, this);
+    }
+
+    public (uint Obtained, uint Total) ComputeProgress(AchievementLayout layout) {
+        if (progressCache.TryGetValue(layout, out var cached)) return cached;
+
+        var result = ComputeProgress(layout.GetAllAchievementIds());
+        progressCache[layout] = result;
+        return result;
+    }
+
+    public (uint Obtained, uint Total) ComputeProgress(IEnumerable<uint> ids) {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var id in ids) {
+            var achievement = plugin.UnlockablesService.GetUnlockableAchievement(id);
+            total += achievement.Points();
+            if (achievement.Unlocked()) obtained += achievement.Points();
+        }
+
+        return (obtained, total);
+    }
+
+    public (uint Obtained, uint Total) ComputeOverallProgress() {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var layout in FilteredLayout.AchievementLayout) {
+            var (layoutObtained, layoutTotal) = ComputeProgress(layout);
+            obtained += layoutObtained;
+            total += layoutTotal;
+        }
+
+        return (obtained, total);
     }
 
     public void Refresh() {
@@ -224,13 +280,13 @@ public class MainWindowState(Plugin plugin) {
     public void SetCategory(int categoryId) {
         var result = FindCategory(FilteredLayout.AchievementLayout, categoryId);
         if (result == null) {
-            SelectedCategoryId = NoCategoryId;
-            CurrentView = new OverviewView(Configuration);
+            OpenOverview();
             return;
         }
 
         var (category, breadcrumb) = result.Value;
         SelectedCategoryId = categoryId;
+        OpenTopLevelGroupName = breadcrumb.Split(" / ")[0];
         CurrentView = new AchievementsView(categoryId, breadcrumb, SortedUnlockables(category), Configuration, ClipperFor(categoryId));
     }
 

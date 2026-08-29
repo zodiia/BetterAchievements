@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
-using BetterAchievements.Data;
-using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
+using BetterAchievements.UI.Component.Sidebar;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 
@@ -49,7 +45,7 @@ public class MainWindow : Window, IDisposable {
         sidebarWidth = Math.Clamp(sidebarWidth, MinSidebarWidth, maxSidebarWidth);
         var sidebarHeight = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
 
-        UiComponents.Sidebar(state, sidebarWidth);
+        SidebarComponents.Sidebar(state, sidebarWidth);
         UiComponents.VerticalSplitter("##SidebarSplitter", ref sidebarWidth, MinSidebarWidth, maxSidebarWidth, sidebarHeight, 16F);
         state.CurrentView.Draw();
         DrawStatusBar();
