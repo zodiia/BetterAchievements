@@ -177,18 +177,18 @@ public class MainWindowState(Plugin plugin) {
         CalculateAchievementPoints();
     }
 
-    private AchievementLayoutCategory? FindCategory(IEnumerable<AchievementLayout> group, int id) {
+    private (AchievementLayoutCategory Category, string Breadcrumb)? FindCategory(IEnumerable<AchievementLayout> group, int id, string prefix = "") {
         foreach (var item in group) {
             switch (item) {
                 case AchievementLayoutGroup subgroup:
-                    var res = FindCategory(subgroup.Items, id);
+                    var res = FindCategory(subgroup.Items, id, prefix.Length == 0 ? subgroup.Name : $"{prefix} / {subgroup.Name}");
                     if (res != null) {
                         return res;
                     }
 
                     break;
                 case AchievementLayoutCategory category when category.Id == id:
-                    return category;
+                    return (category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
             }
         }
 
@@ -202,7 +202,7 @@ public class MainWindowState(Plugin plugin) {
             .Where(it => it != null)
             .Select(it => it!)
             .ToList();
-        CurrentView = new AchievementsView(PinnedAchievementsCategoryId, unlockables, Configuration, ClipperFor(PinnedAchievementsCategoryId));
+        CurrentView = new AchievementsView(PinnedAchievementsCategoryId, "Pinned", unlockables, Configuration, ClipperFor(PinnedAchievementsCategoryId));
     }
 
     public void Refresh() {
@@ -222,15 +222,16 @@ public class MainWindowState(Plugin plugin) {
     }
 
     public void SetCategory(int categoryId) {
-        var category = FindCategory(FilteredLayout.AchievementLayout, categoryId);
-        if (category == null) {
+        var result = FindCategory(FilteredLayout.AchievementLayout, categoryId);
+        if (result == null) {
             SelectedCategoryId = NoCategoryId;
             CurrentView = new OverviewView(Configuration);
             return;
         }
 
+        var (category, breadcrumb) = result.Value;
         SelectedCategoryId = categoryId;
-        CurrentView = new AchievementsView(categoryId, SortedUnlockables(category), Configuration, ClipperFor(categoryId));
+        CurrentView = new AchievementsView(categoryId, breadcrumb, SortedUnlockables(category), Configuration, ClipperFor(categoryId));
     }
 
     public void SetSearch(string search) {
