@@ -75,14 +75,37 @@ public static partial class UiComponents {
         ImGui.Image(wrap.Handle, new Vector2(size, size));
     }
 
-    private static void AchievementHeaderLine1(string name, uint? displayId, Action drawRightSide) {
+    private static void AchievementHeaderLine1(Action drawRightSide) {
+        ImGui.Dummy(Vector2.Zero);
+        drawRightSide();
+    }
+
+    private static void AchievementHeaderTitle(string name, uint? displayId, bool pinned, IEnumerable<uint> ids, Configuration configuration) {
+        var restore = ImGui.GetCursorPos();
+        var middle = restore.Y + (ImGui.GetTextLineHeight() * 2 + ImGui.GetStyle().ItemSpacing.Y * 2) / 2f;
+
+        float pinHeight;
+        using (ImRaii.PushFont(UiBuilder.IconFont)) pinHeight = ImGui.GetTextLineHeight();
+        float titleHeight;
+        using (UiFonts.FontSize110().Push()) {
+            var font = ImGui.GetFont();
+            // the icon glyph fills its line box, but text leaves descender space under the baseline,
+            // so the title is centered on its ascent instead of on its full line height
+            titleHeight = ImGui.GetTextLineHeight() * font.Ascent / font.FontSize;
+        }
+
+        // drawn floating over the gap between the two header lines, so it must not advance the layout cursor
+        ImGui.SetCursorPosY(middle - pinHeight / 2f);
+        Pin(pinned, ids, configuration);
+
+        ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX(), middle - titleHeight / 2f - 2f));
         using (UiFonts.FontSize110().Push()) ImGui.TextColored(UiColors.Progress(), name);
         if (displayId.HasValue) {
             ImGui.SameLine();
             ImGui.TextDisabled(" #" + displayId.Value);
         }
 
-        drawRightSide();
+        ImGui.SetCursorPos(restore);
     }
 
     private static void AchievementRightHeaderTiered(UnlockableTieredAchievement achievements) {
@@ -230,11 +253,14 @@ public static partial class UiComponents {
         AchievementIcon(achievement.Icon(), AchievementIconSize());
         ImGui.SameLine();
         ImGui.BeginGroup();
-        AchievementHeaderLine1(
+        AchievementHeaderTitle(
             achievement.Name(),
             configuration.DisplayIds ? achievement.Id() : null,
+            configuration.PinnedAchievements.Contains(achievement.Id()),
+            [achievement.Id()],
+            configuration);
+        AchievementHeaderLine1(
             () => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(), achievement.Unlocked() ? "Unlocked" : "Locked"));
-        Pin(configuration.PinnedAchievements.Contains(achievement.Id()), [achievement.Id()], configuration);
         AchievementHeaderLine2($"{achievement.Points()} points");
         ImGui.EndGroup();
 
@@ -250,11 +276,13 @@ public static partial class UiComponents {
         AchievementIcon(maxLevel.Icon(), AchievementIconSize());
         ImGui.SameLine();
         ImGui.BeginGroup();
-        AchievementHeaderLine1(
+        AchievementHeaderTitle(
             achievements.Name(),
             configuration.DisplayIds ? maxLevel.Id() : null,
-            () => AchievementRightHeaderTiered(achievements));
-        Pin(configuration.PinnedAchievements.Contains(achievements.Id()), achievements.Ids(), configuration);
+            configuration.PinnedAchievements.Contains(achievements.Id()),
+            achievements.Ids(),
+            configuration);
+        AchievementHeaderLine1(() => AchievementRightHeaderTiered(achievements));
         AchievementHeaderLine2($"{achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
         ImGui.EndGroup();
 
