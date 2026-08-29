@@ -39,6 +39,7 @@ public static class UiColors {
     public static Vector4 Progress() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudOrange ?? DefaultProgress;
     public static Vector4 Violet() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudViolet ?? DefaultViolet;
     public static Vector4 Text() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.Text));
+    public static Vector4 WindowBackground() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.WindowBg));
 
     public static Vector4? Parse(string? value) {
         if (value == null) return null;

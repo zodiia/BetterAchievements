@@ -6,6 +6,7 @@
 		{
 			"type": "group",
 			"name": "Battle",
+            "icon": "Shield",
 			"items": [
 				{
 					"type": "category",
@@ -466,6 +467,7 @@
 		{
 			"type": "group",
 			"name": "PvP",
+            "icon": "Users",
 			"items": [
 				{
 					"type": "category",
@@ -584,6 +586,7 @@
 		{
 			"type": "group",
 			"name": "Character",
+            "icon": "User",
 			"items": [
 				{
 					"type": "category",
@@ -773,6 +776,7 @@
 		{
 			"type": "group",
 			"name": "Items",
+            "icon": "BoxOpen",
 			"items": [
 				{
 					"type": "category",
@@ -1451,6 +1455,7 @@
 		{
 			"type": "group",
 			"name": "Crafting & Gathering",
+            "icon": "Hammer",
 			"items": [
 				{
 					"type": "category",
@@ -1871,6 +1876,7 @@
 		{
 			"type": "group",
 			"name": "Quests",
+            "icon": "Scroll",
 			"items": [
 				{
 					"type": "category",
@@ -2272,6 +2278,7 @@
 		{
 			"type": "group",
 			"name": "Exploration",
+            "icon": "MapMarkedAlt",
 			"items": [
 				{
 					"type": "category",
@@ -2611,6 +2618,7 @@
 		{
 			"type": "group",
 			"name": "Grand Company",
+            "icon": "Building",
 			"items": [
 				{
 					"type": "category",

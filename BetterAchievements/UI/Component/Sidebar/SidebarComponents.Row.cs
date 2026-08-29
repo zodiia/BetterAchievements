@@ -11,7 +11,7 @@ public static partial class SidebarComponents {
     private const float RowHoverAlpha = 0.08f;
     private const float RowActiveAlpha = 0.16f;
     private const float CategoryIconScale = 0.8f;
-    private const float CategoryIconVerticalOffsetEm = 0.2f;
+    private const float CategoryIconVerticalOffsetEm = 0.15f;
     private const float CategoryRowPaddingEm = 0.25f;
 
     private static (bool Clicked, Vector2 ContentStart, float ContentWidth) BeginRow(string id, float contentHeight, Vector2 padding, bool selected) {
@@ -49,7 +49,7 @@ public static partial class SidebarComponents {
     }
 
     private static void PaddedProgressBar(string id, float width, float height, float progress, Vector4 color) {
-        using var child = ImRaii.Child(id, new Vector2(width, height), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+        using var child = ImRaii.Child(id, new Vector2(width, height), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoInputs);
         if (!child) return;
 
         UiComponents.ProgressBar(progress, color, height: height);
@@ -57,7 +57,7 @@ public static partial class SidebarComponents {
 
     private static bool CategoryRow(string id, FontAwesomeIcon icon, string name, float progress, Vector4? color, bool active, bool selected) {
         var style = ImGui.GetStyle();
-        var barHeight = UiSize.Em(0.25f);
+        var barHeight = UiSize.Em(0.2f);
         var lineHeight = ImGui.GetTextLineHeight();
         var contentHeight = lineHeight + style.ItemSpacing.Y + barHeight;
         var padding = new Vector2(UiSize.Em(CategoryRowPaddingEm), UiSize.Em(CategoryRowPaddingEm));

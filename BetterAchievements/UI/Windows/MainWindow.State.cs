@@ -227,6 +227,12 @@ public class MainWindowState(Plugin plugin) {
         CurrentView = new AchievementCategoryView(group, this);
     }
 
+    public void OpenTodo(string name) {
+        SelectedCategoryId = NoCategoryId;
+        OpenTopLevelGroupName = null;
+        CurrentView = new TodoView(name, this);
+    }
+
     public (uint Obtained, uint Total) ComputeProgress(AchievementLayout layout) {
         if (progressCache.TryGetValue(layout, out var cached)) return cached;
 

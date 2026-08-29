@@ -12,17 +12,21 @@ public static partial class UiComponents {
         string? insideText = null,
         float height = 25f,
         bool enabled = true,
-        Action? onClick = null
+        Action? onClick = null,
+        bool? border = null
     ) {
+        var style = ImGui.GetStyle();
         var drawList = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorScreenPos();
         var width = ImGui.GetContentRegionAvail().X;
         var clampedProgress = Math.Clamp(progress, 0f, 1f);
         var insideTextSize = insideText != null ? ImGui.CalcTextSize(insideText) : Vector2.Zero;
+        var drawBorder = border ?? style.FrameBorderSize > 0f;
+        var borderThickness = style.FrameBorderSize > 0f ? style.FrameBorderSize : 1f;
 
         // Background
         var barEnd = new Vector2(cursorPos.X + width, cursorPos.Y + height);
-        drawList.AddRectFilled(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), ImGui.GetStyle().FrameRounding);
+        drawList.AddRectFilled(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.FrameBg), style.FrameRounding);
 
         // Tooltip & Click handling
         if (ImGui.IsMouseHoveringRect(cursorPos, barEnd)) {
@@ -45,14 +49,19 @@ public static partial class UiComponents {
             ImGui.SetCursorScreenPos(textPosition);
             ImGui.TextColored(color, insideText ?? "Disabled");
 
+            if (drawBorder) {
+                drawList.AddRect(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.Border), style.FrameRounding, borderThickness);
+            }
+
             ImGui.SetCursorScreenPos(cursorPos);
             ImGui.Dummy(new Vector2(width, height));
+            if (onClick == null) ImGui.SetItemAllowOverlap();
             return;
         }
 
         // Filled
         Vector2 fillEnd = new Vector2(cursorPos.X + (width * clampedProgress), cursorPos.Y + height);
-        drawList.AddRectFilled(cursorPos, fillEnd, ImGui.GetColorU32(color), ImGui.GetStyle().FrameRounding);
+        drawList.AddRectFilled(cursorPos, fillEnd, ImGui.GetColorU32(color), style.FrameRounding);
 
         // Inside Text
         if (insideText != null) {
@@ -65,7 +74,13 @@ public static partial class UiComponents {
             }
         }
 
+        // Border
+        if (drawBorder) {
+            drawList.AddRect(cursorPos, barEnd, ImGui.GetColorU32(ImGuiCol.Border), style.FrameRounding, borderThickness);
+        }
+
         ImGui.SetCursorScreenPos(cursorPos);
         ImGui.Dummy(new Vector2(width, height));
+        if (onClick == null) ImGui.SetItemAllowOverlap();
     }
 }
