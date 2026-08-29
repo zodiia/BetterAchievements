@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using BetterAchievements.Data;
 using BetterAchievements.UI.Windows;
 using BetterAchievements.UI.Windows.Views;
@@ -10,6 +11,7 @@ namespace BetterAchievements.UI.Component.Sidebar;
 
 public static partial class SidebarComponents {
     private const float FirstLevelIndentEm = 1.8f;
+    private const float SubTreeBottomPaddingEm = 1f;
 
     private static readonly Dictionary<string, FontAwesomeIcon> IconCache = new();
 
@@ -66,6 +68,7 @@ public static partial class SidebarComponents {
                     }
 
                     ImGui.Unindent(UiSize.Em(FirstLevelIndentEm));
+                    ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm)));
                 }
 
                 break;

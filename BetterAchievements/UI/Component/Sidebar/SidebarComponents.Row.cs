@@ -14,7 +14,7 @@ public static partial class SidebarComponents {
     private const float CategoryIconVerticalOffsetEm = 0.15f;
     private const float CategoryRowPaddingEm = 0.25f;
 
-    private static (bool Clicked, Vector2 ContentStart, float ContentWidth) BeginRow(string id, float contentHeight, Vector2 padding, bool selected) {
+    private static (bool Clicked, Vector2 ContentStart, float ContentWidth) BeginRow(string id, float contentHeight, Vector2 padding, bool selected, float? rightPadding = null) {
         var width = ImGui.GetContentRegionAvail().X;
         var rowHeight = contentHeight + (padding.Y * 2);
         var windowPos = ImGui.GetWindowPos();
@@ -36,7 +36,7 @@ public static partial class SidebarComponents {
         }
 
         var contentStart = new Vector2(rowStart.X + padding.X, rowStart.Y + padding.Y);
-        var contentWidth = width - (padding.X * 2);
+        var contentWidth = width - padding.X - (rightPadding ?? padding.X);
         ImGui.SetCursorScreenPos(new Vector2(rowStart.X, rowStart.Y + rowHeight));
 
         return (clicked, contentStart, contentWidth);
@@ -61,21 +61,22 @@ public static partial class SidebarComponents {
         var lineHeight = ImGui.GetTextLineHeight();
         var contentHeight = lineHeight + style.ItemSpacing.Y + barHeight;
         var padding = new Vector2(UiSize.Em(CategoryRowPaddingEm), UiSize.Em(CategoryRowPaddingEm));
+        var iconColumnWidth = lineHeight;
 
         var (clicked, contentStart, contentWidth) = BeginRow(id, contentHeight, padding, selected);
 
-        Vector2 iconSize;
         using (ImRaii.PushFont(UiBuilder.IconFont)) {
             ImGui.SetWindowFontScale(CategoryIconScale);
             var iconText = icon.ToIconString();
-            iconSize = ImGui.CalcTextSize(iconText);
-            ImGui.SetCursorScreenPos(contentStart with { Y = contentStart.Y + UiSize.Em(CategoryIconVerticalOffsetEm) });
+            var iconSize = ImGui.CalcTextSize(iconText);
+            var iconX = contentStart.X + ((iconColumnWidth - iconSize.X) / 2f);
+            ImGui.SetCursorScreenPos(new Vector2(iconX, contentStart.Y + UiSize.Em(CategoryIconVerticalOffsetEm)));
             if (active) ImGui.TextColored(color ?? UiColors.Orange(), iconText);
             else ImGui.TextUnformatted(iconText);
             ImGui.SetWindowFontScale(1f);
         }
 
-        ImGui.SetCursorScreenPos(contentStart with { X = contentStart.X + iconSize.X + style.ItemSpacing.X });
+        ImGui.SetCursorScreenPos(contentStart with { X = contentStart.X + iconColumnWidth + style.ItemSpacing.X });
         ImGui.TextColored(RowTextColor, name);
 
         RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress, 0f, 1f) * 100)}%");
@@ -88,7 +89,8 @@ public static partial class SidebarComponents {
 
     private static bool SubCategoryRow(string id, string name, float progress, bool selected) {
         var style = ImGui.GetStyle();
-        var (clicked, contentStart, contentWidth) = BeginRow(id, ImGui.GetTextLineHeight(), new Vector2(0, style.FramePadding.Y), selected);
+        var rightPadding = UiSize.Em(CategoryRowPaddingEm);
+        var (clicked, contentStart, contentWidth) = BeginRow(id, ImGui.GetTextLineHeight(), new Vector2(0, style.FramePadding.Y), selected, rightPadding);
 
         ImGui.SetCursorScreenPos(contentStart);
         ImGui.TextColored(RowTextColor, name);
@@ -99,7 +101,7 @@ public static partial class SidebarComponents {
 
     private static void StaticSubCategoryLabel(string name, float progress) {
         var style = ImGui.GetStyle();
-        var width = ImGui.GetContentRegionAvail().X;
+        var width = ImGui.GetContentRegionAvail().X - UiSize.Em(CategoryRowPaddingEm);
         var lineStart = ImGui.GetCursorScreenPos();
 
         ImGui.SetCursorScreenPos(lineStart with { Y = lineStart.Y + style.FramePadding.Y });
