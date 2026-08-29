@@ -27,10 +27,10 @@ public static partial class SidebarComponents {
         return (float)new Random(hash).NextDouble();
     }
 
-    private static void FillerItems(MainWindowState state, params string[] names) {
+    private static void FillerItems(MainWindowState state, Vector4 defaultColor, params string[] names) {
         foreach (var name in names) {
             var selected = state.CurrentView is TodoView todo && todo.Name == name;
-            if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, FillerProgressFor(name), null, selected, selected)) {
+            if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, FillerProgressFor(name), null, defaultColor, selected, selected)) {
                 state.OpenTodo(name);
             }
         }
@@ -54,12 +54,12 @@ public static partial class SidebarComponents {
         }
 
         SectionHeader("Collections");
-        FillerItems(state, "Mounts", "Minions", "Titles", "Fishing", "Triple Triad Cards", "Triple Triad NPCs", "Orchestrion Rolls", "Bardings", "Fashion Accessories", "Hairstyles", "Emotes", "Framer's Kits");
+        FillerItems(state, UiColors.Blue(), "Mounts", "Minions", "Titles", "Fishing", "Triple Triad Cards", "Triple Triad NPCs", "Orchestrion Rolls", "Bardings", "Fashion Accessories", "Hairstyles", "Emotes", "Framer's Kits");
 
         SectionHeader("Records");
-        FillerItems(state, "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
-        FillerItems(state, "Yo-kai Watch", "The Rising");
+        FillerItems(state, UiColors.Red(), "Yo-kai Watch", "The Rising");
     }
 }

@@ -31,7 +31,7 @@ public static partial class SidebarComponents {
         var (obtained, total) = state.ComputeProgress(state.Configuration.PinnedAchievements);
         var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow("##Pinned", FontAwesomeIcon.Thumbtack, "Pinned", progress, null, isPinned, isPinned)) {
+        if (CategoryRow("##Pinned", FontAwesomeIcon.Thumbtack, "Pinned", progress, null, UiColors.Progress(), isPinned, isPinned)) {
             state.OpenPinnedAchievements();
         }
     }
@@ -41,7 +41,7 @@ public static partial class SidebarComponents {
         var (obtained, total) = state.ComputeOverallProgress();
         var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow("##Overview", FontAwesomeIcon.Home, "Overview", progress, null, isOverview, isOverview)) {
+        if (CategoryRow("##Overview", FontAwesomeIcon.Home, "Overview", progress, null, UiColors.Progress(), isOverview, isOverview)) {
             state.OpenOverview();
         }
     }
@@ -57,7 +57,7 @@ public static partial class SidebarComponents {
                 var icon = ParseIcon(group.Icon);
                 var color = UiColors.Parse(group.Color);
 
-                if (CategoryRow($"##MainCategory-{group.Name}", icon, group.Name, progress, color, isOpen, selected)) {
+                if (CategoryRow($"##MainCategory-{group.Name}", icon, group.Name, progress, color, UiColors.Progress(), isOpen, selected)) {
                     state.OpenAchievementCategoryGroup(group);
                 }
 
@@ -77,7 +77,7 @@ public static partial class SidebarComponents {
             case AchievementLayoutCategory category: {
                 var selected = state.SelectedCategoryId == category.Id;
 
-                if (CategoryRow($"##MainCategory-{category.Id}", FontAwesomeIcon.Star, category.Name, progress, null, selected, selected)) {
+                if (CategoryRow($"##MainCategory-{category.Id}", FontAwesomeIcon.Star, category.Name, progress, null, UiColors.Progress(), selected, selected)) {
                     state.SetCategory(category.Id);
                 }
 

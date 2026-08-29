@@ -36,7 +36,7 @@ public static partial class UiComponents {
     }
 
     private static void Pin(bool active, IEnumerable<uint> ids, Configuration configuration) {
-        var color = active ? UiColors.Orange() : UiColors.Grey();
+        var color = active ? UiColors.Progress() : UiColors.Grey();
         var hoverText = active ? "Unpin this achievement" : "Pin this achievement";
         var icon = active ? FontAwesomeIcon.Thumbtack : FontAwesomeIcon.ThumbtackSlash;
         var boxStart = ImGui.GetCursorScreenPos();
@@ -76,7 +76,7 @@ public static partial class UiComponents {
     }
 
     private static void AchievementHeaderLine1(string name, uint? displayId, Action drawRightSide) {
-        using (UiFonts.FontSize110().Push()) ImGui.TextColored(UiColors.Orange(), name);
+        using (UiFonts.FontSize110().Push()) ImGui.TextColored(UiColors.Progress(), name);
         if (displayId.HasValue) {
             ImGui.SameLine();
             ImGui.TextDisabled(" #" + displayId.Value);
@@ -96,7 +96,7 @@ public static partial class UiComponents {
     private static void AchievementHeaderLine2(string pointsText) {
         // placeholder for later features?
         ImGui.Dummy(Vector2.Zero);
-        SameLineRightTextColored(UiColors.Orange(), pointsText);
+        SameLineRightTextColored(UiColors.Progress(), pointsText);
     }
 
     private static void AchievementDescriptionSimple(UnlockableAchievement achievement) {

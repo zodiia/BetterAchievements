@@ -31,33 +31,48 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
         return (obtained, total);
     }
 
-    private void DrawHeaderTitleLine(uint obtained, uint total) {
-        using var font = UiFonts.FontSize125().Push();
+    private (uint Obtained, uint Total) ComputeAchievementCounts() {
+        uint obtained = 0;
 
-        ImGui.TextUnformatted(breadcrumb);
+        foreach (var unlockable in unlockables) {
+            if (unlockable.Unlocked()) obtained++;
+        }
 
-        var obtainedText = obtained.ToString();
-        var totalText = $" / {total} pts";
+        return (obtained, (uint)unlockables.Count);
+    }
+
+    private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
+        var lineStartX = ImGui.GetCursorPosX();
+        var lineStartY = ImGui.GetCursorPosY();
+        var avail = ImGui.GetContentRegionAvail().X;
+
+        ImGui.TextColored(UiColors.Blue(), obtainedCount.ToString()); // #fadf5a
+        ImGui.SameLine(0, 0);
+        ImGui.TextUnformatted($" / {totalCount} achievements");
+
+        var obtainedText = obtainedPoints.ToString();
+        var totalText = $" / {totalPoints} pts";
         var rightWidth = ImGui.CalcTextSize(obtainedText).X + ImGui.CalcTextSize(totalText).X;
-        var targetX = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - rightWidth;
+        var targetX = lineStartX + avail - rightWidth;
 
         ImGui.SameLine();
-        ImGui.SetCursorPosX(targetX);
-        ImGui.TextColored(UiColors.Orange(), obtainedText);
+        ImGui.SetCursorPos(new Vector2 { X = targetX, Y = lineStartY });
+        ImGui.TextColored(UiColors.Progress(), obtainedText);
         ImGui.SameLine(0, 0);
         ImGui.TextUnformatted(totalText);
     }
 
     private void DrawHeader() {
-        var (obtained, total) = ComputePoints();
-        var progress = total == 0 ? 0f : (float)obtained / total;
+        var (obtainedPoints, totalPoints) = ComputePoints();
+        var (obtainedCount, totalCount) = ComputeAchievementCounts();
+        var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
-        UiComponents.Callout(UiColors.Orange(), () => {
-            DrawHeaderTitleLine(obtained, total);
+        UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);
 
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
-            UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{(progress * 100).ToString("0.#")}%");
-        });
+        DrawHeaderStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
+
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
+        UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{(progress * 100).ToString("0.#")}%");
 
         UiComponents.SeparatorText("Achievements");
     }
