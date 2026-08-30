@@ -1,12 +1,10 @@
 using System;
 using System.Numerics;
-using BetterAchievements.UI.Windows;
-using BetterAchievements.UI.Windows.Views;
+using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility.Numerics;
-using Serilog;
 
 namespace BetterAchievements.UI.Component.Sidebar;
 
@@ -29,9 +27,10 @@ public static partial class SidebarComponents {
 
     private static void FillerItems(MainWindowState state, Vector4 defaultColor, params string[] names) {
         foreach (var name in names) {
-            var selected = state.CurrentView is TodoView todo && todo.Name == name;
+            var target = new NavigationTarget.Todo(name);
+            var selected = state.Navigation.IsSelected(target);
             if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, FillerProgressFor(name), null, defaultColor, selected, selected)) {
-                state.OpenTodo(name);
+                state.Navigation.Navigate(target);
             }
         }
     }
@@ -40,16 +39,16 @@ public static partial class SidebarComponents {
         return UiColors.Text().WithW(0.03f);
     }
 
-    public static void Sidebar(MainWindowState state, float sidebarWidth) {
-        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+    public static void Sidebar(Plugin plugin, MainWindowState state, float sidebarWidth) {
+        var ySize = UiSize.MainContentHeight(plugin.Configuration);
         using var backgroundColor = ImRaii.PushColor(ImGuiCol.ChildBg, BackgroundColor());
         using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = sidebarWidth, Y = ySize }, true, ImGuiWindowFlags.AlwaysUseWindowPadding);
         if (!sidebar) return;
 
         SectionHeader("Achievements", 0f);
-        PinnedAchievementsItem(state);
+        PinnedAchievementsItem(plugin, state);
         OverviewItem(state);
-        foreach (var layout in state.FilteredLayout.AchievementLayout) {
+        foreach (var layout in state.Unlockables.FilteredLayout.AchievementLayout) {
             MainCategoryItem(state, layout);
         }
 

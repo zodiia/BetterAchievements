@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 using System.Numerics;
+using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockable> unlockables, Configuration configuration, VariableHeightClipper clipper) : IView {
+public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
-    public int CategoryId => categoryId;
-
-    private (uint Obtained, uint Total) ComputePoints() {
+    private PointsScore ComputePoints() {
         uint obtained = 0;
         uint total = 0;
 
@@ -28,17 +27,27 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
             }
         }
 
-        return (obtained, total);
+        return new PointsScore(obtained, total);
     }
 
-    private (uint Obtained, uint Total) ComputeAchievementCounts() {
+    private PointsScore ComputeAchievementCounts() {
         uint obtained = 0;
+        uint total = 0;
 
         foreach (var unlockable in unlockables) {
-            if (unlockable.Unlocked()) obtained++;
+            switch (unlockable) {
+                case UnlockableTieredAchievement tiered:
+                    obtained += tiered.Current() ?? 0;
+                    total += tiered.Maximum();
+                    break;
+                default:
+                    total++;
+                    if (unlockable.Unlocked()) obtained++;
+                    break;
+            }
         }
 
-        return (obtained, (uint)unlockables.Count);
+        return new PointsScore(obtained, total);
     }
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -46,7 +55,7 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
         var lineStartY = ImGui.GetCursorPosY();
         var avail = ImGui.GetContentRegionAvail().X;
 
-        ImGui.TextColored(UiColors.Blue(), obtainedCount.ToString()); // #fadf5a
+        ImGui.TextColored(UiColors.Blue(), obtainedCount.ToString());
         ImGui.SameLine(0, 0);
         ImGui.TextUnformatted($" / {totalCount} achievements");
 
@@ -72,7 +81,7 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
         DrawHeaderStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
-        UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{(progress * 100).ToString("0.#")}%");
+        UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100 :0.#}%");
 
         UiComponents.SeparatorText("Achievements");
     }
@@ -83,7 +92,7 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
             var textSize = ImGui.CalcTextSize(AchievementListNotLoadedWarning);
             var cursorPos = ImGui.GetCursorPos();
 
-            ImGui.SetCursorPos(new Vector2 { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
+            ImGui.SetCursorPos(new Vector2 { X = cursorPos.X + ((available.X - textSize.X) / 2), Y = cursorPos.Y + ((available.Y - textSize.Y) / 2) });
             ImGui.TextColored(UiColors.Red(), AchievementListNotLoadedWarning);
             return true;
         }
@@ -95,10 +104,10 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
         clipper.Draw(unlockables.Count, i => {
             switch (unlockables[i]) {
                 case UnlockableAchievement achievement:
-                    UiComponents.Achievement(achievement, configuration);
+                    UiComponents.Achievement(achievement, plugin.Configuration);
                     break;
                 case UnlockableTieredAchievement tiered:
-                    UiComponents.Achievement(tiered, configuration);
+                    UiComponents.Achievement(tiered, plugin.Configuration);
                     break;
             }
 
@@ -109,7 +118,7 @@ public class AchievementsView(int categoryId, string breadcrumb, List<IUnlockabl
     }
 
     public void Draw() {
-        var ySize = ImGui.GetContentRegionAvail().Y - (configuration.DebugMode ? 32 : 0);
+        var ySize = UiSize.MainContentHeight(plugin.Configuration);
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }

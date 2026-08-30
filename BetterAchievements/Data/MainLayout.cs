@@ -13,7 +13,7 @@ public record MainLayout {
 
     private const string AchievementCategoryLegacy = "Legacy";
 
-    public required List<AchievementLayout> AchievementLayout { get; set; }
+    public required List<AchievementLayout> AchievementLayout { get; init; }
 
     private static bool IsExcelAchievementInvalid(Achievement ach) {
         return ach.Name.IsEmpty
@@ -64,6 +64,7 @@ public abstract record AchievementLayout {
 
 public record AchievementLayoutGroup : AchievementLayout {
     public required List<AchievementLayout> Items { get; init; }
+
     public string? Color { get; init; }
     public string? Icon { get; init; }
 
@@ -80,18 +81,16 @@ public record AchievementLayoutCategory : AchievementLayout {
         return Items.SelectMany(it => it switch {
             AchievementLayoutItemSimple simple => [simple.Id],
             AchievementLayoutItemTiered tiered => tiered.Ids,
-            AchievementLayoutItemCombined combined => combined.Ids,
             _ => throw new ArgumentOutOfRangeException(nameof(it), it, null)
         }).ToList();
     }
 
-    public override AchievementLayoutCategory? FindFirstCategory() => this;
+    public override AchievementLayoutCategory FindFirstCategory() => this;
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(AchievementLayoutItemSimple), typeDiscriminator: "simple")]
 [JsonDerivedType(typeof(AchievementLayoutItemTiered), typeDiscriminator: "tiered")]
-[JsonDerivedType(typeof(AchievementLayoutItemCombined), typeDiscriminator: "combined")]
 public abstract record AchievementLayoutItem { }
 
 public record AchievementLayoutItemSimple : AchievementLayoutItem {
@@ -101,8 +100,4 @@ public record AchievementLayoutItemSimple : AchievementLayoutItem {
 public record AchievementLayoutItemTiered : AchievementLayoutItem {
     public required List<uint> Ids { get; init; }
     public bool Spoilers { get; init; } = false;
-}
-
-public record AchievementLayoutItemCombined : AchievementLayoutItem {
-    public required List<uint> Ids { get; init; }
 }

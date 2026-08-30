@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -36,6 +37,39 @@ public class UnlockablesService(Plugin plugin) {
 
     public IUnlockable? GetExistingAchievement(uint achievementId) {
         return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
+    }
+
+    public List<IUnlockable> GetPinnedUnlockables() {
+        return plugin.Configuration.PinnedAchievements
+                     .Select(id => GetExistingAchievement(id) ?? GetUnlockableAchievement(id))
+                     .ToList();
+    }
+
+    public PointsScore CalculateAchievementPoints(IEnumerable<uint> achievementIds) {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var id in achievementIds) {
+            var achievement = GetUnlockableAchievement(id);
+            total += achievement.Points();
+            if (achievement.Unlocked()) obtained += achievement.Points();
+        }
+
+        return new PointsScore(obtained, total);
+    }
+
+    public static PointsScore CalculateAchievementPoints() {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var achievement in Plugin.DataManager.GetExcelSheet<Achievement>()) {
+            total += achievement.Points;
+            if (Plugin.UnlockState.IsAchievementComplete(achievement)) {
+                obtained += achievement.Points;
+            }
+        }
+
+        return new PointsScore(obtained, total);
     }
 
     public void Refresh() {

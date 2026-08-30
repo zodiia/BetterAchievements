@@ -14,7 +14,6 @@ public class Configuration : IPluginConfiguration {
     public RankedFilter RankedFilter { get; set; } = RankedFilter.All;
     public AreaFilter AreaFilter { get; set; } = AreaFilter.All;
     public SortBy SortBy { get; set; } = SortBy.Default;
-    public GroupBy GroupBy { get; set; } = GroupBy.Default;
     public bool DisplayIds { get; set; } = false;
     public bool NeverHideProgressBars { get; set; } = false;
     public bool DebugMode { get; set; } = false;

@@ -32,11 +32,6 @@ public enum SortBy {
     Rarest
 }
 
-public enum GroupBy {
-    Default,
-    Better
-}
-
 public static class FilterEnumsExtensions {
     public static string DisplayName(this UnlockStatusFilter filter) {
         switch (filter) {
@@ -83,15 +78,6 @@ public static class FilterEnumsExtensions {
             case SortBy.Alphabetically: return "Alphabetical order";
             case SortBy.MostCommon: return "Most common first";
             case SortBy.Rarest: return "Rarest first";
-        }
-
-        throw new ArgumentOutOfRangeException($"{filter} not implemented.");
-    }
-
-    public static string DisplayName(this GroupBy filter) {
-        switch (filter) {
-            case GroupBy.Default: return "Vanilla groups";
-            case GroupBy.Better: return "Better groups";
         }
 
         throw new ArgumentOutOfRangeException($"{filter} not implemented.");

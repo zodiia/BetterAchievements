@@ -1,11 +1,12 @@
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.UI.Component;
+using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class OverviewView(MainWindowState state) : IView {
+public class OverviewView(Plugin plugin, UnlockablesState unlockables, NavigationState navigation) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private static void DrawCenteredWarning(string text) {
@@ -18,16 +19,16 @@ public class OverviewView(MainWindowState state) : IView {
     }
 
     private void DrawTestNavigationButton() {
-        var target = state.FilteredLayout.AchievementLayout.FirstOrDefault()?.FindFirstCategory();
+        var target = unlockables.FilteredLayout.AchievementLayout.FirstOrDefault()?.FindFirstCategory();
         if (target == null) return;
 
         if (ImGui.Button($"Go to \"{target.Name}\" (test)")) {
-            state.SetCategory(target.Id);
+            navigation.Navigate(new NavigationTarget.Category(target.Id));
         }
     }
 
     public void Draw() {
-        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+        var ySize = UiSize.MainContentHeight(plugin.Configuration);
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }

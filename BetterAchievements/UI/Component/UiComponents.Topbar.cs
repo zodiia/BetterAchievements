@@ -1,4 +1,5 @@
 using System.Numerics;
+using BetterAchievements.UI.State;
 using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -8,7 +9,7 @@ using Dalamud.Interface.Utility.Raii;
 namespace BetterAchievements.UI.Component;
 
 public static partial class UiComponents {
-    public static void Topbar(MainWindowState state) {
+    public static void Topbar(Plugin plugin, MainWindowState state) {
         var cellPadding = ImGui.GetStyle().CellPadding;   // outside search bar
         var framePadding = ImGui.GetStyle().FramePadding; // inside search bar
         var margin = ImGui.GetStyle().WindowPadding;
@@ -47,7 +48,7 @@ public static partial class UiComponents {
             ImGui.SetTooltip("Refresh UI state");
         }
 
-        ConfigPopup.FiltersPopup(state);
+        ConfigPopup.FiltersPopup(plugin, state);
 
         ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);
@@ -59,7 +60,7 @@ public static partial class UiComponents {
         ImGui.PopFont();
 
         ImGui.SameLine();
-        var achievementPointsText = $"{state.AchievementPoints} ";
+        var achievementPointsText = $"{state.Unlockables.AchievementPoints.Obtained} ";
         var achievementPointsSize = ImGui.CalcTextSize(achievementPointsText);
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (iconSize.X + achievementPointsSize.X));
         ImGui.SetCursorPosY(startingY + cellPadding.Y);

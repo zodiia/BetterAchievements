@@ -20,8 +20,4 @@
   <ItemGroup>
     <PackageReference Update="DalamudPackager" Version="15.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UI\State\" />
-  </ItemGroup>
 </Project>

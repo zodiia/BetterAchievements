@@ -1,5 +1,5 @@
 using BetterAchievements.Data;
-using BetterAchievements.UI.Windows;
+using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Component.Sidebar;
@@ -8,13 +8,14 @@ public static partial class SidebarComponents {
     private const float NestedLevelIndentEm = 1f;
 
     private static void SubTree(MainWindowState state, AchievementLayout layout) {
-        var (obtained, total) = state.ComputeProgress(layout);
+        var (obtained, total) = state.Unlockables.ComputeProgress(layout);
         var progress = total == 0 ? 0f : (float)obtained / total;
 
         switch (layout) {
             case AchievementLayoutCategory category:
-                if (SubCategoryRow($"##SubCategory-{category.Id}", category.Name, progress, state.SelectedCategoryId == category.Id)) {
-                    state.SetCategory(category.Id);
+                var target = new NavigationTarget.Category(category.Id);
+                if (SubCategoryRow($"##SubCategory-{category.Id}", category.Name, progress, state.Navigation.IsSelected(target))) {
+                    state.Navigation.Navigate(target);
                 }
 
                 break;

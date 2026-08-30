@@ -4,13 +4,11 @@ using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class TodoView(string name, MainWindowState state) : IView {
+public class TodoView(Plugin plugin) : IView {
     private const string Text = "Feature coming soon!";
 
-    public string Name => name;
-
     public void Draw() {
-        var ySize = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+        var ySize = UiSize.MainContentHeight(plugin.Configuration);
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }

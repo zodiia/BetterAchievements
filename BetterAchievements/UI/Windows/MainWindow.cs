@@ -2,6 +2,7 @@
 using System.Numerics;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Component.Sidebar;
+using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
@@ -28,27 +29,27 @@ public class MainWindow : Window, IDisposable {
     public void Dispose() { }
 
     private void DrawStatusBar() {
-        if (!state.Configuration.DebugMode) return;
+        if (!plugin.Configuration.DebugMode) return;
 
-        using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = 32 }, true);
+        using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = UiSize.StatusBarHeight }, true);
         if (!statusBar) return;
 
-        ImGui.Text($"frame time {state.AverageFrameTimeMs:F3}ms/f (highest {state.WorstFrameTimeMs:F3}ms/f)");
+        ImGui.Text($"frame time {state.FrameTimes.AverageMs:F3}ms/f (highest {state.FrameTimes.WorstMs:F3}ms/f)");
     }
 
     public override void Draw() {
-        state.DebugStart();
+        state.FrameTimes.StartDebug();
         state.CheckForUiRefresh();
-        UiComponents.Topbar(state);
+        UiComponents.Topbar(plugin, state);
 
         var maxSidebarWidth = MinSidebarWidth + Math.Max(0, ImGui.GetWindowWidth() - (SizeConstraints!.Value.MinimumSize.X * 1.5f)); // todo: find out where the scale is stored
         sidebarWidth = Math.Clamp(sidebarWidth, MinSidebarWidth, maxSidebarWidth);
-        var sidebarHeight = ImGui.GetContentRegionAvail().Y - (state.Configuration.DebugMode ? 32 : 0);
+        var sidebarHeight = UiSize.MainContentHeight(plugin.Configuration);
 
-        SidebarComponents.Sidebar(state, sidebarWidth);
+        SidebarComponents.Sidebar(plugin, state, sidebarWidth);
         UiComponents.VerticalSplitter("##SidebarSplitter", ref sidebarWidth, MinSidebarWidth, maxSidebarWidth, sidebarHeight, 16F);
-        state.CurrentView.Draw();
+        state.Navigation.CurrentView.Draw();
         DrawStatusBar();
-        state.DebugEnd();
+        state.FrameTimes.EndDebug();
     }
 }
