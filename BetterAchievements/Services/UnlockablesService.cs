@@ -14,6 +14,52 @@ public class UnlockablesService(Plugin plugin) {
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
 
+    public readonly Dictionary<uint, uint> HighestIdMap = CalculateHighestIdMap(plugin.MainLayout);
+
+    private static Dictionary<uint, uint> CalculateHighestIdMap(AchievementLayout layout) {
+        var map = new Dictionary<uint, uint>();
+
+        switch (layout) {
+            case AchievementLayoutGroup group:
+                foreach (var subLayout in group.Items) {
+                    foreach (var (key, value) in CalculateHighestIdMap(subLayout)) {
+                        map[key] = value;
+                    }
+                }
+                break;
+
+            case AchievementLayoutCategory category:
+                foreach (var item in category.Items) {
+                    switch (item) {
+                        case AchievementLayoutItemSimple simple:
+                            map[simple.Id] = simple.Id;
+                            break;
+                        case AchievementLayoutItemTiered tiered:
+                            var lastId = tiered.Ids.Last();
+                            foreach (var id in tiered.Ids) {
+                                map[id] = lastId;
+                            }
+                            break;
+                    }
+                }
+                break;
+        }
+
+        return map;
+    }
+
+    private static Dictionary<uint, uint> CalculateHighestIdMap(MainLayout mainLayout) {
+        var map = new Dictionary<uint, uint>();
+
+        foreach (var layout in mainLayout.AchievementLayout) {
+            foreach (var (key, value) in CalculateHighestIdMap(layout)) {
+                map[key] = value;
+            }
+        }
+
+        return map;
+    }
+
     public UnlockableAchievement GetUnlockableAchievement(uint achievementId) {
         if (achievements.TryGetValue(achievementId, out var it)) {
             return it;

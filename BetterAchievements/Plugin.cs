@@ -106,13 +106,13 @@ public sealed class Plugin : IDalamudPlugin {
             Log.Error(e, "Hooks failed. If you see this, please contact the plugin author.");
         }
 
+        MainLayout = LoadMainWindowLayout();
+
         AddonLifecycleService = new AddonLifecycleService();
-        UnlockablesProgressService = new UnlockablesProgressService(this);
         UnlockablesService = new UnlockablesService(this);
+        UnlockablesProgressService = new UnlockablesProgressService(this, UnlockablesService);
         LalachievementsService = new LalachievementsService();
         ProgressTrackerService = new ProgressTrackerService(this);
-
-        MainLayout = LoadMainWindowLayout();
 
         UiFonts.Initialize();
 

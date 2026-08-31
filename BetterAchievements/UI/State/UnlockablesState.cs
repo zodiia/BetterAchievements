@@ -179,6 +179,11 @@ public class UnlockablesState(Plugin plugin) {
         return plugin.UnlockablesService.GetPinnedUnlockables();
     }
 
+    public List<IUnlockable> PinnedUnlockables(AchievementLayout layout) {
+        var ids = layout.GetAllAchievementIds().ToHashSet();
+        return PinnedUnlockables().Where(it => ids.Contains(it.Id())).ToList();
+    }
+
     private static (AchievementLayoutCategory Category, string Breadcrumb)? FindCategory(IEnumerable<AchievementLayout> group, int id, string prefix = "") {
         foreach (var item in group) {
             switch (item) {

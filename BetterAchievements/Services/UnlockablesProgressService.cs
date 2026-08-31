@@ -4,11 +4,13 @@ namespace BetterAchievements.Services;
 
 public class UnlockablesProgressService {
     private readonly Plugin plugin;
+    private readonly UnlockablesService unlockables;
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
     private bool updated = false;
 
-    public UnlockablesProgressService(Plugin plugin) {
+    public UnlockablesProgressService(Plugin plugin, UnlockablesService unlockables) {
         this.plugin = plugin;
+        this.unlockables = unlockables;
         SetupEvent();
     }
 
@@ -25,14 +27,18 @@ public class UnlockablesProgressService {
     }
 
     public void SetProgress(uint achievementId, uint progress) {
-        progressCache[achievementId] = progress;
+        var lastId = unlockables.HighestIdMap[achievementId];
+
+        progressCache[lastId] = progress;
         updated = true;
     }
 
     public uint? IncrementProgress(uint achievementId, int amount) {
-        if (progressCache.TryGetValue(achievementId, out var current)) {
-            current = (uint)(current + amount); // man i hate c#
-            progressCache[achievementId] = current;
+        var lastId = unlockables.HighestIdMap[achievementId];
+
+        if (progressCache.TryGetValue(lastId, out var current)) {
+            current += (uint) amount;
+            progressCache[lastId] = current;
             updated = true;
             return current;
         }

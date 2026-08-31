@@ -40,8 +40,8 @@ public class ProgressTrackerService {
 
     private unsafe void OnCharacterSetMode(Character* chara, CharacterModes mode, byte modeParam) {
         if (chara == null) return;
-        switch (chara->ObjectKind, chara->BattleNpcSubKind, mode) {
-            case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead):
+        switch (chara->ObjectKind, chara->BattleNpcSubKind, mode, chara->CombatTagType) {
+            case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead, 1 /* Character Tag */):
                 try {
                     var combatTagger = Plugin.ObjectTable.CharacterManagerObjects.FirstOrDefault(it => it.GameObjectId == chara->CombatTaggerId.Id);
                     if (combatTagger == null) break;
@@ -50,7 +50,13 @@ public class ProgressTrackerService {
                         plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                     }
                 } catch (Exception ex) {
-                    Log.Error(ex, "Error!");
+                    Log.Error(ex, "Error while trying to parse Character.SetMode");
+                }
+
+                break;
+            case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead, 2 /* Party Tag */):
+                if ((ulong)Plugin.PartyList.PartyId == chara->CombatTaggerId.Id) {
+                    plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                 }
 
                 break;
