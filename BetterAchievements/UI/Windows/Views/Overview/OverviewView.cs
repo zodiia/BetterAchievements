@@ -1,10 +1,9 @@
-using System.Linq;
 using System.Numerics;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 
-namespace BetterAchievements.UI.Windows.Views;
+namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public class OverviewView(Plugin plugin, UnlockablesState unlockables, NavigationState navigation) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
@@ -16,15 +15,6 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
 
         ImGui.SetCursorPos(new Vector2 { X = cursorPos.X + (available.X - textSize.X) / 2, Y = cursorPos.Y + (available.Y - textSize.Y) / 2 });
         ImGui.TextColored(UiColors.Red(), text);
-    }
-
-    private void DrawTestNavigationButton() {
-        var target = unlockables.FilteredLayout.AchievementLayout.FirstOrDefault()?.FindFirstCategory();
-        if (target == null) return;
-
-        if (ImGui.Button($"Go to \"{target.Name}\" (test)")) {
-            navigation.Navigate(new NavigationTarget.Category(target.Id));
-        }
     }
 
     public void Draw() {
@@ -39,8 +29,17 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
             return;
         }
 
+        ImGui.Dummy(new(0, UiSize.Em(1f)));
+
+        OverviewComponents.PlayerHeader();
+
         UiComponents.SeparatorText("Overview");
-        DrawTestNavigationButton();
+        OverviewComponents.OverviewStats(plugin, unlockables);
+
+        UiComponents.SeparatorText("Categories");
+        OverviewComponents.CategoriesGrid(unlockables, navigation);
+
+        OverviewComponents.ActivityColumns(plugin, unlockables);
 
         ImGui.EndChild();
     }

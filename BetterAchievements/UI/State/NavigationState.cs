@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using BetterAchievements.Data;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows.Views;
+using BetterAchievements.UI.Windows.Views.Overview;
 
 namespace BetterAchievements.UI.State;
 

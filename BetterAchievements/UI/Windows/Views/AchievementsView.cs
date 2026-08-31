@@ -1,54 +1,14 @@
 using System.Collections.Generic;
 using System.Numerics;
-using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
+using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
 public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
-
-    private PointsScore ComputePoints() {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var unlockable in unlockables) {
-            switch (unlockable) {
-                case UnlockableAchievement achievement:
-                    total += achievement.Points();
-                    if (achievement.Unlocked()) obtained += achievement.Points();
-                    break;
-                case UnlockableTieredAchievement tiered:
-                    total += tiered.MaximumPoints();
-                    obtained += tiered.CurrentPoints();
-                    break;
-            }
-        }
-
-        return new PointsScore(obtained, total);
-    }
-
-    private PointsScore ComputeAchievementCounts() {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var unlockable in unlockables) {
-            switch (unlockable) {
-                case UnlockableTieredAchievement tiered:
-                    obtained += tiered.Current() ?? 0;
-                    total += tiered.Maximum();
-                    break;
-                default:
-                    total++;
-                    if (unlockable.Unlocked()) obtained++;
-                    break;
-            }
-        }
-
-        return new PointsScore(obtained, total);
-    }
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
         var lineStartX = ImGui.GetCursorPosX();
@@ -72,8 +32,8 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
     }
 
     private void DrawHeader() {
-        var (obtainedPoints, totalPoints) = ComputePoints();
-        var (obtainedCount, totalCount) = ComputeAchievementCounts();
+        var (obtainedPoints, totalPoints) = UnlockablesState.ComputePoints(unlockables);
+        var (obtainedCount, totalCount) = UnlockablesState.ComputeAchievementCounts(unlockables);
         var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
         UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);

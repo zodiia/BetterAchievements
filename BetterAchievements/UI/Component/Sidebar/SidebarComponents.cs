@@ -1,8 +1,10 @@
 using System;
 using System.Numerics;
 using BetterAchievements.UI.State;
+using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility.Numerics;
 
@@ -39,13 +41,40 @@ public static partial class SidebarComponents {
         return UiColors.Text().WithW(0.03f);
     }
 
+    private static void SearchAndSettings(Plugin plugin, MainWindowState state) {
+        var style = ImGui.GetStyle();
+
+        Vector2 settingsButtonSize;
+        using (ImRaii.PushFont(UiBuilder.IconFont)) {
+            settingsButtonSize = new Vector2(ImGui.CalcTextSize(FontAwesomeIcon.SlidersH.ToIconString()).X + (style.FramePadding.X * 2), ImGui.GetFrameHeight());
+        }
+
+        var searchWidth = Math.Max(ImGui.GetContentRegionAvail().X - settingsButtonSize.X - style.ItemSpacing.X, 0f);
+        if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, new Vector2(searchWidth, 0))) {
+            state.SetSearch(state.SearchBuffer);
+        }
+
+        ImGui.SameLine();
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.SlidersH)) {
+            ImGui.OpenPopup(ConfigPopup.FiltersPopupId);
+        }
+
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Settings");
+        }
+
+        ConfigPopup.FiltersPopup(plugin, state);
+    }
+
     public static void Sidebar(Plugin plugin, MainWindowState state, float sidebarWidth) {
         var ySize = UiSize.MainContentHeight(plugin.Configuration);
         using var backgroundColor = ImRaii.PushColor(ImGuiCol.ChildBg, BackgroundColor());
         using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = sidebarWidth, Y = ySize }, true, ImGuiWindowFlags.AlwaysUseWindowPadding);
         if (!sidebar) return;
 
-        SectionHeader("Achievements", 0f);
+        SearchAndSettings(plugin, state);
+
+        SectionHeader("Achievements");
         PinnedAchievementsItem(plugin, state);
         OverviewItem(state);
         foreach (var layout in state.Unlockables.FilteredLayout.AchievementLayout) {

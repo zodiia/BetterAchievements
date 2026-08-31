@@ -58,6 +58,19 @@ public class UnlockablesService(Plugin plugin) {
         return new PointsScore(obtained, total);
     }
 
+    public PointsScore CalculateAchievementCount(IEnumerable<uint> achievementIds) {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var id in achievementIds) {
+            var achievement = GetUnlockableAchievement(id);
+            total++;
+            if (achievement.Unlocked()) obtained++;
+        }
+
+        return new PointsScore(obtained, total);
+    }
+
     public static PointsScore CalculateAchievementPoints() {
         uint obtained = 0;
         uint total = 0;

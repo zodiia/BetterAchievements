@@ -40,7 +40,6 @@ public class MainWindow : Window, IDisposable {
     public override void Draw() {
         state.FrameTimes.StartDebug();
         state.CheckForUiRefresh();
-        UiComponents.Topbar(plugin, state);
 
         var maxSidebarWidth = MinSidebarWidth + Math.Max(0, ImGui.GetWindowWidth() - (SizeConstraints!.Value.MinimumSize.X * 1.5f)); // todo: find out where the scale is stored
         sidebarWidth = Math.Clamp(sidebarWidth, MinSidebarWidth, maxSidebarWidth);

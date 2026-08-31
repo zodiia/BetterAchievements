@@ -12,6 +12,7 @@ public class UnlockablesState(Plugin plugin) {
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
     private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
 
     private string search = "";
     private ulong achievementArrayHash;
@@ -29,6 +30,7 @@ public class UnlockablesState(Plugin plugin) {
 
         FilteredLayout = new MainLayout { AchievementLayout = items };
         progressCache.Clear();
+        achievementCountCache.Clear();
     }
 
     public void Refresh() {
@@ -73,12 +75,77 @@ public class UnlockablesState(Plugin plugin) {
         return new PointsScore(obtained, total);
     }
 
+    public PointsScore ComputeAchievementCount(IEnumerable<uint> achievementIds) {
+        return plugin.UnlockablesService.CalculateAchievementCount(achievementIds);
+    }
+
+    public PointsScore ComputeAchievementCount(AchievementLayout layout) {
+        if (achievementCountCache.TryGetValue(layout, out var cached)) return cached;
+
+        var result = ComputeAchievementCount(layout.GetAllAchievementIds());
+        achievementCountCache[layout] = result;
+        return result;
+    }
+
+    public PointsScore ComputeOverallAchievementCount() {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var layout in FilteredLayout.AchievementLayout) {
+            var (layoutObtained, layoutTotal) = ComputeAchievementCount(layout);
+            obtained += layoutObtained;
+            total += layoutTotal;
+        }
+
+        return new PointsScore(obtained, total);
+    }
+
     public (AchievementLayoutCategory Category, string Breadcrumb)? FindCategory(int id) {
         return FindCategory(FilteredLayout.AchievementLayout, id);
     }
 
     public AchievementLayoutGroup? FindTopLevelGroup(string name) {
         return FilteredLayout.AchievementLayout.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
+    }
+
+    public static PointsScore ComputePoints(IEnumerable<IUnlockable> unlockables) {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var unlockable in unlockables) {
+            switch (unlockable) {
+                case UnlockableAchievement achievement:
+                    total += achievement.Points();
+                    if (achievement.Unlocked()) obtained += achievement.Points();
+                    break;
+                case UnlockableTieredAchievement tiered:
+                    total += tiered.MaximumPoints();
+                    obtained += tiered.CurrentPoints();
+                    break;
+            }
+        }
+
+        return new PointsScore(obtained, total);
+    }
+
+    public static PointsScore ComputeAchievementCounts(IEnumerable<IUnlockable> unlockables) {
+        uint obtained = 0;
+        uint total = 0;
+
+        foreach (var unlockable in unlockables) {
+            switch (unlockable) {
+                case UnlockableTieredAchievement tiered:
+                    obtained += tiered.Current() ?? 0;
+                    total += tiered.Maximum();
+                    break;
+                default:
+                    total++;
+                    if (unlockable.Unlocked()) obtained++;
+                    break;
+            }
+        }
+
+        return new PointsScore(obtained, total);
     }
 
     public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
