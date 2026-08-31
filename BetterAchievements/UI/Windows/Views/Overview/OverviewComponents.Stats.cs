@@ -1,4 +1,5 @@
 using System.Numerics;
+using BetterAchievements.Data;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
@@ -7,8 +8,16 @@ namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
     public static void OverviewStats(Plugin plugin, UnlockablesState unlockables) {
-        var (obtainedCount, totalCount) = unlockables.ComputeOverallAchievementCount();
-        var (obtainedPoints, totalPoints) = unlockables.ComputeOverallProgress();
+        OverviewStats(plugin, unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress());
+    }
+
+    public static void OverviewStats(Plugin plugin, UnlockablesState unlockables, AchievementLayout layout) {
+        OverviewStats(plugin, unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout));
+    }
+
+    private static void OverviewStats(Plugin plugin, PointsScore achievementCount, PointsScore points) {
+        var (obtainedCount, totalCount) = achievementCount;
+        var (obtainedPoints, totalPoints) = points;
         var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
         DrawStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
@@ -16,8 +25,8 @@ public static partial class OverviewComponents {
         ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
         UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100:0.#}%");
 
-        ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
-        RanksRow(plugin);
+        // ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
+        // RanksRow(plugin);
     }
 
     private static void DrawStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -43,11 +52,11 @@ public static partial class OverviewComponents {
     private static void RanksRow(Plugin plugin) {
         var location = GetPlayerLocation();
 
-        // RankBlock(location.World, plugin.LalachievementsService.GetWorldRank());
-        // ImGui.SameLine(0, UiSize.Em(1.5f));
-        // RankBlock(location.DataCenter, plugin.LalachievementsService.GetDataCenterRank());
-        // ImGui.SameLine(0, UiSize.Em(1.5f));
-        // RankBlock("Global", plugin.LalachievementsService.GetGlobalRank());
+        RankBlock(location.World, plugin.LalachievementsService.GetWorldRank());
+        ImGui.SameLine(0, UiSize.Em(1.5f));
+        RankBlock(location.DataCenter, plugin.LalachievementsService.GetDataCenterRank());
+        ImGui.SameLine(0, UiSize.Em(1.5f));
+        RankBlock("Global", plugin.LalachievementsService.GetGlobalRank());
     }
 
     private static void RankBlock(string label, uint? rank) {

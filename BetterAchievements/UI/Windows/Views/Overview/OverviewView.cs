@@ -31,7 +31,7 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
 
         ImGui.Dummy(new(0, UiSize.Em(1f)));
 
-        OverviewComponents.PlayerHeader();
+        // OverviewComponents.PlayerHeader();
 
         UiComponents.SeparatorText("Overview");
         OverviewComponents.OverviewStats(plugin, unlockables);

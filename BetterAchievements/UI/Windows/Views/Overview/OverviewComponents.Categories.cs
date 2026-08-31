@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using BetterAchievements.Data;
 using BetterAchievements.UI.Component;
@@ -10,10 +11,10 @@ namespace BetterAchievements.UI.Windows.Views.Overview;
 public static partial class OverviewComponents {
     private const int CategoryColumns = 3;
 
-    public static void CategoriesGrid(UnlockablesState unlockables, NavigationState navigation) {
-        if (!ImGui.BeginTable("CategoriesGrid", CategoryColumns, ImGuiTableFlags.SizingStretchSame)) return;
+    public static void CategoriesGrid(UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns) {
+        if (!ImGui.BeginTable("CategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame)) return;
 
-        foreach (var layout in unlockables.FilteredLayout.AchievementLayout) {
+        foreach (var layout in layouts ?? unlockables.FilteredLayout.AchievementLayout) {
             ImGui.TableNextColumn();
             CategoryCard(unlockables, navigation, layout);
         }
