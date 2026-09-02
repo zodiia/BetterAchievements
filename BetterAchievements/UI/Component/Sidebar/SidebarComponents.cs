@@ -50,7 +50,7 @@ public static partial class SidebarComponents {
         }
 
         var searchWidth = Math.Max(ImGui.GetContentRegionAvail().X - settingsButtonSize.X - style.ItemSpacing.X, 0f);
-        if (ImGui.InputTextEx("", "Search achievements", ref state.SearchBuffer, 128, new Vector2(searchWidth, 0))) {
+        if (ImGui.InputTextEx("##Search", "Search achievements", ref state.SearchBuffer, 128, new Vector2(searchWidth, 0))) {
             state.SetSearch(state.SearchBuffer);
         }
 
