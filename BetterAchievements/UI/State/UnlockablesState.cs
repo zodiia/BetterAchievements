@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
-using BetterAchievements.Helpers;
 using BetterAchievements.Services;
 
 namespace BetterAchievements.UI.State;
@@ -15,7 +14,6 @@ public class UnlockablesState(Plugin plugin) {
     private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
 
     private string search = "";
-    private ulong achievementArrayHash;
 
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public PointsScore AchievementPoints { get; private set; } = new(0, 0);
@@ -39,15 +37,13 @@ public class UnlockablesState(Plugin plugin) {
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
     }
 
-    public unsafe bool CheckForUpdates() {
-        var newHash = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement.Instance()->CompletedAchievementsBitArray.ComputeHash();
-        if (newHash.Equals(achievementArrayHash) && !plugin.UnlockablesProgressService.CheckUpdated()) {
-            return false;
+    public bool CheckForUpdates() {
+        if (plugin.UnlockablesService.GetAchievementListUpdatedForUi() || plugin.AchievementProgressService.CheckUpdated()) {
+            Refresh();
+            return true;
         }
 
-        achievementArrayHash = newHash;
-        Refresh();
-        return true;
+        return false;
     }
 
     public PointsScore ComputeProgress(IEnumerable<uint> achievementIds) {

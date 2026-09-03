@@ -1,25 +1,22 @@
 using System;
-using System.Collections;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.External.Mapping;
-using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.DutyState;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Lumina.Excel.Sheets;
-using Serilog;
 using BattleNpcSubKind = FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind;
 using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace BetterAchievements.Services;
 
-public class ProgressTrackerService {
-    public static readonly IPluginLog Log = Plugin.GetLogger<ProgressTrackerService>();
+public class TrackerService {
+    public static readonly IPluginLog Log = Plugin.GetLogger<TrackerService>();
 
     private readonly Plugin plugin;
 
-    public ProgressTrackerService(Plugin plugin) {
+    public TrackerService(Plugin plugin) {
         this.plugin = plugin;
         SetupEvents();
     }
@@ -47,7 +44,7 @@ public class ProgressTrackerService {
                     if (combatTagger == null) break;
                     if (Plugin.ObjectTable.LocalPlayer?.EntityId == combatTagger.EntityId
                         || Plugin.PartyList.Any(it => it.EntityId == combatTagger.EntityId)) {
-                        plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
+                        plugin.AchievementProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                     }
                 } catch (Exception ex) {
                     Log.Error(ex, "Error while trying to parse Character.SetMode");
@@ -56,7 +53,7 @@ public class ProgressTrackerService {
                 break;
             case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead, 2 /* Party Tag */):
                 if ((ulong)Plugin.PartyList.PartyId == chara->CombatTaggerId.Id) {
-                    plugin.UnlockablesProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
+                    plugin.AchievementProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
                 }
 
                 break;
@@ -65,7 +62,7 @@ public class ProgressTrackerService {
 
     private void OnFateCompleted(Fate fate, FateMedal medal) {
         if (medal == FateMedal.Gold) {
-            plugin.UnlockablesProgressService.IncrementProgress((uint)AchievementIdMap.DateWithDestinyI, 1);
+            plugin.AchievementProgressService.IncrementProgress((uint)AchievementIdMap.DateWithDestinyI, 1);
         }
     }
 }

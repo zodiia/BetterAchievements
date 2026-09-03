@@ -75,11 +75,12 @@ public sealed class Plugin : IDalamudPlugin {
 
     public IPluginManifest PluginManifest { get; private set; } = null!;
 
-    public UnlockablesProgressService UnlockablesProgressService { get; private set; }
+    public AchievementProgressService AchievementProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
     public LalachievementsService LalachievementsService { get; private set; }
-    public ProgressTrackerService ProgressTrackerService { get; private set; }
+    public TrackerService TrackerService { get; private set; }
     public AddonLifecycleService AddonLifecycleService { get; private set; }
+    public HistoryService HistoryService { get; private set; }
 
     public Configuration Configuration { get; private set; }
 
@@ -91,6 +92,7 @@ public sealed class Plugin : IDalamudPlugin {
     public SetModeHook SetModeHook { get; private set; } = null!;
 
     public Plugin() {
+        PluginInterface.ConfigDirectory.Create();
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         foreach (var plugin in PluginInterface.InstalledPlugins) {
@@ -108,11 +110,12 @@ public sealed class Plugin : IDalamudPlugin {
 
         MainLayout = LoadMainWindowLayout();
 
+        HistoryService = new HistoryService(this);
         AddonLifecycleService = new AddonLifecycleService();
         UnlockablesService = new UnlockablesService(this);
-        UnlockablesProgressService = new UnlockablesProgressService(this, UnlockablesService);
+        AchievementProgressService = new AchievementProgressService(this);
         LalachievementsService = new LalachievementsService();
-        ProgressTrackerService = new ProgressTrackerService(this);
+        TrackerService = new TrackerService(this);
 
         UiFonts.Initialize();
 
@@ -173,6 +176,7 @@ public sealed class Plugin : IDalamudPlugin {
         return reader.ReadToEnd();
     }
 
+    // todo: better logging of which class is logging
     public static IPluginLog GetLogger<T>() {
         return Log;
     }

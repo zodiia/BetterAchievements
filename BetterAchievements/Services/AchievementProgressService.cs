@@ -2,20 +2,32 @@ using System.Collections.Concurrent;
 
 namespace BetterAchievements.Services;
 
-public class UnlockablesProgressService {
+public class AchievementProgressService {
     private readonly Plugin plugin;
     private readonly UnlockablesService unlockables;
+    private readonly HistoryService history;
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
     private bool updated = false;
 
-    public UnlockablesProgressService(Plugin plugin, UnlockablesService unlockables) {
+    public AchievementProgressService(Plugin plugin) {
         this.plugin = plugin;
-        this.unlockables = unlockables;
+        unlockables = plugin.UnlockablesService;
+        history = plugin.HistoryService;
         SetupEvent();
+        LoadProgress();
     }
 
     private unsafe void SetupEvent() {
         plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, _) => SetProgress(id, current);
+    }
+
+    private void LoadProgress() {
+        var all = history.GetAllAchievementStatus();
+        foreach (var status in all) {
+            if (status.Progress != null) {
+                progressCache[status.AchievementId] = (uint)status.Progress;
+            }
+        }
     }
 
     public uint? GetProgress(uint achievementId) {

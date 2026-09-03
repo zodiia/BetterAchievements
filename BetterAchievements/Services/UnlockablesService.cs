@@ -8,13 +8,27 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Services;
 
-public class UnlockablesService(Plugin plugin) {
+public class UnlockablesService {
+    private readonly Plugin plugin;
     private readonly ExcelSheet<Achievement> achievementSheet = Plugin.DataManager.GetExcelSheet<Achievement>();
 
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
+    private bool achievementArrayUpdatedForUi = false;
+    private bool achievementsWereLoaded = false;
 
-    public readonly Dictionary<uint, uint> HighestIdMap = CalculateHighestIdMap(plugin.MainLayout);
+    public readonly Dictionary<uint, uint> HighestIdMap;
+
+    public UnlockablesService(Plugin plugin) {
+        this.plugin = plugin;
+
+        HighestIdMap = CalculateHighestIdMap(plugin.MainLayout);
+        Plugin.UnlockState.Unlock += OnUnlock;
+    }
+
+    private void OnUnlock(RowRef _) {
+        achievementArrayUpdatedForUi = true;
+    }
 
     private static Dictionary<uint, uint> CalculateHighestIdMap(AchievementLayout layout) {
         var map = new Dictionary<uint, uint>();
@@ -129,6 +143,19 @@ public class UnlockablesService(Plugin plugin) {
         }
 
         return new PointsScore(obtained, total);
+    }
+
+    public bool GetAchievementListUpdatedForUi() {
+        if (!achievementsWereLoaded && Plugin.UnlockState.IsAchievementListLoaded) {
+            achievementsWereLoaded = true;
+            return true;
+        }
+        if (achievementArrayUpdatedForUi) {
+            achievementArrayUpdatedForUi = false;
+            return true;
+        }
+
+        return false;
     }
 
     public void Refresh() {

@@ -10,7 +10,6 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
-using Serilog;
 using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType;
 
 namespace BetterAchievements.Services;
