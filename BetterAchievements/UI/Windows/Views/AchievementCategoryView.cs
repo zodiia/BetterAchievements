@@ -57,7 +57,7 @@ public class AchievementCategoryView(Plugin plugin, AchievementLayoutGroup group
         ImGui.Dummy(new Vector2(0, UiSize.Em(1f)));
 
         UiComponents.SeparatorText(group.Name);
-        OverviewComponents.OverviewStats(plugin, unlockables, group);
+        OverviewComponents.OverviewStats(unlockables, group);
 
         UiComponents.SeparatorText("Categories");
         OverviewComponents.CategoriesGrid(unlockables, navigation, group.Items);

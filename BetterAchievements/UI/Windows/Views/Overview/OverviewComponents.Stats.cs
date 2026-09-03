@@ -7,15 +7,15 @@ using Dalamud.Bindings.ImGui;
 namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
-    public static void OverviewStats(Plugin plugin, UnlockablesState unlockables) {
-        OverviewStats(plugin, unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress());
+    public static void OverviewStats(UnlockablesState unlockables) {
+        OverviewStats(unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress());
     }
 
-    public static void OverviewStats(Plugin plugin, UnlockablesState unlockables, AchievementLayout layout) {
-        OverviewStats(plugin, unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout));
+    public static void OverviewStats(UnlockablesState unlockables, AchievementLayout layout) {
+        OverviewStats(unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout));
     }
 
-    private static void OverviewStats(Plugin plugin, PointsScore achievementCount, PointsScore points) {
+    private static void OverviewStats(PointsScore achievementCount, PointsScore points) {
         var (obtainedCount, totalCount) = achievementCount;
         var (obtainedPoints, totalPoints) = points;
         var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Style;
@@ -42,7 +41,7 @@ public static class UiColors {
     public static Vector4 Black() => DefaultBlack; // dalamud doesn't have a black so i guess i'm making my own
     public static Vector4 Progress() => DefaultProgress;
     public static Vector4 Violet() => StyleModel.GetFromCurrent().BuiltInColors?.DalamudViolet ?? DefaultViolet;
-    public static Vector4 Blue() => StyleModel.GetFromCurrent()?.BuiltInColors?.ParsedBlue ?? DefaultBlue;
+    public static Vector4 Blue() => StyleModel.GetFromCurrent().BuiltInColors?.ParsedBlue ?? DefaultBlue;
     public static Vector4 Text() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.Text));
     public static Vector4 WindowBackground() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.WindowBg));
 

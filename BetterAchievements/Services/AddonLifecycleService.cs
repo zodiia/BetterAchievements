@@ -43,7 +43,7 @@ public class AddonLifecycleService {
         }
 
         Log.Debug("Fate {Name} completed with {Medal} medal, matched with #{Fate} in {Area}", name, medal, fate.Value.RowId, fate.Value.Location);
-        OnFateCompleted?.Invoke(fate!.Value, medal);
+        OnFateCompleted?.Invoke(fate.Value, medal);
     }
 
     private unsafe void LogAtkValue(AtkValue* atkValue) {

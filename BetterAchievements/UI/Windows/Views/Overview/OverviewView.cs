@@ -34,7 +34,7 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
         // OverviewComponents.PlayerHeader();
 
         UiComponents.SeparatorText("Overview");
-        OverviewComponents.OverviewStats(plugin, unlockables);
+        OverviewComponents.OverviewStats(unlockables);
 
         UiComponents.SeparatorText("Categories");
         OverviewComponents.CategoriesGrid(unlockables, navigation);

@@ -7,7 +7,6 @@ using Dapper;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Microsoft.Data.Sqlite;
-using Serilog;
 
 namespace BetterAchievements.Services;
 
