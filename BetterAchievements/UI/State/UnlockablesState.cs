@@ -17,6 +17,7 @@ public class UnlockablesState(Plugin plugin) {
 
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public PointsScore AchievementPoints { get; private set; } = new(0, 0);
+    public List<AchievementUpdate> RecentlyUnlockedAchievements { get; private set; } = [];
 
     public void SetSearch(string value) {
         search = value.ToLower();
@@ -35,6 +36,7 @@ public class UnlockablesState(Plugin plugin) {
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
+        RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements();
     }
 
     public bool CheckForUpdates() {

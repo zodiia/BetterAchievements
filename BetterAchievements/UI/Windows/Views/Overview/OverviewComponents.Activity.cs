@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data;
+using BetterAchievements.Services;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
@@ -12,11 +14,6 @@ namespace BetterAchievements.UI.Windows.Views.Overview;
 public static partial class OverviewComponents {
     private const int ActivityRowCount = 10;
 
-    private static readonly string[] RecentlyObtainedDummyDetails = [
-        "2 hours ago", "1 day ago", "3 days ago", "5 days ago", "1 week ago",
-        "2 weeks ago", "3 weeks ago", "1 month ago", "2 months ago", "3 months ago"
-    ];
-
     private static MainLayout? SampleIdsSource;
     private static List<uint> SampleIdsCache = [];
 
@@ -25,7 +22,7 @@ public static partial class OverviewComponents {
             SampleIdsSource = unlockables.FilteredLayout;
             SampleIdsCache = unlockables.FilteredLayout.AchievementLayout
                                         .SelectMany(it => it.GetAllAchievementIds())
-                                        .Take(ActivityRowCount * 2)
+                                        .Take(ActivityRowCount)
                                         .ToList();
         }
 
@@ -39,17 +36,28 @@ public static partial class OverviewComponents {
         ImGui.TableSetupColumn("##MiddleGap", ImGuiTableColumnFlags.WidthFixed, UiSize.Em(1f));
         ImGui.TableSetupColumn("##Right", ImGuiTableColumnFlags.WidthStretch);
 
-        var sampleIds = SampleAchievementIds(unlockables);
+        ImGui.TableNextColumn();
+        RecentlyObtainedColumn(plugin, unlockables.RecentlyUnlockedAchievements);
 
         ImGui.TableNextColumn();
-        ActivityColumn(plugin, "Recently Obtained", sampleIds.Take(ActivityRowCount), RecentlyObtainedDummyDetails);
 
         ImGui.TableNextColumn();
-
-        ImGui.TableNextColumn();
-        ActivityColumn(plugin, "Nearing Completion", sampleIds.Skip(ActivityRowCount).Take(ActivityRowCount), null);
+        ActivityColumn(plugin, "Nearing Completion", SampleAchievementIds(unlockables), null);
 
         ImGui.EndTable();
+    }
+
+    private static void RecentlyObtainedColumn(Plugin plugin, IReadOnlyList<AchievementUpdate> updates) {
+        UiComponents.SeparatorText("Recently Obtained", UiFonts.FontSize110, paddingAboveEm: 0f);
+
+        foreach (var update in updates) {
+            var achievement = plugin.UnlockablesService.GetUnlockableAchievement(update.AchievementId);
+            ActivityRow(achievement.Icon(), achievement.Name(), achievement.Points(), FormatTimeAgo(update.Timestamp));
+
+            // yes it is on purpose, for some reason an empty dummy still adds spacing?
+            // me from the future: yes you idiot it's the item padding
+            ImGui.Dummy(new());
+        }
     }
 
     private static void ActivityColumn(Plugin plugin, string title, IEnumerable<uint> achievementIds, string[]? dummyDetails) {
@@ -62,9 +70,27 @@ public static partial class OverviewComponents {
             ActivityRow(achievement.Icon(), achievement.Name(), achievement.Points(), detail);
             index++;
 
-            ImGui.Dummy(new()); // yes it is on purpose, for some reason an empty dummy still adds spacing?
+            // yes it is on purpose, for some reason an empty dummy still adds spacing?
+            // me from the future: yes you idiot it's the item padding
+            ImGui.Dummy(new());
         }
     }
+
+    private static string FormatTimeAgo(ulong timestamp) {
+        var elapsed = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds((long)timestamp);
+
+        return elapsed switch {
+            { TotalMinutes: < 1 } => "just now",
+            { TotalHours: < 1 } => FormatUnit((int)elapsed.TotalMinutes, "minute"),
+            { TotalDays: < 1 } => FormatUnit((int)elapsed.TotalHours, "hour"),
+            { TotalDays: < 7 } => FormatUnit((int)elapsed.TotalDays, "day"),
+            { TotalDays: < 30 } => FormatUnit((int)(elapsed.TotalDays / 7), "week"),
+            { TotalDays: < 365 } => FormatUnit((int)(elapsed.TotalDays / 30), "month"),
+            _ => FormatUnit((int)(elapsed.TotalDays / 365), "year"),
+        };
+    }
+
+    private static string FormatUnit(int amount, string unit) => $"{amount} {unit}{(amount == 1 ? "" : "s")} ago";
 
     private static void ActivityRow(uint iconId, string name, byte points, string? detail) {
         var iconSize = ImGui.GetTextLineHeight();
