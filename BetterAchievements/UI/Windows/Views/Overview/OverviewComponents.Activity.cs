@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data;
-using BetterAchievements.Services;
+using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
@@ -13,20 +13,50 @@ namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
     private const int ActivityRowCount = 10;
+    private const string NoDataText = "No data.";
 
-    private static MainLayout? SampleIdsSource;
-    private static List<uint> SampleIdsCache = [];
+    private readonly record struct ActivityEntry(UnlockableAchievement Achievement, string? Breadcrumb, string? Detail);
+    private readonly record struct RankedEntry(double Ratio, ActivityEntry Entry);
 
-    private static List<uint> SampleAchievementIds(UnlockablesState unlockables) {
-        if (!ReferenceEquals(SampleIdsSource, unlockables.FilteredLayout)) {
-            SampleIdsSource = unlockables.FilteredLayout;
-            SampleIdsCache = unlockables.FilteredLayout.AchievementLayout
-                                        .SelectMany(it => it.GetAllAchievementIds())
+    private static MainLayout? NearingCompletionSource;
+    private static List<ActivityEntry> NearingCompletionCache = [];
+
+    private static IEnumerable<AchievementLayoutItem> AllItems(AchievementLayout layout) => layout switch {
+        AchievementLayoutGroup group => group.Items.SelectMany(AllItems),
+        AchievementLayoutCategory category => category.Items,
+        _ => []
+    };
+
+    private static string FormatPercentage(double ratio) => $"{(int)MathF.Round((float)ratio * 100)}%";
+
+    private static RankedEntry? NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
+        var candidate = item switch {
+            AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).NearingCompletionCandidate(),
+            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).NearingCompletionCandidate(),
+            _ => null
+        };
+
+        if (candidate == null) return null;
+
+        var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id());
+        return new RankedEntry(candidate.Ratio, new ActivityEntry(candidate.Achievement, breadcrumb, FormatPercentage(candidate.Ratio)));
+    }
+
+    private static List<ActivityEntry> NearingCompletionAchievements(Plugin plugin, UnlockablesState unlockables) {
+        if (ReferenceEquals(NearingCompletionSource, unlockables.FilteredLayout)) return NearingCompletionCache;
+        NearingCompletionSource = unlockables.FilteredLayout;
+
+        NearingCompletionCache = plugin.MainLayout.AchievementLayout
+                                        .SelectMany(AllItems)
+                                        .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
+                                        .Where(it => it != null)
+                                        .Select(it => it!.Value)
+                                        .OrderByDescending(it => it.Ratio)
                                         .Take(ActivityRowCount)
+                                        .Select(it => it.Entry)
                                         .ToList();
-        }
 
-        return SampleIdsCache;
+        return NearingCompletionCache;
     }
 
     public static void ActivityColumns(Plugin plugin, UnlockablesState unlockables) {
@@ -37,38 +67,36 @@ public static partial class OverviewComponents {
         ImGui.TableSetupColumn("##Right", ImGuiTableColumnFlags.WidthStretch);
 
         ImGui.TableNextColumn();
-        RecentlyObtainedColumn(plugin, unlockables.RecentlyUnlockedAchievements);
+        RecentlyObtainedColumn(plugin, unlockables);
 
         ImGui.TableNextColumn();
 
         ImGui.TableNextColumn();
-        ActivityColumn(plugin, "Nearing Completion", SampleAchievementIds(unlockables), null);
+        ActivityColumn("Nearing Completion", NearingCompletionAchievements(plugin, unlockables));
 
         ImGui.EndTable();
     }
 
-    private static void RecentlyObtainedColumn(Plugin plugin, IReadOnlyList<AchievementUpdate> updates) {
-        UiComponents.SeparatorText("Recently Obtained", UiFonts.FontSize110, paddingAboveEm: 0f);
-
-        foreach (var update in updates) {
+    private static void RecentlyObtainedColumn(Plugin plugin, UnlockablesState unlockables) {
+        var entries = unlockables.RecentlyUnlockedAchievements.Select(update => {
             var achievement = plugin.UnlockablesService.GetUnlockableAchievement(update.AchievementId);
-            ActivityRow(achievement.Icon(), achievement.Name(), achievement.Points(), FormatTimeAgo(update.Timestamp));
+            var breadcrumb = unlockables.FindBreadcrumb(achievement.Id());
+            return new ActivityEntry(achievement, breadcrumb, FormatTimeAgo(update.Timestamp));
+        }).ToList();
 
-            // yes it is on purpose, for some reason an empty dummy still adds spacing?
-            // me from the future: yes you idiot it's the item padding
-            ImGui.Dummy(new());
-        }
+        ActivityColumn("Recently Obtained", entries);
     }
 
-    private static void ActivityColumn(Plugin plugin, string title, IEnumerable<uint> achievementIds, string[]? dummyDetails) {
+    private static void ActivityColumn(string title, IReadOnlyList<ActivityEntry> entries) {
         UiComponents.SeparatorText(title, UiFonts.FontSize110, paddingAboveEm: 0f);
 
-        var index = 0;
-        foreach (var id in achievementIds) {
-            var achievement = plugin.UnlockablesService.GetUnlockableAchievement(id);
-            var detail = dummyDetails?[index % dummyDetails.Length];
-            ActivityRow(achievement.Icon(), achievement.Name(), achievement.Points(), detail);
-            index++;
+        if (entries.Count == 0) {
+            ImGui.TextColored(UiColors.Grey(), NoDataText);
+            return;
+        }
+
+        foreach (var entry in entries) {
+            ActivityRow(entry);
 
             // yes it is on purpose, for some reason an empty dummy still adds spacing?
             // me from the future: yes you idiot it's the item padding
@@ -92,22 +120,31 @@ public static partial class OverviewComponents {
 
     private static string FormatUnit(int amount, string unit) => $"{amount} {unit}{(amount == 1 ? "" : "s")} ago";
 
-    private static void ActivityRow(uint iconId, string name, byte points, string? detail) {
+    private static void ActivityRow(ActivityEntry entry) {
+        var achievement = entry.Achievement;
         var iconSize = ImGui.GetTextLineHeight();
 
-        var wrap = Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(iconId)).GetWrapOrEmpty();
+        ImGui.BeginGroup();
+
+        var wrap = Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(achievement.Icon())).GetWrapOrEmpty();
         ImGui.Image(wrap.Handle, new Vector2(iconSize, iconSize));
 
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.Text(), name);
+        ImGui.TextColored(UiColors.Text(), achievement.Name());
 
-        var pointsText = $"+{points}";
-        if (detail != null) {
-            RightAlignedTwoPart(detail, UiColors.Grey(), pointsText, UiColors.Progress());
+        var pointsText = $"+{achievement.Points()}";
+        if (entry.Detail != null) {
+            RightAlignedTwoPart(entry.Detail, UiColors.Grey(), pointsText, UiColors.Progress());
         } else {
             UiComponents.SameLineRightTextColored(UiColors.Progress(), pointsText);
         }
+
+        ImGui.EndGroup();
+
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip(BuildTooltip(entry));
     }
+
+    private static string BuildTooltip(ActivityEntry entry) => $"In {entry.Breadcrumb ?? "(unknown)"}\n{entry.Achievement.Description()}";
 
     private static void RightAlignedTwoPart(string leftText, Vector4 leftColor, string rightText, Vector4 rightColor) {
         var spacing = ImGui.CalcTextSize(" ").X;

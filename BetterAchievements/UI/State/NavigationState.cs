@@ -58,12 +58,12 @@ public class NavigationState {
 
                 var view = new AchievementsView(
                     plugin,
-                    found.Value.Breadcrumb,
-                    unlockables.SortedUnlockables(found.Value.Category),
-                    unlockables.ComputeProgress(found.Value.Category),
-                    unlockables.ComputeAchievementCount(found.Value.Category),
+                    found.Breadcrumb,
+                    unlockables.SortedUnlockables(found.Category),
+                    unlockables.ComputeProgress(found.Category),
+                    unlockables.ComputeAchievementCount(found.Category),
                     ClipperFor(target));
-                SetNavigation(target, found.Value.Breadcrumb.Split(" / ")[0], view);
+                SetNavigation(target, found.Breadcrumb.Split(" / ")[0], view);
                 break;
 
             case NavigationTarget.Group group:

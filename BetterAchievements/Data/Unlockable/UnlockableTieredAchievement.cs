@@ -55,4 +55,17 @@ public record UnlockableTieredAchievement : IUnlockable {
     public uint CurrentPoints() => currentPoints;
     public uint MaximumPoints() => maximumPoints;
     public List<UnlockableAchievement> ProvidesAchievements() => providesAchievements;
+
+    public NearingCompletionCandidate? NearingCompletionCandidate() {
+        var currentTier = providesAchievements.Find(it => !it.Unlocked());
+        if (currentTier == null) return null;
+
+        var progress = providesAchievements.Last().Current();
+        if (progress is null or 0) return null;
+
+        var ratio = (double)progress.Value / currentTier.Maximum();
+        if (ratio >= 1.0) return null;
+
+        return new NearingCompletionCandidate(ratio, currentTier);
+    }
 }

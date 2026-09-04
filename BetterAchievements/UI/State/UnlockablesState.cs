@@ -102,8 +102,12 @@ public class UnlockablesState(Plugin plugin) {
         return new PointsScore(obtained, total);
     }
 
-    public (AchievementLayoutCategory Category, string Breadcrumb)? FindCategory(int id) {
-        return FindCategory(FilteredLayout.AchievementLayout, id);
+    public CategoryWithBreadcrumbs? FindCategory(int id) {
+        return FindCategory(FilteredLayout.AchievementLayout, category => category.Id == id);
+    }
+
+    public string? FindBreadcrumb(uint achievementId) {
+        return FindCategory(mainLayout.AchievementLayout, category => category.GetAllAchievementIds().Contains(achievementId))?.Breadcrumb;
     }
 
     public AchievementLayoutGroup? FindTopLevelGroup(string name) {
@@ -146,18 +150,19 @@ public class UnlockablesState(Plugin plugin) {
         return PinnedUnlockables().Where(it => ids.Contains(it.Id())).ToList();
     }
 
-    private static (AchievementLayoutCategory Category, string Breadcrumb)? FindCategory(IEnumerable<AchievementLayout> group, int id, string prefix = "") {
+    private static CategoryWithBreadcrumbs? FindCategory(
+        IEnumerable<AchievementLayout> group, Func<AchievementLayoutCategory, bool> predicate, string prefix = "") {
         foreach (var item in group) {
             switch (item) {
                 case AchievementLayoutGroup subgroup:
-                    var res = FindCategory(subgroup.Items, id, prefix.Length == 0 ? subgroup.Name : $"{prefix} / {subgroup.Name}");
+                    var res = FindCategory(subgroup.Items, predicate, prefix.Length == 0 ? subgroup.Name : $"{prefix} / {subgroup.Name}");
                     if (res != null) {
                         return res;
                     }
 
                     break;
-                case AchievementLayoutCategory category when category.Id == id:
-                    return (category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
+                case AchievementLayoutCategory category when predicate(category):
+                    return new(category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
             }
         }
 

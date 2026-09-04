@@ -25,6 +25,18 @@ public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugi
     public bool Unlocked() => unlocked;
     private readonly bool pinned = Plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
     public bool Pinned() => pinned;
+
+    public NearingCompletionCandidate? NearingCompletionCandidate() {
+        if (Unlocked()) return null;
+
+        var progress = Current();
+        if (progress is null or 0) return null;
+
+        var ratio = (double)progress.Value / Maximum();
+        if (ratio >= 1.0) return null;
+
+        return new NearingCompletionCandidate(ratio, this);
+    }
 }
 
 public static class AchievementExtensions {
