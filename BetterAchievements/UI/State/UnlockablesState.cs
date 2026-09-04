@@ -12,6 +12,7 @@ public class UnlockablesState(Plugin plugin) {
     private readonly MainLayout mainLayout = plugin.MainLayout;
     private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<AchievementLayout, List<uint>> progressAchievementIds = new(ReferenceEqualityComparer.Instance);
 
     private string search = "";
 
@@ -25,6 +26,7 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public void ApplyFilters() {
+        progressAchievementIds.Clear();
         var items = mainLayout.AchievementLayout.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList();
 
         FilteredLayout = new MainLayout { AchievementLayout = items };
@@ -55,7 +57,8 @@ public class UnlockablesState(Plugin plugin) {
     public PointsScore ComputeProgress(AchievementLayout layout) {
         if (progressCache.TryGetValue(layout, out var cached)) return cached;
 
-        var result = ComputeProgress(layout.GetAllAchievementIds());
+        var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
+        var result = ComputeProgress(ids);
         progressCache[layout] = result;
         return result;
     }
@@ -64,7 +67,7 @@ public class UnlockablesState(Plugin plugin) {
         uint obtained = 0;
         uint total = 0;
 
-        foreach (var layout in FilteredLayout.AchievementLayout) {
+        foreach (var layout in mainLayout.AchievementLayout) {
             var (layoutObtained, layoutTotal) = ComputeProgress(layout);
             obtained += layoutObtained;
             total += layoutTotal;
@@ -80,7 +83,8 @@ public class UnlockablesState(Plugin plugin) {
     public PointsScore ComputeAchievementCount(AchievementLayout layout) {
         if (achievementCountCache.TryGetValue(layout, out var cached)) return cached;
 
-        var result = ComputeAchievementCount(layout.GetAllAchievementIds());
+        var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
+        var result = ComputeAchievementCount(ids);
         achievementCountCache[layout] = result;
         return result;
     }
@@ -89,7 +93,7 @@ public class UnlockablesState(Plugin plugin) {
         uint obtained = 0;
         uint total = 0;
 
-        foreach (var layout in FilteredLayout.AchievementLayout) {
+        foreach (var layout in mainLayout.AchievementLayout) {
             var (layoutObtained, layoutTotal) = ComputeAchievementCount(layout);
             obtained += layoutObtained;
             total += layoutTotal;
@@ -104,46 +108,6 @@ public class UnlockablesState(Plugin plugin) {
 
     public AchievementLayoutGroup? FindTopLevelGroup(string name) {
         return FilteredLayout.AchievementLayout.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
-    }
-
-    public static PointsScore ComputePoints(IEnumerable<IUnlockable> unlockables) {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var unlockable in unlockables) {
-            switch (unlockable) {
-                case UnlockableAchievement achievement:
-                    total += achievement.Points();
-                    if (achievement.Unlocked()) obtained += achievement.Points();
-                    break;
-                case UnlockableTieredAchievement tiered:
-                    total += tiered.MaximumPoints();
-                    obtained += tiered.CurrentPoints();
-                    break;
-            }
-        }
-
-        return new PointsScore(obtained, total);
-    }
-
-    public static PointsScore ComputeAchievementCounts(IEnumerable<IUnlockable> unlockables) {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var unlockable in unlockables) {
-            switch (unlockable) {
-                case UnlockableTieredAchievement tiered:
-                    obtained += tiered.Current() ?? 0;
-                    total += tiered.Maximum();
-                    break;
-                default:
-                    total++;
-                    if (unlockable.Unlocked()) obtained++;
-                    break;
-            }
-        }
-
-        return new PointsScore(obtained, total);
     }
 
     public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
@@ -242,16 +206,53 @@ public class UnlockablesState(Plugin plugin) {
         _ => false
     };
 
+    private bool MatchProgressFilter(AchievementLayoutItemSimple item) {
+        var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
+        return MatchSearch(achievement.NameLowercase(), achievement.DescriptionLowercase())
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
+    }
+
+    private bool MatchProgressFilter(AchievementLayoutItemTiered item) {
+        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
+        return MatchSearch(achievements.NameLowercase(), achievements.DescriptionLowercase())
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
+    }
+
+    private bool MatchProgressFilter(AchievementLayoutItem item) => item switch {
+        AchievementLayoutItemSimple simple => MatchProgressFilter(simple),
+        AchievementLayoutItemTiered tiered => MatchProgressFilter(tiered),
+        _ => false
+    };
+
+    private static List<uint> AchievementIds(AchievementLayoutItem item) => item switch {
+        AchievementLayoutItemSimple simple => [simple.Id],
+        AchievementLayoutItemTiered tiered => tiered.Ids,
+        _ => []
+    };
+
     private AchievementLayoutCategory? FilterAchievementLayout(AchievementLayoutCategory category) {
+        var progressIds = category.Items.Where(MatchProgressFilter).SelectMany(AchievementIds).ToList();
+        progressAchievementIds[category] = progressIds;
+
         var items = category.Items.Where(FilterAchievementLayoutItem).ToList();
         if (items.Count == 0) return null;
-        return category with { Items = items };
+
+        var filtered = category with { Items = items };
+        progressAchievementIds[filtered] = progressIds;
+        return filtered;
     }
 
     private AchievementLayoutGroup? FilterAchievementLayout(AchievementLayoutGroup group) {
-        var items = group.Items.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList();
-        if (items.Count == 0) return null;
-        return group with { Items = items };
+        var filteredChildren = group.Items.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList();
+
+        var progressIds = group.Items.SelectMany(child => progressAchievementIds[child]).ToList();
+        progressAchievementIds[group] = progressIds;
+
+        if (filteredChildren.Count == 0) return null;
+
+        var filtered = group with { Items = filteredChildren };
+        progressAchievementIds[filtered] = progressIds;
+        return filtered;
     }
 
     private AchievementLayout? FilterAchievementLayout(AchievementLayout layout) => layout switch {

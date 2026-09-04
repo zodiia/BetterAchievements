@@ -56,7 +56,13 @@ public class NavigationState {
                     return;
                 }
 
-                var view = new AchievementsView(plugin, found.Value.Breadcrumb, unlockables.SortedUnlockables(found.Value.Category), ClipperFor(target));
+                var view = new AchievementsView(
+                    plugin,
+                    found.Value.Breadcrumb,
+                    unlockables.SortedUnlockables(found.Value.Category),
+                    unlockables.ComputeProgress(found.Value.Category),
+                    unlockables.ComputeAchievementCount(found.Value.Category),
+                    ClipperFor(target));
                 SetNavigation(target, found.Value.Breadcrumb.Split(" / ")[0], view);
                 break;
 
@@ -72,7 +78,13 @@ public class NavigationState {
                 break;
 
             case NavigationTarget.Pinned:
-                SetNavigation(target, null, new AchievementsView(plugin, "Pinned", unlockables.PinnedUnlockables(), ClipperFor(target)));
+                SetNavigation(target, null, new AchievementsView(
+                    plugin,
+                    "Pinned",
+                    unlockables.PinnedUnlockables(),
+                    unlockables.ComputeProgress(plugin.Configuration.PinnedAchievements),
+                    unlockables.ComputeAchievementCount(plugin.Configuration.PinnedAchievements),
+                    ClipperFor(target)));
                 break;
 
             case NavigationTarget.Todo:

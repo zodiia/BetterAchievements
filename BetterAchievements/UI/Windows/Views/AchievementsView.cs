@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Numerics;
+using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
-using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 
 namespace BetterAchievements.UI.Windows.Views;
 
-public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, VariableHeightClipper clipper) : IView {
+public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, PointsScore points, PointsScore achievementCount, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -32,8 +32,8 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
     }
 
     private void DrawHeader() {
-        var (obtainedPoints, totalPoints) = UnlockablesState.ComputePoints(unlockables);
-        var (obtainedCount, totalCount) = UnlockablesState.ComputeAchievementCounts(unlockables);
+        var (obtainedPoints, totalPoints) = points;
+        var (obtainedCount, totalCount) = achievementCount;
         var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
         UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);
