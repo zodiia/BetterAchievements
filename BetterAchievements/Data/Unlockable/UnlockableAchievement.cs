@@ -6,8 +6,6 @@ namespace BetterAchievements.Data.Unlockable;
 public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugin) : IUnlockable {
     public uint Id() => Achievement.RowId;
     public UnlockableType Type() => UnlockableType.Achievement;
-    public string Name() => Achievement.Name.ToString();
-    public string Description() => Achievement.Description.ToString();
     public AchievementCategory SubCategory() => Achievement.AchievementCategory.Value;
     public AchievementKind Category() => Achievement.AchievementCategory.Value.AchievementKind.Value;
     public uint Icon() => Achievement.Icon;
@@ -15,6 +13,10 @@ public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugi
     public byte AchievementType() => Achievement.Type;
     public uint Maximum() => Achievement.Maximum();
 
+    private readonly string name = Achievement.Name.ToString();
+    public string Name() => name;
+    private readonly string description = Achievement.Description.ToString();
+    public string Description() => description;
     private readonly string nameLowercase = Achievement.Name.ToString().ToLower();
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
