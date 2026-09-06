@@ -52,8 +52,12 @@ public class TrackerService {
 
                 break;
             case (ObjectKind.BattleNpc, BattleNpcSubKind.Combatant, CharacterModes.Dead, 2 /* Party Tag */):
-                if ((ulong)Plugin.PartyList.PartyId == chara->CombatTaggerId.Id) {
-                    plugin.AchievementProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
+                try {
+                    if ((ulong)Plugin.PartyList.PartyId == chara->CombatTaggerId.Id) {
+                        plugin.AchievementProgressService.IncrementProgress(GetLastAchievementInSeries(AchievementIdMap.ToCrushYourEnemiesI), 1);
+                    }
+                } catch (Exception ex) {
+                    Log.Error(ex, "Error while trying to parse Character.SetMode");
                 }
 
                 break;

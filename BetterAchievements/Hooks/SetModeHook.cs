@@ -2,6 +2,7 @@ using System;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using Serilog;
 
 #pragma warning disable CS0649 // for the hook
 
@@ -21,8 +22,12 @@ public sealed unsafe class SetModeHook : IDisposable {
     }
 
     private void SetModeDetour(Character* chara, CharacterModes mode, byte modeParam) {
+        try {
+            OnDetour?.Invoke(chara, mode, modeParam);
+        } catch (Exception ex) {
+            Log.Error(ex, "Exception caught in SetMode hook");
+        }
         hook?.Original(chara, mode, modeParam);
-        OnDetour?.Invoke(chara, mode, modeParam);
     }
 
     public void Dispose() {

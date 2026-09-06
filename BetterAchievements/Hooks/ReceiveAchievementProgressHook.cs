@@ -2,6 +2,7 @@ using System;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Serilog;
 
 #pragma warning disable CS0649 // for the hook
 
@@ -21,8 +22,12 @@ public sealed unsafe class ReceiveAchievementProgressHook : IDisposable {
     }
 
     private void ReceiveAchievementProgressDetour(Achievement* achievement, uint id, uint current, uint max) {
+        try {
+            OnDetour?.Invoke(achievement, id, current, max);
+        } catch (Exception ex) {
+            Log.Error(ex, "Exception caught in ReceiveAchievementProgress hook");
+        }
         hook?.Original(achievement, id, current, max);
-        OnDetour?.Invoke(achievement, id, current, max);
     }
 
     public void Dispose() {

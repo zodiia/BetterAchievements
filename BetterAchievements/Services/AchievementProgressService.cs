@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace BetterAchievements.Services;
 
@@ -39,14 +40,14 @@ public class AchievementProgressService {
     }
 
     public void SetProgress(uint achievementId, uint progress) {
-        var lastId = unlockables.HighestIdMap[achievementId];
+        var lastId = unlockables.HighestIdMap.GetValueOrDefault(achievementId, achievementId);
 
         progressCache[lastId] = progress;
         updated = true;
     }
 
     public uint? IncrementProgress(uint achievementId, int amount) {
-        var lastId = unlockables.HighestIdMap[achievementId];
+        var lastId = unlockables.HighestIdMap.GetValueOrDefault(achievementId, achievementId);
 
         if (progressCache.TryGetValue(lastId, out var current)) {
             current += (uint) amount;
