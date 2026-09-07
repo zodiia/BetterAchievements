@@ -5,6 +5,7 @@ namespace BetterAchievements.Data.Unlockable;
 public sealed record UnlockableMinion(Companion Minion) : IUnlockable {
     public uint Id() => Minion.RowId;
     public UnlockableType Type() => UnlockableType.Minion;
+    public uint Icon() => Minion.Icon;
     private readonly string name = Minion.Singular.ToString();
     public string Name() => name;
     private readonly string description = Plugin.DataManager.GetExcelSheet<CompanionTransient>().GetRow(Minion.RowId).Description.ToString();

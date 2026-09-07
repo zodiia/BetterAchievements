@@ -38,6 +38,7 @@ public record UnlockableTieredAchievement : IUnlockable {
     private readonly List<uint> ids;
     public List<uint> Ids() => ids;
     public UnlockableType Type() => UnlockableType.Achievement;
+    public uint Icon() => providesAchievements.Last().Icon();
     public string Name() => name;
     public string Description() => description;
     private readonly string nameLowercase;

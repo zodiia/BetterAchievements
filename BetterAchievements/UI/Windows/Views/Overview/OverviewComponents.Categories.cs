@@ -2,16 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using BetterAchievements.Data;
+using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
     private const int CategoryColumns = 3;
 
-    public static void CategoriesGrid(UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns) {
+    public static void CategoriesGrid(
+        UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns) {
         if (!ImGui.BeginTable("CategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame)) return;
 
         foreach (var layout in layouts ?? unlockables.FilteredLayout.Achievements) {
@@ -33,10 +36,30 @@ public static partial class OverviewComponents {
         }
     }
 
+    public static void CollectionCategoriesGrid(
+        UnlockablesState unlockables, NavigationState navigation, UnlockableType type, int columns = CategoryColumns) {
+        using var table = ImRaii.Table("CollectionCategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame);
+        if (!table) return;
+
+        foreach (var category in unlockables.CollectionCategories(type)) {
+            var (score, visible) = unlockables.ComputeProgress(type, category);
+            if (visible == 0) continue;
+
+            ImGui.TableNextColumn();
+            CategoryCard($"##CollectionCategory-{type}-{category.Id}", category.Name, score, null,
+                         () => navigation.Navigate(new NavigationTarget.CollectionCategory(type, category.Id)));
+        }
+    }
+
     private static void CategoryCard(UnlockablesState unlockables, NavigationState navigation, AchievementLayout layout) {
-        var (obtainedCount, totalCount) = unlockables.ComputeAchievementCount(layout);
-        var (obtainedPoints, totalPoints) = unlockables.ComputeProgress(layout);
-        var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
+        CategoryCard($"##Category-{layout.Name}", layout.Name,
+                     unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout),
+                     () => NavigateToCategory(navigation, layout));
+    }
+
+    private static void CategoryCard(string id, string name, PointsScore count, PointsScore? points, Action onClick) {
+        var (obtainedCount, totalCount) = count;
+        var progress = ProgressRatio(count, points);
 
         var style = ImGui.GetStyle();
         var barHeight = UiSize.Em(0.5f);
@@ -47,7 +70,7 @@ public static partial class OverviewComponents {
         var rowHeight = contentHeight + (padding.Y * 2);
 
         var rowStart = ImGui.GetCursorScreenPos();
-        ImGui.InvisibleButton($"##Category-{layout.Name}", new Vector2(width, rowHeight));
+        ImGui.InvisibleButton(id, new Vector2(width, rowHeight));
         var hovered = ImGui.IsItemHovered();
         var clicked = ImGui.IsItemClicked(ImGuiMouseButton.Left);
         if (hovered) ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
@@ -61,7 +84,7 @@ public static partial class OverviewComponents {
         var contentWidth = width - (padding.X * 2);
 
         ImGui.SetCursorScreenPos(contentStart);
-        ImGui.TextColored(UiColors.Text(), layout.Name);
+        ImGui.TextColored(UiColors.Text(), name);
         RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(progress * 100)}%");
 
         var barPos = contentStart with { Y = contentStart.Y + lineHeight + style.ItemSpacing.Y };
@@ -74,10 +97,12 @@ public static partial class OverviewComponents {
         ImGui.SameLine(0, 0);
         ImGui.TextColored(UiColors.Text(), $"/{totalCount:N0}");
 
-        RightAlignedSplitText(line3Pos, contentWidth, UiColors.Progress(), $"{obtainedPoints:N0}", UiColors.Text(), $"/{totalPoints:N0}");
+        if (points != null) {
+            RightAlignedSplitText(line3Pos, contentWidth, UiColors.Progress(), $"{points.Obtained:N0}", UiColors.Text(), $"/{points.Total:N0}");
+        }
 
         if (clicked) {
-            NavigateToCategory(navigation, layout);
+            onClick();
         }
     }
 

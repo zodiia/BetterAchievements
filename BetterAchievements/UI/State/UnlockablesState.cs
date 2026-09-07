@@ -13,6 +13,8 @@ public class UnlockablesState(Plugin plugin) {
     private readonly MainLayout mainLayout = plugin.MainLayout;
     private readonly Dictionary<AchievementLayout, List<uint>> progressAchievementIds = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<CollectionCategory, CollectionProgress> collectionCategoryCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<UnlockableType, CollectionProgress> collectionCache = new();
 
     private string search = "";
 
@@ -33,6 +35,8 @@ public class UnlockablesState(Plugin plugin) {
         };
         progressCache.Clear();
         achievementCountCache.Clear();
+        collectionCategoryCache.Clear();
+        collectionCache.Clear();
     }
 
     public void Refresh() {
@@ -42,8 +46,12 @@ public class UnlockablesState(Plugin plugin) {
         RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements();
     }
 
+    public bool CollectionsLoaded => plugin.CollectionsService.Loaded;
+
     public bool CheckForUpdates() {
-        if (plugin.UnlockablesService.GetAchievementListUpdatedForUi() || plugin.AchievementProgressService.CheckUpdated()) {
+        if (plugin.CollectionsService.CheckForUpdates() ||
+            plugin.UnlockablesService.GetAchievementListUpdatedForUi() ||
+            plugin.AchievementProgressService.CheckUpdated()) {
             Refresh();
             return true;
         }
@@ -61,6 +69,46 @@ public class UnlockablesState(Plugin plugin) {
         var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
         var result = ComputeProgress(ids);
         progressCache[layout] = result;
+        return result;
+    }
+
+    public CollectionProgress ComputeProgress(UnlockableType type, CollectionCategory category) {
+        if (collectionCategoryCache.TryGetValue(category, out var cached)) return cached;
+
+        uint obtained = 0;
+        uint total = 0;
+        uint visible = 0;
+
+        foreach (var item in category.Items) {
+            var unlockable = plugin.UnlockablesService.GetUnlockableCollectionItem(type, item.Id);
+            if (!MatchSearch(unlockable.NameLowercase(), unlockable.DescriptionLowercase())) continue;
+
+            total++;
+            if (unlockable.Unlocked()) obtained++;
+            if (MatchUnlockFilter(unlockable.Unlocked())) visible++;
+        }
+
+        var result = new CollectionProgress(new PointsScore(obtained, total), visible);
+        collectionCategoryCache[category] = result;
+        return result;
+    }
+
+    public CollectionProgress ComputeProgress(UnlockableType type) {
+        if (collectionCache.TryGetValue(type, out var cached)) return cached;
+
+        uint obtained = 0;
+        uint total = 0;
+        uint visible = 0;
+
+        foreach (var category in CollectionCategories(type)) {
+            var (score, categoryVisible) = ComputeProgress(type, category);
+            obtained += score.Obtained;
+            total += score.Total;
+            visible += categoryVisible;
+        }
+
+        var result = new CollectionProgress(new PointsScore(obtained, total), visible);
+        collectionCache[type] = result;
         return result;
     }
 
@@ -115,6 +163,14 @@ public class UnlockablesState(Plugin plugin) {
         return FilteredLayout.Achievements.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
     }
 
+    public List<CollectionCategory> CollectionCategories(UnlockableType type) {
+        return plugin.CollectionsService.Categories(type);
+    }
+
+    public CollectionCategory? FindCollectionCategory(UnlockableType type, uint id) {
+        return plugin.CollectionsService.FindCategory(type, id);
+    }
+
     public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
         var items = category.Items;
 
@@ -140,6 +196,19 @@ public class UnlockablesState(Plugin plugin) {
             unlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
 
         return unlockables;
+    }
+
+    public List<CollectionEntry> SortedCollectionEntries(UnlockableType type, CollectionCategory category) {
+        var entries = category.Items
+                              .Select(it => new CollectionEntry(plugin.UnlockablesService.GetUnlockableCollectionItem(type, it.Id), it))
+                              .Where(it => MatchSearch(it.Unlockable.NameLowercase(), it.Unlockable.DescriptionLowercase())
+                                           && MatchUnlockFilter(it.Unlockable.Unlocked()))
+                              .ToList();
+
+        if (configuration.SortBy == SortBy.Alphabetically)
+            entries.Sort((a, b) => string.Compare(a.Unlockable.NameLowercase(), b.Unlockable.NameLowercase(), StringComparison.OrdinalIgnoreCase));
+
+        return entries;
     }
 
     public List<IUnlockable> PinnedUnlockables() {

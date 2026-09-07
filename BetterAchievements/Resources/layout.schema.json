@@ -3,84 +3,13 @@
     "title": "MainLayout",
     "type": "object",
     "required": [
-        "achievements",
-        "fashionaccessories",
-        "minions",
-        "bardings",
-        "emotes",
-        "facewears",
-        "framerskits",
-        "hairstyles",
-        "mounts",
-        "titles",
-        "ttcards",
-        "ttnpcs"
+        "achievements"
     ],
     "properties": {
         "achievements": {
             "type": "array",
             "items": {
                 "$ref": "#/definitions/AchievementLayout"
-            }
-        },
-        "mounts": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "minions": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "ttcards": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "ttnpcs": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "bardings": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "fashionaccessories": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "hairstyles": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "facewears": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "emotes": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
-            }
-        },
-        "framerskits": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/LayoutCategory"
             }
         }
     },
@@ -191,22 +120,6 @@
                     "const": "tiered"
                 },
                 "ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
-        "LayoutCategory": {
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "items": {
                     "type": "array",
                     "items": {
                         "type": "integer"

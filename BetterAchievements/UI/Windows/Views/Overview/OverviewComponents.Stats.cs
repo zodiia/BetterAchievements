@@ -7,20 +7,24 @@ using Dalamud.Bindings.ImGui;
 namespace BetterAchievements.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
+    private const string AchievementsNoun = "achievements";
+
     public static void OverviewStats(UnlockablesState unlockables) {
-        OverviewStats(unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress());
+        OverviewStats(unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress(), AchievementsNoun);
     }
 
     public static void OverviewStats(UnlockablesState unlockables, AchievementLayout layout) {
-        OverviewStats(unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout));
+        OverviewStats(unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout), AchievementsNoun);
     }
 
-    private static void OverviewStats(PointsScore achievementCount, PointsScore points) {
-        var (obtainedCount, totalCount) = achievementCount;
-        var (obtainedPoints, totalPoints) = points;
-        var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
+    public static void OverviewStats(PointsScore count, string noun) {
+        OverviewStats(count, null, noun);
+    }
 
-        DrawStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
+    private static void OverviewStats(PointsScore count, PointsScore? points, string noun) {
+        var progress = ProgressRatio(count, points);
+
+        DrawStatsLine(count, points, noun);
 
         ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
         UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100:0.#}%");
@@ -29,17 +33,24 @@ public static partial class OverviewComponents {
         // RanksRow(plugin);
     }
 
-    private static void DrawStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
+    private static float ProgressRatio(PointsScore count, PointsScore? points) {
+        var score = points ?? count;
+        return score.Total == 0 ? 0f : (float)score.Obtained / score.Total;
+    }
+
+    private static void DrawStatsLine(PointsScore count, PointsScore? points, string noun) {
         var lineStartX = ImGui.GetCursorPosX();
         var lineStartY = ImGui.GetCursorPosY();
         var avail = ImGui.GetContentRegionAvail().X;
 
-        ImGui.TextColored(UiColors.Blue(), $"{obtainedCount:N0}");
+        ImGui.TextColored(UiColors.Blue(), $"{count.Obtained:N0}");
         ImGui.SameLine(0, 0);
-        ImGui.TextColored(UiColors.Text(), $" / {totalCount:N0} achievements");
+        ImGui.TextColored(UiColors.Text(), $" / {count.Total:N0} {noun}");
 
-        var obtainedText = $"{obtainedPoints:N0}";
-        var totalText = $" / {totalPoints:N0} points";
+        if (points is not { } pointsScore) return;
+
+        var obtainedText = $"{pointsScore.Obtained:N0}";
+        var totalText = $" / {pointsScore.Total:N0} points";
         var rightWidth = ImGui.CalcTextSize(obtainedText).X + ImGui.CalcTextSize(totalText).X;
 
         ImGui.SameLine();

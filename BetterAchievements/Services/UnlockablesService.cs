@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +6,7 @@ using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
+using Lumina.Extensions;
 
 namespace BetterAchievements.Services;
 
@@ -14,6 +16,7 @@ public class UnlockablesService {
 
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
+    private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
     private bool achievementArrayUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
 
@@ -40,6 +43,7 @@ public class UnlockablesService {
                         map[key] = value;
                     }
                 }
+
                 break;
 
             case AchievementLayoutCategory category:
@@ -53,9 +57,11 @@ public class UnlockablesService {
                             foreach (var id in tiered.Ids) {
                                 map[id] = lastId;
                             }
+
                             break;
                     }
                 }
+
                 break;
         }
 
@@ -92,6 +98,57 @@ public class UnlockablesService {
         var achievementList = achievementIds.Select(id => achievementSheet.GetRow(id)).ToList();
         var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
         achievementIds.ForEach(id => tieredAchievements[id] = unlockable);
+        return unlockable;
+    }
+
+    private static IUnlockable CreateUnlockableCollectionItem(UnlockableType type, uint id) {
+        return type switch {
+            UnlockableType.Mount => new UnlockableMount(Plugin.DataManager.GetExcelSheet<Mount>().GetRow(id)),
+            UnlockableType.Minion => new UnlockableMinion(Plugin.DataManager.GetExcelSheet<Companion>().GetRow(id)),
+            UnlockableType.Title => new UnlockableTitle(Plugin.DataManager.GetExcelSheet<Title>().GetRow(id)),
+            UnlockableType.TripleTriadCard => new UnlockableTripleTriadCard(Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRow(id)),
+            UnlockableType.Barding => new UnlockableBarding(Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRow(id)),
+            UnlockableType.FashionAccessory => new UnlockableFashionAccessory(Plugin.DataManager.GetExcelSheet<Ornament>().GetRow(id)),
+            UnlockableType.Hairstyle => new UnlockableHairstyle(Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().First(it => it.FeatureID == id)),
+            UnlockableType.Facewear => new UnlockableFacewear(Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRow(id)),
+            UnlockableType.Emote => new UnlockableEmote(Plugin.DataManager.GetExcelSheet<Emote>().GetRow(id)),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+    }
+
+    public static bool IsValidCollectionItem(UnlockableType type, uint id) {
+        return type switch {
+            UnlockableType.Mount =>
+                Plugin.DataManager.GetExcelSheet<Mount>().GetRowOrDefault(id) is { Order: > -1, Singular.IsEmpty: false },
+            UnlockableType.Minion =>
+                Plugin.DataManager.GetExcelSheet<Companion>().GetRowOrDefault(id) is { Singular.IsEmpty: false },
+            UnlockableType.Title =>
+                Plugin.DataManager.GetExcelSheet<Title>().GetRowOrDefault(id) is { Masculine.IsEmpty: false },
+            UnlockableType.TripleTriadCard =>
+                Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRowOrDefault(id) is { Name.IsEmpty: false },
+            UnlockableType.Barding => Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRowOrDefault(id) is { Order: > 0, Name.IsEmpty: false },
+            UnlockableType.FashionAccessory =>
+                Plugin.DataManager.GetExcelSheet<Ornament>().GetRowOrDefault(id) is { Singular.IsEmpty: false },
+            UnlockableType.Hairstyle =>
+                Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().TryGetFirst(it => it.FeatureID == id, out var hairstyle)
+                && hairstyle is { IsPurchasable: true, RowId: < 2400, FeatureID: not 130, FeatureID: not 159 },
+            UnlockableType.Facewear =>
+                Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRowOrDefault(id) is { Name.IsEmpty: false } facewear
+                && facewear.Glasses.FirstOrNull()?.IsValid == true && !facewear.Glasses.FirstOrNull()?.Value.Name.IsEmpty == true,
+            UnlockableType.Emote =>
+                Plugin.DataManager.GetExcelSheet<Emote>().GetRowOrDefault(id) is { Order: > 0, Name.IsEmpty: false },
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+    }
+
+    public IUnlockable GetUnlockableCollectionItem(UnlockableType type, uint id) {
+        var key = new UnlockableKey(type, id);
+        if (collectionItems.TryGetValue(key, out var it)) {
+            return it;
+        }
+
+        var unlockable = CreateUnlockableCollectionItem(type, id);
+        collectionItems[key] = unlockable;
         return unlockable;
     }
 
@@ -150,6 +207,7 @@ public class UnlockablesService {
             achievementsWereLoaded = true;
             return true;
         }
+
         if (achievementArrayUpdatedForUi) {
             achievementArrayUpdatedForUi = false;
             return true;
@@ -161,5 +219,6 @@ public class UnlockablesService {
     public void Refresh() {
         achievements.Clear();
         tieredAchievements.Clear();
+        collectionItems.Clear();
     }
 }

@@ -1,4 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
+using BetterAchievements.Data;
+using BetterAchievements.Data.Unlockable;
+using BetterAchievements.Services;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows.Views;
 using BetterAchievements.UI.Windows.Views.Overview;
@@ -10,6 +14,8 @@ public abstract record NavigationTarget {
     public sealed record Pinned : NavigationTarget;
     public sealed record Category(int Id) : NavigationTarget;
     public sealed record Group(string Name) : NavigationTarget;
+    public sealed record Collection(UnlockableType Type) : NavigationTarget;
+    public sealed record CollectionCategory(UnlockableType Type, uint Id) : NavigationTarget;
     public sealed record Todo(string Name) : NavigationTarget;
 }
 
@@ -42,6 +48,17 @@ public class NavigationState {
 
         return clipper;
     }
+
+    private CollectionView CollectionView(NavigationTarget target, UnlockableType type, CollectionCategory category, string breadcrumb) {
+        return new CollectionView(
+            plugin,
+            type,
+            breadcrumb,
+            unlockables.SortedCollectionEntries(type, category),
+            unlockables.ComputeProgress(type, category).Score,
+            ClipperFor(target));
+    }
+
     public bool IsSelected(NavigationTarget target) => Target == target;
 
     public bool IsGroupOpen(string name) => OpenGroupName == name;
@@ -75,6 +92,34 @@ public class NavigationState {
                 }
 
                 SetNavigation(target, group.Name, new AchievementCategoryView(plugin, layoutGroup, unlockables, this));
+                break;
+
+            case NavigationTarget.Collection collection:
+                var singleCategory = unlockables.CollectionCategories(collection.Type).FirstOrDefault();
+                if (collection.Type == UnlockableType.Title && singleCategory == null) {
+                    // fall back to overview (shouldn't happen)
+                    Navigate(new NavigationTarget.Overview());
+                    return;
+                }
+
+                IView collectionView = collection.Type == UnlockableType.Title
+                    ? CollectionView(target, collection.Type, singleCategory!, CollectionsService.Label(collection.Type))
+                    : new CollectionOverviewView(plugin, collection.Type, unlockables, this);
+
+                SetNavigation(target, CollectionsService.Label(collection.Type), collectionView);
+                break;
+
+            case NavigationTarget.CollectionCategory collectionCategory:
+                var collectionFound = unlockables.FindCollectionCategory(collectionCategory.Type, collectionCategory.Id);
+                if (collectionFound == null) {
+                    // fall back to overview (shouldn't happen)
+                    Navigate(new NavigationTarget.Overview());
+                    return;
+                }
+
+                SetNavigation(target, CollectionsService.Label(collectionCategory.Type),
+                              CollectionView(target, collectionCategory.Type, collectionFound,
+                                             $"{CollectionsService.Label(collectionCategory.Type)} / {collectionFound.Name}"));
                 break;
 
             case NavigationTarget.Pinned:

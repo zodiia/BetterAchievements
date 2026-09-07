@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.State;
 using BetterAchievements.UI.Windows;
 using Dalamud.Bindings.ImGui;
@@ -82,7 +83,19 @@ public static partial class SidebarComponents {
         }
 
         SectionHeader("Collections");
-        FillerItems(state, UiColors.Blue(), "Mounts", "Minions", "Titles", "Fishing", "Triple Triad Cards", "Triple Triad NPCs", "Bardings", "Fashion Accessories", "Hairstyles", "Emotes", "Framer's Kits");
+        if (!state.Unlockables.CollectionsLoaded) CollectionsLoading();
+        CollectionItem(state, UnlockableType.Mount);
+        CollectionItem(state, UnlockableType.Minion);
+        CollectionItem(state, UnlockableType.Title);
+        FillerItems(state, UiColors.Blue(), "Fishing");
+        CollectionItem(state, UnlockableType.TripleTriadCard);
+        FillerItems(state, UiColors.Blue(), "Triple Triad NPCs");
+        CollectionItem(state, UnlockableType.Barding);
+        CollectionItem(state, UnlockableType.FashionAccessory);
+        CollectionItem(state, UnlockableType.Hairstyle);
+        CollectionItem(state, UnlockableType.Facewear);
+        CollectionItem(state, UnlockableType.Emote);
+        FillerItems(state, UiColors.Blue(), "Framer's Kits");
 
         SectionHeader("Records");
         FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");

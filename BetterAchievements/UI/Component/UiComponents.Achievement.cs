@@ -89,12 +89,9 @@ public static partial class UiComponents {
         float titleHeight;
         using (UiFonts.FontSize110().Push()) {
             var font = ImGui.GetFont();
-            // the icon glyph fills its line box, but text leaves descender space under the baseline,
-            // so the title is centered on its ascent instead of on its full line height
             titleHeight = ImGui.GetTextLineHeight() * font.Ascent / font.FontSize;
         }
 
-        // drawn floating over the gap between the two header lines, so it must not advance the layout cursor
         ImGui.SetCursorPosY(middle - pinHeight / 2f);
         Pin(pinned, ids, configuration);
 

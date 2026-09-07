@@ -5,6 +5,7 @@ namespace BetterAchievements.Data.Unlockable;
 public sealed record UnlockableMount(Mount Mount) : IUnlockable {
     public uint Id() => Mount.RowId;
     public UnlockableType Type() => UnlockableType.Mount;
+    public uint Icon() => Mount.Icon;
     private readonly string name = Mount.Singular.ToString();
     public string Name() => name;
     private readonly string description = Plugin.DataManager.GetExcelSheet<MountTransient>().GetRow(Mount.RowId).DescriptionEnhanced.ToString();

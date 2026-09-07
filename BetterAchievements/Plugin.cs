@@ -78,6 +78,7 @@ public sealed class Plugin : IDalamudPlugin {
     public AchievementProgressService AchievementProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
     public LalachievementsService LalachievementsService { get; private set; }
+    public CollectionsService CollectionsService { get; private set; }
     public TrackerService TrackerService { get; private set; }
     public AddonLifecycleService AddonLifecycleService { get; private set; }
     public HistoryService HistoryService { get; private set; }
@@ -115,6 +116,7 @@ public sealed class Plugin : IDalamudPlugin {
         UnlockablesService = new UnlockablesService(this);
         AchievementProgressService = new AchievementProgressService(this);
         LalachievementsService = new LalachievementsService();
+        CollectionsService = new CollectionsService(this);
         TrackerService = new TrackerService(this);
 
         UiFonts.Initialize();
@@ -156,7 +158,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     private void HandleWarnings() {
-        MainLayout.CheckMissingCollectionEntries();
+        MainLayout.CheckMissingAchievements(DataManager.GetExcelSheet<Achievement>());
     }
 
     public void ToggleConfigUi() => MainWindow.Toggle();
