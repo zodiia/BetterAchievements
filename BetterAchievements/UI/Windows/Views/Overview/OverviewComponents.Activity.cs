@@ -46,7 +46,7 @@ public static partial class OverviewComponents {
         if (ReferenceEquals(NearingCompletionSource, unlockables.FilteredLayout)) return NearingCompletionCache;
         NearingCompletionSource = unlockables.FilteredLayout;
 
-        NearingCompletionCache = plugin.MainLayout.AchievementLayout
+        NearingCompletionCache = plugin.MainLayout.Achievements
                                         .SelectMany(AllItems)
                                         .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
                                         .Where(it => it != null)

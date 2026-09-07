@@ -2,7 +2,7 @@
 // bunx @biomejs/biome format --line-width=120 --write ./BetterAchievements/Resources/layout.jsonc
 {
 	"$schema": "./layout.schema.json",
-	"achievementLayout": [
+	"achievements": [
 		{
 			"type": "group",
 			"name": "Battle",

@@ -1,100 +1,218 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"title": "MainLayout",
-	"type": "object",
-	"required": ["achievementLayout"],
-	"properties": {
-		"achievementLayout": {
-			"type": "array",
-			"items": {
-				"$ref": "#/$defs/AchievementLayout"
-			}
-		}
-	},
-	"$defs": {
-		"AchievementLayout": {
-			"anyOf": [{ "$ref": "#/$defs/AchievementLayoutGroup" }, { "$ref": "#/$defs/AchievementLayoutCategory" }]
-		},
-		"AchievementLayoutGroup": {
-			"type": "object",
-			"required": ["type", "name", "items"],
-			"properties": {
-				"type": {
-					"const": "group"
-				},
-				"name": {
-					"type": "string"
-				},
-				"items": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/AchievementLayout"
-					}
-				},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MainLayout",
+    "type": "object",
+    "required": [
+        "achievements",
+        "fashionaccessories",
+        "minions",
+        "bardings",
+        "emotes",
+        "facewears",
+        "framerskits",
+        "hairstyles",
+        "mounts",
+        "titles",
+        "ttcards",
+        "ttnpcs"
+    ],
+    "properties": {
+        "achievements": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/AchievementLayout"
+            }
+        },
+        "mounts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "minions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "ttcards": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "ttnpcs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "bardings": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "fashionaccessories": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "hairstyles": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "facewears": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "emotes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        },
+        "framerskits": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/LayoutCategory"
+            }
+        }
+    },
+    "definitions": {
+        "AchievementLayout": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/AchievementLayoutGroup"
+                },
+                {
+                    "$ref": "#/definitions/AchievementLayoutCategory"
+                }
+            ]
+        },
+        "AchievementLayoutGroup": {
+            "type": "object",
+            "required": [
+                "type",
+                "name",
+                "items"
+            ],
+            "properties": {
+                "type": {
+                    "const": "group"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AchievementLayout"
+                    }
+                },
                 "color": {
                     "type": "string"
                 },
                 "icon": {
                     "type": "string"
                 }
-			}
-		},
-		"AchievementLayoutCategory": {
-			"type": "object",
-			"required": ["type", "id", "name", "items"],
-			"properties": {
-				"type": {
-					"const": "category"
-				},
-				"id": {
-					"type": "number"
-				},
-				"name": {
-					"type": "string"
-				},
-				"items": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/AchievementLayoutItem"
-					}
-				},
+            }
+        },
+        "AchievementLayoutCategory": {
+            "type": "object",
+            "required": [
+                "type",
+                "id",
+                "name",
+                "items"
+            ],
+            "properties": {
+                "type": {
+                    "const": "category"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AchievementLayoutItem"
+                    }
+                },
                 "additionalViews": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 }
-			}
-		},
-		"AchievementLayoutItem": {
-			"anyOf": [{ "$ref": "#/$defs/AchievementLayoutItemSimple" }, { "$ref": "#/$defs/AchievementLayoutItemTiered" }]
-		},
-		"AchievementLayoutItemSimple": {
-			"type": "object",
-			"required": ["type", "id"],
-			"properties": {
-				"type": {
-					"const": "simple"
-				},
-				"id": {
-					"type": "number"
-				}
-			}
-		},
-		"AchievementLayoutItemTiered": {
-			"type": "object",
-			"required": ["type", "ids"],
-			"properties": {
-				"type": {
-					"const": "tiered"
-				},
-				"ids": {
-					"type": "array",
-					"items": {
-						"type": "number"
-					}
-				}
-			}
-		}
-	}
+            }
+        },
+        "AchievementLayoutItem": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/AchievementLayoutItemSimple"
+                },
+                {
+                    "$ref": "#/definitions/AchievementLayoutItemTiered"
+                }
+            ]
+        },
+        "AchievementLayoutItemSimple": {
+            "type": "object",
+            "required": [
+                "type",
+                "id"
+            ],
+            "properties": {
+                "type": {
+                    "const": "simple"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "AchievementLayoutItemTiered": {
+            "type": "object",
+            "required": [
+                "type",
+                "ids"
+            ],
+            "properties": {
+                "type": {
+                    "const": "tiered"
+                },
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "LayoutCategory": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    }
 }

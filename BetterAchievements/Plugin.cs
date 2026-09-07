@@ -156,7 +156,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     private void HandleWarnings() {
-        MainLayout.CheckMissingAchievements(DataManager.Excel.GetSheet<Achievement>());
+        MainLayout.CheckMissingCollectionEntries();
     }
 
     public void ToggleConfigUi() => MainWindow.Toggle();

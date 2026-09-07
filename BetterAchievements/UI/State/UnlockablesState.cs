@@ -8,11 +8,11 @@ using BetterAchievements.Services;
 namespace BetterAchievements.UI.State;
 
 public class UnlockablesState(Plugin plugin) {
+    private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
-    private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<AchievementLayout, List<uint>> progressAchievementIds = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
 
     private string search = "";
 
@@ -27,9 +27,10 @@ public class UnlockablesState(Plugin plugin) {
 
     public void ApplyFilters() {
         progressAchievementIds.Clear();
-        var items = mainLayout.AchievementLayout.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList();
 
-        FilteredLayout = new MainLayout { AchievementLayout = items };
+        FilteredLayout = mainLayout with {
+            Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList()
+        };
         progressCache.Clear();
         achievementCountCache.Clear();
     }
@@ -67,7 +68,7 @@ public class UnlockablesState(Plugin plugin) {
         uint obtained = 0;
         uint total = 0;
 
-        foreach (var layout in mainLayout.AchievementLayout) {
+        foreach (var layout in mainLayout.Achievements) {
             var (layoutObtained, layoutTotal) = ComputeProgress(layout);
             obtained += layoutObtained;
             total += layoutTotal;
@@ -93,7 +94,7 @@ public class UnlockablesState(Plugin plugin) {
         uint obtained = 0;
         uint total = 0;
 
-        foreach (var layout in mainLayout.AchievementLayout) {
+        foreach (var layout in mainLayout.Achievements) {
             var (layoutObtained, layoutTotal) = ComputeAchievementCount(layout);
             obtained += layoutObtained;
             total += layoutTotal;
@@ -103,15 +104,15 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public CategoryWithBreadcrumbs? FindCategory(int id) {
-        return FindCategory(FilteredLayout.AchievementLayout, category => category.Id == id);
+        return FindCategory(FilteredLayout.Achievements, category => category.Id == id);
     }
 
     public string? FindBreadcrumb(uint achievementId) {
-        return FindCategory(mainLayout.AchievementLayout, category => category.GetAllAchievementIds().Contains(achievementId))?.Breadcrumb;
+        return FindCategory(mainLayout.Achievements, category => category.GetAllAchievementIds().Contains(achievementId))?.Breadcrumb;
     }
 
     public AchievementLayoutGroup? FindTopLevelGroup(string name) {
-        return FilteredLayout.AchievementLayout.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
+        return FilteredLayout.Achievements.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
     }
 
     public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
@@ -128,15 +129,15 @@ public class UnlockablesState(Plugin plugin) {
                     plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)
                 ],
                 AchievementLayoutItemTiered tiered => [
-                    plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers)
+                    plugin.UnlockablesService.GetUnlockableTieredAchievement(
+                        tiered.Ids, tiered.Spoilers)
                 ],
                 _ => []
             };
         }).ToList();
 
-        if (configuration.SortBy == SortBy.Alphabetically) {
+        if (configuration.SortBy == SortBy.Alphabetically)
             unlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
-        }
 
         return unlockables;
     }
@@ -152,44 +153,48 @@ public class UnlockablesState(Plugin plugin) {
 
     private static CategoryWithBreadcrumbs? FindCategory(
         IEnumerable<AchievementLayout> group, Func<AchievementLayoutCategory, bool> predicate, string prefix = "") {
-        foreach (var item in group) {
+        foreach (var item in group)
             switch (item) {
                 case AchievementLayoutGroup subgroup:
                     var res = FindCategory(subgroup.Items, predicate, prefix.Length == 0 ? subgroup.Name : $"{prefix} / {subgroup.Name}");
-                    if (res != null) {
-                        return res;
-                    }
+                    if (res != null) return res;
 
                     break;
                 case AchievementLayoutCategory category when predicate(category):
-                    return new(category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
+                    return new CategoryWithBreadcrumbs(category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
             }
-        }
 
         return null;
     }
 
-    private uint Rarity(AchievementLayoutItem item) => item switch {
-        AchievementLayoutItemSimple simple => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue),
-        AchievementLayoutItemTiered tiered => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue),
-        _ => uint.MaxValue
-    };
+    private uint Rarity(AchievementLayoutItem item) {
+        return item switch {
+            AchievementLayoutItemSimple simple => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue),
+            AchievementLayoutItemTiered tiered => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue),
+            _ => uint.MaxValue
+        };
+    }
 
-    private bool MatchSearch(string name, string desc) => name.Contains(search) || desc.Contains(search);
+    private bool MatchSearch(string name, string desc) {
+        return name.Contains(search) || desc.Contains(search);
+    }
 
-    private bool MatchUnlockFilter(bool unlocked) =>
-        configuration.UnlockStatusFilter switch {
+    private bool MatchUnlockFilter(bool unlocked) {
+        return configuration.UnlockStatusFilter switch {
             UnlockStatusFilter.All => true,
             UnlockStatusFilter.Unlocked => unlocked,
             UnlockStatusFilter.Locked => !unlocked,
             _ => throw new ArgumentOutOfRangeException($"{configuration.UnlockStatusFilter} not implemented.")
         };
+    }
 
-    private bool MatchRankedFilter(bool lalachievements) => configuration.RankedFilter switch {
-        RankedFilter.All => true,
-        RankedFilter.Lalachievements => lalachievements,
-        _ => throw new ArgumentOutOfRangeException($"{configuration.RankedFilter} not implemented.")
-    };
+    private bool MatchRankedFilter(bool lalachievements) {
+        return configuration.RankedFilter switch {
+            RankedFilter.All => true,
+            RankedFilter.Lalachievements => lalachievements,
+            _ => throw new ArgumentOutOfRangeException($"{configuration.RankedFilter} not implemented.")
+        };
+    }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item) {
         var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
@@ -205,11 +210,13 @@ public class UnlockablesState(Plugin plugin) {
                && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
     }
 
-    private bool FilterAchievementLayoutItem(AchievementLayoutItem item) => item switch {
-        AchievementLayoutItemSimple simple => FilterAchievementLayoutItem(simple),
-        AchievementLayoutItemTiered tiered => FilterAchievementLayoutItem(tiered),
-        _ => false
-    };
+    private bool FilterAchievementLayoutItem(AchievementLayoutItem item) {
+        return item switch {
+            AchievementLayoutItemSimple simple => FilterAchievementLayoutItem(simple),
+            AchievementLayoutItemTiered tiered => FilterAchievementLayoutItem(tiered),
+            _ => false
+        };
+    }
 
     private bool MatchProgressFilter(AchievementLayoutItemSimple item) {
         var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
@@ -223,17 +230,21 @@ public class UnlockablesState(Plugin plugin) {
                && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
     }
 
-    private bool MatchProgressFilter(AchievementLayoutItem item) => item switch {
-        AchievementLayoutItemSimple simple => MatchProgressFilter(simple),
-        AchievementLayoutItemTiered tiered => MatchProgressFilter(tiered),
-        _ => false
-    };
+    private bool MatchProgressFilter(AchievementLayoutItem item) {
+        return item switch {
+            AchievementLayoutItemSimple simple => MatchProgressFilter(simple),
+            AchievementLayoutItemTiered tiered => MatchProgressFilter(tiered),
+            _ => false
+        };
+    }
 
-    private static List<uint> AchievementIds(AchievementLayoutItem item) => item switch {
-        AchievementLayoutItemSimple simple => [simple.Id],
-        AchievementLayoutItemTiered tiered => tiered.Ids,
-        _ => []
-    };
+    private static List<uint> AchievementIds(AchievementLayoutItem item) {
+        return item switch {
+            AchievementLayoutItemSimple simple => [simple.Id],
+            AchievementLayoutItemTiered tiered => tiered.Ids,
+            _ => []
+        };
+    }
 
     private AchievementLayoutCategory? FilterAchievementLayout(AchievementLayoutCategory category) {
         var progressIds = category.Items.Where(MatchProgressFilter).SelectMany(AchievementIds).ToList();
@@ -260,9 +271,11 @@ public class UnlockablesState(Plugin plugin) {
         return filtered;
     }
 
-    private AchievementLayout? FilterAchievementLayout(AchievementLayout layout) => layout switch {
-        AchievementLayoutGroup group => FilterAchievementLayout(group),
-        AchievementLayoutCategory category => FilterAchievementLayout(category),
-        _ => null
-    };
+    private AchievementLayout? FilterAchievementLayout(AchievementLayout layout) {
+        return layout switch {
+            AchievementLayoutGroup group => FilterAchievementLayout(group),
+            AchievementLayoutCategory category => FilterAchievementLayout(category),
+            _ => null
+        };
+    }
 }

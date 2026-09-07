@@ -14,7 +14,7 @@ public static partial class OverviewComponents {
     public static void CategoriesGrid(UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns) {
         if (!ImGui.BeginTable("CategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame)) return;
 
-        foreach (var layout in layouts ?? unlockables.FilteredLayout.AchievementLayout) {
+        foreach (var layout in layouts ?? unlockables.FilteredLayout.Achievements) {
             ImGui.TableNextColumn();
             CategoryCard(unlockables, navigation, layout);
         }

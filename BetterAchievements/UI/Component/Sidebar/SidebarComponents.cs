@@ -77,15 +77,15 @@ public static partial class SidebarComponents {
         SectionHeader("Achievements");
         PinnedAchievementsItem(plugin, state);
         OverviewItem(state);
-        foreach (var layout in state.Unlockables.FilteredLayout.AchievementLayout) {
+        foreach (var layout in state.Unlockables.FilteredLayout.Achievements) {
             MainCategoryItem(state, layout);
         }
 
         SectionHeader("Collections");
-        FillerItems(state, UiColors.Blue(), "Mounts", "Minions", "Titles", "Fishing", "Triple Triad Cards", "Triple Triad NPCs", "Orchestrion Rolls", "Bardings", "Fashion Accessories", "Hairstyles", "Emotes", "Framer's Kits");
+        FillerItems(state, UiColors.Blue(), "Mounts", "Minions", "Titles", "Fishing", "Triple Triad Cards", "Triple Triad NPCs", "Bardings", "Fashion Accessories", "Hairstyles", "Emotes", "Framer's Kits");
 
         SectionHeader("Records");
-        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
         FillerItems(state, UiColors.Red(), "Yo-kai Watch", "The Rising");

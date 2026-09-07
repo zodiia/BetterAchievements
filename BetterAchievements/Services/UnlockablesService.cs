@@ -65,7 +65,7 @@ public class UnlockablesService {
     private static Dictionary<uint, uint> CalculateHighestIdMap(MainLayout mainLayout) {
         var map = new Dictionary<uint, uint>();
 
-        foreach (var layout in mainLayout.AchievementLayout) {
+        foreach (var layout in mainLayout.Achievements) {
             foreach (var (key, value) in CalculateHighestIdMap(layout)) {
                 map[key] = value;
             }
