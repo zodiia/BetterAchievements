@@ -88,18 +88,18 @@ public class CollectionsService(Plugin plugin) {
     }
 
     private static List<CollectionCategory> BuildCategories<T>(
-        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, string> getHowTo, Func<T, uint> getSourceTypeId)
+        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, string> getHowTo, Func<T, uint?> getSourceTypeId)
         where T : ITable {
         return rows.Where(it => IsIncluded(type, it))
-                   .GroupBy(getSourceTypeId)
+                   .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
                    .Select(group => new CollectionCategory {
-                       Id = group.Key,
-                       Name = response.GetRow<SourceType>(group.Key)?.Name ?? UnknownCategoryName,
+                       Id = group.Key.Id,
+                       Name = group.Key.Name,
                        Items = group.OrderBy(it => it.Id)
                                     .Select(it => new CollectionItem {
                                         Id = it.Id,
                                         Table = it,
-                                        SourceType = response.GetRow<SourceType>(group.Key),
+                                        SourceType = group.Key,
                                         HowTo = getHowTo(it)
                                     })
                                     .ToList()
