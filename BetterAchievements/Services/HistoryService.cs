@@ -204,7 +204,7 @@ public class HistoryService : IDisposable {
                              .ToList();
 
         ImportAchievementStatuses(statuses);
-        Log.Information("[BetterAchievements] Imported achievement progress to history database in {E}ms", stopwatch.Elapsed.Microseconds / 1000.0);
+        Log.Information("[BetterAchievements] Imported achievement progress from history database in {E}ms", stopwatch.Elapsed.Microseconds / 1000.0);
     }
 
     public void Dispose() {
