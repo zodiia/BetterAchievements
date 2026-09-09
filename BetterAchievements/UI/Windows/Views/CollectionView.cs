@@ -14,7 +14,7 @@ public class CollectionView(
     Plugin plugin,
     UnlockableType type,
     string breadcrumb,
-    List<CollectionEntry> entries,
+    List<IUnlockable> entries,
     PointsScore score,
     VariableHeightClipper clipper) : IView {
     private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!\n(Character Window > Profile > Title > Acquired Titles)";

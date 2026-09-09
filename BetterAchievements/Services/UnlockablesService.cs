@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
+using ITable = BetterAchievements.External.Lalachievements.ITable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
@@ -101,17 +102,19 @@ public class UnlockablesService {
         return unlockable;
     }
 
-    private static IUnlockable CreateUnlockableCollectionItem(UnlockableType type, uint id) {
+    private static IUnlockable CreateUnlockableCollectionItem(UnlockableType type, ITable row) {
+        var id = row.Id;
+
         return type switch {
-            UnlockableType.Mount => new UnlockableMount(Plugin.DataManager.GetExcelSheet<Mount>().GetRow(id)),
-            UnlockableType.Minion => new UnlockableMinion(Plugin.DataManager.GetExcelSheet<Companion>().GetRow(id)),
-            UnlockableType.Title => new UnlockableTitle(Plugin.DataManager.GetExcelSheet<Title>().GetRow(id)),
-            UnlockableType.TripleTriadCard => new UnlockableTripleTriadCard(Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRow(id)),
-            UnlockableType.Barding => new UnlockableBarding(Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRow(id)),
-            UnlockableType.FashionAccessory => new UnlockableFashionAccessory(Plugin.DataManager.GetExcelSheet<Ornament>().GetRow(id)),
-            UnlockableType.Hairstyle => new UnlockableHairstyle(Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().First(it => it.FeatureID == id)),
-            UnlockableType.Facewear => new UnlockableFacewear(Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRow(id)),
-            UnlockableType.Emote => new UnlockableEmote(Plugin.DataManager.GetExcelSheet<Emote>().GetRow(id)),
+            UnlockableType.Mount => new UnlockableMount(Plugin.DataManager.GetExcelSheet<Mount>().GetRow(id), row),
+            UnlockableType.Minion => new UnlockableMinion(Plugin.DataManager.GetExcelSheet<Companion>().GetRow(id), row),
+            UnlockableType.Title => new UnlockableTitle(Plugin.DataManager.GetExcelSheet<Title>().GetRow(id), row),
+            UnlockableType.TripleTriadCard => new UnlockableTripleTriadCard(Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRow(id), row),
+            UnlockableType.Barding => new UnlockableBarding(Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRow(id), row),
+            UnlockableType.FashionAccessory => new UnlockableFashionAccessory(Plugin.DataManager.GetExcelSheet<Ornament>().GetRow(id), row),
+            UnlockableType.Hairstyle => new UnlockableHairstyle(Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().First(it => it.FeatureID == id), row),
+            UnlockableType.Facewear => new UnlockableFacewear(Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRow(id), row),
+            UnlockableType.Emote => new UnlockableEmote(Plugin.DataManager.GetExcelSheet<Emote>().GetRow(id), row),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
@@ -141,13 +144,13 @@ public class UnlockablesService {
         };
     }
 
-    public IUnlockable GetUnlockableCollectionItem(UnlockableType type, uint id) {
-        var key = new UnlockableKey(type, id);
+    public IUnlockable GetUnlockableCollectionItem(UnlockableType type, ITable row) {
+        var key = new UnlockableKey(type, row.Id);
         if (collectionItems.TryGetValue(key, out var it)) {
             return it;
         }
 
-        var unlockable = CreateUnlockableCollectionItem(type, id);
+        var unlockable = CreateUnlockableCollectionItem(type, row);
         collectionItems[key] = unlockable;
         return unlockable;
     }

@@ -11,5 +11,3 @@ public sealed record CategoryWithBreadcrumbs(AchievementLayoutCategory Category,
 public sealed record CollectionProgress(PointsScore Score, uint VisibleCount);
 
 public sealed record UnlockableKey(UnlockableType Type, uint Id);
-
-public sealed record CollectionEntry(IUnlockable Unlockable, CollectionItem Item);

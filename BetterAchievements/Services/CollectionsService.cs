@@ -75,36 +75,28 @@ public class CollectionsService(Plugin plugin) {
 
     private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) {
         return type switch {
-            UnlockableType.Mount => BuildCategories(type, response, response.GetTable<Mount>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.Minion => BuildCategories(type, response, response.GetTable<Minion>(), it => it.HowTo, it => it.SourceTypeId),
+            UnlockableType.Mount => BuildCategories(type, response, response.GetTable<Mount>(), it => it.SourceTypeId),
+            UnlockableType.Minion => BuildCategories(type, response, response.GetTable<Minion>(), it => it.SourceTypeId),
             UnlockableType.Title => BuildTitleCategory(response),
-            UnlockableType.TripleTriadCard =>
-                BuildCategories(type, response, response.GetTable<TripleTriadCard>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.Barding => BuildCategories(type, response, response.GetTable<Barding>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.FashionAccessory => BuildCategories(type, response, response.GetTable<Fashion>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.Hairstyle => BuildCategories(type, response, response.GetTable<Hair>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.Facewear => BuildCategories(type, response, response.GetTable<Spectacle>(), it => it.HowTo, it => it.SourceTypeId),
-            UnlockableType.Emote => BuildCategories(type, response, response.GetTable<Emote>(), it => it.HowTo, it => it.SourceTypeId),
+            UnlockableType.TripleTriadCard => BuildCategories(type, response, response.GetTable<TripleTriadCard>(), it => it.SourceTypeId),
+            UnlockableType.Barding => BuildCategories(type, response, response.GetTable<Barding>(), it => it.SourceTypeId),
+            UnlockableType.FashionAccessory => BuildCategories(type, response, response.GetTable<Fashion>(), it => it.SourceTypeId),
+            UnlockableType.Hairstyle => BuildCategories(type, response, response.GetTable<Hair>(), it => it.SourceTypeId),
+            UnlockableType.Facewear => BuildCategories(type, response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
+            UnlockableType.Emote => BuildCategories(type, response, response.GetTable<Emote>(), it => it.SourceTypeId),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
 
     private static List<CollectionCategory> BuildCategories<T>(
-        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, string?> getHowTo, Func<T, uint?> getSourceTypeId)
+        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, uint?> getSourceTypeId)
         where T : ITable {
         return rows.Where(it => IsIncluded(type, it))
                    .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
                    .Select(group => new CollectionCategory {
                        Id = group.Key.Id,
                        Name = group.Key.Name,
-                       Items = group.OrderBy(it => it.Id)
-                                    .Select(it => new CollectionItem {
-                                        Id = it.Id,
-                                        Table = it,
-                                        SourceType = group.Key,
-                                        HowTo = getHowTo(it) ?? ""
-                                    })
-                                    .ToList()
+                       Items = group.OrderBy(it => it.Id).Select(ITable (it) => it).ToList()
                    })
                    .Where(it => it.Items.Count > 0)
                    .OrderBy(it => CategorySortRank(it.Name))
@@ -124,12 +116,9 @@ public class CollectionsService(Plugin plugin) {
         var items = response.GetTable<Title>()
                             .Where(it => IsIncluded(UnlockableType.Title, it))
                             .OrderBy(it => it.Id)
-                            .Select(it => new CollectionItem {
-                                Id = it.Id,
-                                Table = it,
-                                SourceType = null,
+                            .Select(ITable (it) => it with {
                                 HowTo = achievementNamesByTitleId.TryGetValue(it.Id, out var achievementName)
-                                    ? $"Complete the achievement \"{achievementName}\"."
+                                    ? $"Obtain the achievement \"{achievementName}\"."
                                     : "Could not find the required achievement."
                             })
                             .ToList();

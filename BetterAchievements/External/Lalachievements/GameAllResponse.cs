@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using BetterAchievements.Helpers;
 
 namespace BetterAchievements.External.Lalachievements;
 
@@ -10,6 +11,9 @@ public interface ITable {
     uint Id { get; init; }
     long UpdatedAt { get; init; }
     bool? Deleted { get; init; }
+    string? HowTo { get; init; }
+
+    string PlainHowTo() => CompiledRegexes.HtmlTagStrip().Replace(HowTo ?? "", "\n");
 }
 
 public sealed record GameAllCache {
@@ -109,6 +113,7 @@ public sealed record SourceType : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public string Name { get; init; } = "";
 }
 
@@ -116,6 +121,7 @@ public sealed record Item : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public string Name { get; init; } = "";
 }
 
@@ -123,6 +129,7 @@ public sealed record PlaceName : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public string Name { get; init; } = "";
 }
 
@@ -134,7 +141,7 @@ public sealed record Barding : ITable {
     public uint? SourceTypeId { get; init; }
     public bool? Obtainable { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -146,7 +153,7 @@ public sealed record Hair : ITable {
     public uint? SourceTypeId { get; init; }
     public bool? Obtainable { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -159,7 +166,7 @@ public sealed record Fashion : ITable {
     public uint? SourceTypeId { get; init; }
     public bool? Obtainable { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -172,7 +179,7 @@ public sealed record Spectacle : ITable {
     public uint? SourceTypeId { get; init; }
     public bool? Obtainable { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -186,7 +193,7 @@ public sealed record Emote : ITable {
     public uint? SourceTypeId { get; init; }
     public bool? Obtainable { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -203,7 +210,7 @@ public sealed record Mount : ITable {
     public string Description { get; init; } = "";
     public string DescriptionEnhanced { get; init; } = "";
     public string Tooltip { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -220,7 +227,7 @@ public sealed record Minion : ITable {
     public string Description { get; init; } = "";
     public string DescriptionEnhanced { get; init; } = "";
     public string Tooltip { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -229,6 +236,7 @@ public sealed record Orchestrion : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public uint Sort { get; init; }
     public uint OrchestrionCategoryId { get; init; }
     public string Name { get; init; } = "";
@@ -239,6 +247,7 @@ public sealed record Title : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public bool IsPrefix { get; init; }
     public uint Sort { get; init; }
     public string Masculine { get; init; } = "";
@@ -249,6 +258,7 @@ public sealed record Fish : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public bool IsInLog { get; init; }
     public uint ItemId { get; init; }
     public bool Spearfish { get; init; }
@@ -260,6 +270,7 @@ public sealed record Raid : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public DateTimeOffset Released { get; init; }
     public uint Expansion { get; init; }
     public string Name { get; init; } = "";
@@ -269,6 +280,7 @@ public sealed record Npc : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public double X { get; init; }
     public double Y { get; init; }
     public double Z { get; init; }
@@ -290,6 +302,7 @@ public sealed record Leve : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public uint LeveAssignmentTypeId { get; init; }
     public uint ClassJobLevel { get; init; }
     public uint ExpReward { get; init; }
@@ -321,6 +334,7 @@ public sealed record BozjaFate : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public uint Sort { get; init; }
     public uint FateType { get; init; }
     public uint Icon { get; init; }
@@ -344,7 +358,7 @@ public sealed record BozjaNote : ITable {
     public List<uint>? BozjaFateIds { get; init; }
 
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public List<BozjaFate> GetBozjaFates(GameAllResponse response) =>
         BozjaFateIds?.Select(response.GetRow<BozjaFate>).OfType<BozjaFate>().ToList() ?? [];
@@ -359,7 +373,7 @@ public sealed record PortraitCondition : ITable {
     public uint? SourceTypeId { get; init; }
     public uint UnlockType { get; init; }
     public string Name { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
@@ -368,6 +382,7 @@ public sealed record Portrait : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public uint PortraitConditionId { get; init; }
     public uint Sort { get; init; }
     public uint? Icon { get; init; }
@@ -381,6 +396,7 @@ public sealed record TripleTriadCardType : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public string Name { get; init; } = "";
 }
 
@@ -388,6 +404,7 @@ public sealed record TripleTriadRule : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
     public string Name { get; init; } = "";
 }
 
@@ -411,7 +428,7 @@ public sealed record TripleTriadCard : ITable {
 
     public string Name { get; init; } = "";
     public string Description { get; init; } = "";
-    public string HowTo { get; init; } = "";
+    public string? HowTo { get; init; }
 
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
     public TripleTriadCardType? GetTripleTriadCardType(GameAllResponse response) => response.GetRow<TripleTriadCardType>(TripleTriadCardTypeId);
@@ -421,6 +438,7 @@ public sealed record TripleTriadNpc : ITable {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
+    public string? HowTo { get; init; }
 
     [JsonPropertyName("fixedTtcardIds")]
     public List<uint>? FixedTripleTriadCardIds { get; init; }

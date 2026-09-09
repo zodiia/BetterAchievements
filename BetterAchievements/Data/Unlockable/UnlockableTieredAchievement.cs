@@ -45,6 +45,8 @@ public record UnlockableTieredAchievement : IUnlockable {
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase;
     public string DescriptionLowercase() => descriptionLowercase;
+    public string HowTo() => "";
+    public string HowToLowercase() => "";
     private readonly uint current;
     public uint? Current() => current;
     public uint Maximum() => (uint)providesAchievements.Count;

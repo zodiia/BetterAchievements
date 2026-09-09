@@ -1,8 +1,9 @@
 using Lumina.Excel.Sheets;
+using ITable = BetterAchievements.External.Lalachievements.ITable;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableMinion(Companion Minion) : IUnlockable {
+public sealed record UnlockableMinion(Companion Minion, ITable Table) : IUnlockable {
     public uint Id() => Minion.RowId;
     public UnlockableType Type() => UnlockableType.Minion;
     public uint Icon() => Minion.Icon;
@@ -14,6 +15,10 @@ public sealed record UnlockableMinion(Companion Minion) : IUnlockable {
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Plugin.DataManager.GetExcelSheet<CompanionTransient>().GetRow(Minion.RowId).DescriptionEnhanced.ToString().ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
+    private readonly string howTo = Table.PlainHowTo();
+    public string HowTo() => howTo;
+    private readonly string howToLowercase = Table.PlainHowTo().ToLower();
+    public string HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
     private readonly bool unlocked = Plugin.UnlockState.IsCompanionUnlocked(Minion);

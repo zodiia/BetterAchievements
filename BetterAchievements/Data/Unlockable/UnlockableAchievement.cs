@@ -21,6 +21,8 @@ public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugi
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
+    public string HowTo() => "";
+    public string HowToLowercase() => "";
     private readonly uint? current = Plugin.AchievementProgressService.GetProgress(Achievement.RowId);
     public uint? Current() => current;
     private readonly bool unlocked = Plugin.UnlockState.IsAchievementComplete(Achievement);

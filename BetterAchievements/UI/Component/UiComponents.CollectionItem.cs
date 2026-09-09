@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Text;
-using BetterAchievements.Data;
-using BetterAchievements.Helpers;
+using BetterAchievements.Data.Unlockable;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 
@@ -76,15 +74,14 @@ public static partial class UiComponents {
         }
     }
 
-    private static string CollectionItemHowTo(CollectionEntry entry) {
-        var howTo = CompiledRegexes.HtmlTagStrip().Replace(entry.Item.HowTo, "");
+    private static string CollectionItemHowTo(IUnlockable unlockable) {
+        var howTo = unlockable.HowTo();
         return howTo.Length > 0 ? howTo : Unknown;
     }
 
-    public static void CollectionItem(CollectionEntry entry) {
+    public static void CollectionItem(IUnlockable unlockable) {
         using var group = ImRaii.Group();
 
-        var unlockable = entry.Unlockable;
         var start = ImGui.GetCursorPos();
         var availableWidth = ImGui.GetContentRegionAvail().X;
         var iconSize = AchievementIconSize();
@@ -98,10 +95,10 @@ public static partial class UiComponents {
 
         CollectionItemTitle(unlockable.Name(), textX, start.Y, lineHeight);
         CollectionItemStatus(unlockable.Unlocked(), start.X + availableWidth, start.Y, lineHeight);
-        IndentedWrappedText(CollectionItemHowTo(entry), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
+        IndentedWrappedText(CollectionItemHowTo(unlockable), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
 
-        if (entry.Unlockable.Description().Length > 0) {
-            ImGui.TextColoredWrapped(UiColors.Grey(), entry.Unlockable.Description());
+        if (unlockable.Description().Length > 0) {
+            ImGui.TextColoredWrapped(UiColors.Grey(), unlockable.Description());
         }
         ImGui.Dummy(Vector2.Zero);
     }

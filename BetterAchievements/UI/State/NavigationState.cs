@@ -54,7 +54,7 @@ public class NavigationState {
             plugin,
             type,
             breadcrumb,
-            unlockables.SortedCollectionEntries(type, category),
+            unlockables.SortedCollectionUnlockables(type, category),
             unlockables.ComputeProgress(type, category).Score,
             ClipperFor(target));
     }

@@ -1,10 +1,11 @@
 using System.Linq;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
+using ITable = BetterAchievements.External.Lalachievements.ITable;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableEmote(Emote Emote) : IUnlockable {
+public sealed record UnlockableEmote(Emote Emote, ITable Table) : IUnlockable {
     public uint Id() => Emote.RowId;
     public UnlockableType Type() => UnlockableType.Emote;
     public uint Icon() => Emote.Icon;
@@ -16,6 +17,10 @@ public sealed record UnlockableEmote(Emote Emote) : IUnlockable {
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = DisplayDescription(Emote.TextCommand).ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
+    private readonly string howTo = Table.PlainHowTo();
+    public string HowTo() => howTo;
+    private readonly string howToLowercase = Table.PlainHowTo().ToLower();
+    public string HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
     private readonly bool unlocked = Plugin.UnlockState.IsEmoteUnlocked(Emote);

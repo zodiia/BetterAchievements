@@ -6,6 +6,6 @@ public static partial class CompiledRegexes {
     [GeneratedRegex(@" ?[\\dIVX]+$", RegexOptions.Compiled)]
     public static partial Regex AchievementNameReplace();
 
-    [GeneratedRegex(@"<.*>", RegexOptions.Compiled)]
+    [GeneratedRegex(@"<.*?>(\\n)?", RegexOptions.Compiled)]
     public static partial Regex HtmlTagStrip();
 }

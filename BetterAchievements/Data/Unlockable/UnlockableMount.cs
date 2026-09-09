@@ -1,8 +1,9 @@
 using Lumina.Excel.Sheets;
+using ITable = BetterAchievements.External.Lalachievements.ITable;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableMount(Mount Mount) : IUnlockable {
+public sealed record UnlockableMount(Mount Mount, ITable Table) : IUnlockable {
     public uint Id() => Mount.RowId;
     public UnlockableType Type() => UnlockableType.Mount;
     public uint Icon() => Mount.Icon;
@@ -14,6 +15,10 @@ public sealed record UnlockableMount(Mount Mount) : IUnlockable {
     public string NameLowercase() => nameLowercase;
     private readonly string descriptionLowercase = Plugin.DataManager.GetExcelSheet<MountTransient>().GetRow(Mount.RowId).DescriptionEnhanced.ToString().ToLower();
     public string DescriptionLowercase() => descriptionLowercase;
+    private readonly string howTo = Table.PlainHowTo();
+    public string HowTo() => howTo;
+    private readonly string howToLowercase = Table.PlainHowTo().ToLower();
+    public string HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
     private readonly bool unlocked = Plugin.UnlockState.IsMountUnlocked(Mount);
