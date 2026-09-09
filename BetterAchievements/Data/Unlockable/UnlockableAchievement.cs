@@ -28,6 +28,8 @@ public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugi
     private readonly bool pinned = Plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
     public bool Pinned() => pinned;
 
+    public Title? Title() => Achievement.Title.ValueNullable;
+
     public NearingCompletionCandidate? NearingCompletionCandidate() {
         if (Unlocked()) return null;
 

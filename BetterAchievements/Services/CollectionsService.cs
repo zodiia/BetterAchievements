@@ -27,6 +27,8 @@ public class CollectionsService(Plugin plugin) {
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
     private GameAllResponse? builtFrom;
 
+    private static readonly Lazy<Dictionary<uint, string>> TitleUnlockAchievementNames = new(BuildTitleUnlockAchievementNames);
+
     public bool Loaded => builtFrom != null;
 
     public static string Label(UnlockableType type) {
@@ -117,13 +119,28 @@ public class CollectionsService(Plugin plugin) {
     }
 
     private static List<CollectionCategory> BuildTitleCategory(GameAllResponse response) {
+        var achievementNamesByTitleId = TitleUnlockAchievementNames.Value;
+
         var items = response.GetTable<Title>()
                             .Where(it => IsIncluded(UnlockableType.Title, it))
                             .OrderBy(it => it.Id)
-                            .Select(it => new CollectionItem { Id = it.Id, Table = it, SourceType = null, HowTo = "" })
+                            .Select(it => new CollectionItem {
+                                Id = it.Id,
+                                Table = it,
+                                SourceType = null,
+                                HowTo = achievementNamesByTitleId.TryGetValue(it.Id, out var achievementName)
+                                    ? $"Complete the achievement \"{achievementName}\"."
+                                    : "Could not find the required achievement."
+                            })
                             .ToList();
 
         return [new CollectionCategory { Id = TitlesCategoryId, Name = Label(UnlockableType.Title), Items = items }];
+    }
+
+    private static Dictionary<uint, string> BuildTitleUnlockAchievementNames() {
+        return Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Achievement>()
+                     .Where(it => it.Title.IsValid)
+                     .ToDictionary(it => it.RowId, it => it.Name.ToString());
     }
 
     private static bool IsIncluded(UnlockableType type, ITable row) {
