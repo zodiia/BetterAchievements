@@ -11,6 +11,8 @@ using Dalamud.Interface.Utility.Raii;
 namespace BetterAchievements.UI.Component;
 
 public static partial class UiComponents {
+    private const string Unknown = "Unknown";
+
     private static void CollectionItemTitle(string name, float x, float y, float lineHeight) {
         using (UiFonts.FontSize110().Push()) {
             ImGui.SetCursorPos(new Vector2(x, y + ((lineHeight - ImGui.GetTextLineHeight()) / 2f)));
@@ -60,8 +62,8 @@ public static partial class UiComponents {
         return lines;
     }
 
-    private static float IndentedWrappedText(string text, float startX, float startY, float indentX, float indentWidth, float fullWidth) {
-        if (text.Length == 0) return startY;
+    private static void IndentedWrappedText(string text, float startX, float startY, float indentX, float indentWidth, float fullWidth) {
+        if (text.Length == 0) return;
 
         var lineHeight = ImGui.GetTextLineHeightWithSpacing();
         var lines = WrapLines(text, indentWidth, fullWidth);
@@ -72,12 +74,12 @@ public static partial class UiComponents {
             ImGui.SetCursorPos(new Vector2(i == 0 ? indentX : startX, startY + (i * lineHeight)));
             ImGui.TextUnformatted(lines[i]);
         }
-
-        return startY + (lines.Count * lineHeight);
     }
 
-    private static string CollectionItemText(CollectionEntry entry) => CompiledRegexes.HtmlTagStrip().Replace(
-        string.Join("\n", new[] { entry.Item.HowTo, entry.Unlockable.Description() }.Where(it => it.Length > 0)), "");
+    private static string CollectionItemHowTo(CollectionEntry entry) {
+        var howTo = CompiledRegexes.HtmlTagStrip().Replace(entry.Item.HowTo, "");
+        return howTo.Length > 0 ? howTo : Unknown;
+    }
 
     public static void CollectionItem(CollectionEntry entry) {
         using var group = ImRaii.Group();
@@ -96,12 +98,11 @@ public static partial class UiComponents {
 
         CollectionItemTitle(unlockable.Name(), textX, start.Y, lineHeight);
         CollectionItemStatus(unlockable.Unlocked(), start.X + availableWidth, start.Y, lineHeight);
+        IndentedWrappedText(CollectionItemHowTo(entry), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
 
-        var textBottom = IndentedWrappedText(
-            CollectionItemText(entry), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
-        var headerBottom = start.Y + (hasIcon ? iconSize : lineHeight);
-
-        ImGui.SetCursorPos(start with { Y = Math.Max(headerBottom, textBottom) });
+        if (entry.Unlockable.Description().Length > 0) {
+            ImGui.TextColoredWrapped(UiColors.Grey(), entry.Unlockable.Description());
+        }
         ImGui.Dummy(Vector2.Zero);
     }
 }

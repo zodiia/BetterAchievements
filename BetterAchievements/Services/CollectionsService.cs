@@ -88,7 +88,7 @@ public class CollectionsService(Plugin plugin) {
     }
 
     private static List<CollectionCategory> BuildCategories<T>(
-        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, string> getHowTo, Func<T, uint?> getSourceTypeId)
+        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, string?> getHowTo, Func<T, uint?> getSourceTypeId)
         where T : ITable {
         return rows.Where(it => IsIncluded(type, it))
                    .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
@@ -100,7 +100,7 @@ public class CollectionsService(Plugin plugin) {
                                         Id = it.Id,
                                         Table = it,
                                         SourceType = group.Key,
-                                        HowTo = getHowTo(it)
+                                        HowTo = getHowTo(it) ?? ""
                                     })
                                     .ToList()
                    })
