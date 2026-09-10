@@ -7,6 +7,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace BetterAchievements.UI.Component;
 
@@ -26,6 +27,14 @@ public static partial class UiComponents {
             >= 1 => "I" + ToRoman(number - 1),
             _ => ""
         };
+    }
+
+    private static unsafe void OpenAchievementWindow(uint achievementId) {
+        if (AgentModule.Instance() is null || AgentModule.Instance()->GetAgentAchievement() is null) {
+            return;
+        }
+
+        AgentModule.Instance()->GetAgentAchievement()->OpenById(achievementId);
     }
 
     public static void SameLineRightTextColored(Vector4 color, string text) {
@@ -132,10 +141,7 @@ public static partial class UiComponents {
             insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progress != null,
-            onClick: RequestAchievementProgress);
-        return;
-
-        unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(achievement.Id());
+            onClick: () => OpenAchievementWindow(achievement.Id()));
     }
 
     private static void WrappedColoredText(params (string Text, Vector4? Color)[] segments) {
@@ -187,7 +193,7 @@ public static partial class UiComponents {
                     insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
                     tooltip: "Click to refresh",
                     enabled: progressLoaded,
-                    onClick: RequestAchievementProgress);
+                    onClick: () => OpenAchievementWindow(maxLevel.Id()));
             }
         }
 
@@ -202,13 +208,9 @@ public static partial class UiComponents {
                     insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
                     tooltip: "Click to refresh",
                     enabled: progressLoaded,
-                    onClick: RequestAchievementProgress);
+                    onClick: () => OpenAchievementWindow(maxLevel.Id()));
             }
         }
-
-        return;
-
-        unsafe void RequestAchievementProgress() => Plugin.UiState->Achievement.RequestAchievementProgress(maxLevel.Id());
     }
 
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements) {
