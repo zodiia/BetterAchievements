@@ -8,7 +8,7 @@ using Dalamud.Bindings.ImGui;
 namespace BetterAchievements.UI.Windows.Views;
 
 public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, PointsScore points, PointsScore achievementCount, VariableHeightClipper clipper) : IView {
-    private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!\n(In the main menu, Character > Achievements)";
+    private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
         var lineStartX = ImGui.GetCursorPosX();

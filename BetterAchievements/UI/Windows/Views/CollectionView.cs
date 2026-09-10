@@ -17,7 +17,7 @@ public class CollectionView(
     List<IUnlockable> entries,
     PointsScore score,
     VariableHeightClipper clipper) : IView {
-    private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!\n(Character Window > Profile > Title > Acquired Titles)";
+    private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!";
 
     private void DrawHeader() {
         UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);
