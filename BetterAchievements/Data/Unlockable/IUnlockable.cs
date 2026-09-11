@@ -19,10 +19,10 @@ public interface IUnlockable {
     uint Icon();
     string Name();
     string Description();
-    string HowTo();
+    string? HowTo();
     string NameLowercase();
     string DescriptionLowercase();
-    string HowToLowercase();
+    string? HowToLowercase();
     uint? Current();
     uint Maximum();
     bool Unlocked();

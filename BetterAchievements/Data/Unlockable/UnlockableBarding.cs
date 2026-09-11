@@ -3,22 +3,33 @@ using ITable = BetterAchievements.External.Lalachievements.ITable;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableBarding(BuddyEquip Barding, ITable Table) : IUnlockable {
-    public uint Id() => Barding.RowId;
+public sealed record UnlockableBarding : IUnlockable {
+    private readonly BuddyEquip barding;
+
+    public UnlockableBarding(BuddyEquip barding, ITable table) {
+        this.barding = barding;
+        name = barding.Name.ToString();
+        nameLowercase = barding.Name.ToString().ToLower();
+        howTo = table.HowTo;
+        howToLowercase = table.HowTo?.ToLower();
+        unlocked = Plugin.UnlockState.IsBuddyEquipUnlocked(barding);
+    }
+
+    public uint Id() => barding.RowId;
     public UnlockableType Type() => UnlockableType.Barding;
-    public uint Icon() => Barding.IconBody;
-    private readonly string name = Barding.Name.ToString();
+    public uint Icon() => barding.IconBody;
+    private readonly string name;
     public string Name() => name;
     public string Description() => "";
-    private readonly string nameLowercase = Barding.Name.ToString().ToLower();
+    private readonly string nameLowercase;
     public string NameLowercase() => nameLowercase;
     public string DescriptionLowercase() => "";
-    private readonly string howTo = Table.PlainHowTo();
-    public string HowTo() => howTo;
-    private readonly string howToLowercase = Table.PlainHowTo().ToLower();
-    public string HowToLowercase() => howToLowercase;
+    private readonly string? howTo;
+    public string? HowTo() => howTo;
+    private readonly string? howToLowercase;
+    public string? HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
-    private readonly bool unlocked = Plugin.UnlockState.IsBuddyEquipUnlocked(Barding);
+    private readonly bool unlocked;
     public bool Unlocked() => unlocked;
 }

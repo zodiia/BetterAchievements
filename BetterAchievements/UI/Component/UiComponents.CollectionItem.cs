@@ -76,7 +76,7 @@ public static partial class UiComponents {
 
     private static string CollectionItemHowTo(IUnlockable unlockable) {
         var howTo = unlockable.HowTo();
-        return howTo.Length > 0 ? howTo : Unknown;
+        return howTo?.Length is > 0 ? howTo : Unknown;
     }
 
     public static void CollectionItem(IUnlockable unlockable) {

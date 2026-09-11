@@ -3,34 +3,46 @@ using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
 
-public sealed record UnlockableAchievement(Achievement Achievement, Plugin Plugin) : IUnlockable {
-    public uint Id() => Achievement.RowId;
+public sealed record UnlockableAchievement : IUnlockable {
+    private readonly Achievement achievement;
+
+    public UnlockableAchievement(Achievement achievement, Plugin plugin) {
+        this.achievement = achievement;
+        name = achievement.Name.ToString();
+        description = achievement.Description.ToString();
+        nameLowercase = achievement.Name.ToString().ToLower();
+        descriptionLowercase = achievement.Description.ToString().ToLower();
+        current = plugin.AchievementProgressService.GetProgress(achievement.RowId);
+        unlocked = Plugin.UnlockState.IsAchievementComplete(achievement);
+        pinned = plugin.Configuration.PinnedAchievements.Contains(achievement.RowId);
+    }
+
+    public uint Id() => achievement.RowId;
     public UnlockableType Type() => UnlockableType.Achievement;
-    public AchievementCategory SubCategory() => Achievement.AchievementCategory.Value;
-    public AchievementKind Category() => Achievement.AchievementCategory.Value.AchievementKind.Value;
-    public uint Icon() => Achievement.Icon;
-    public byte Points() => Achievement.Points;
-    public byte AchievementType() => Achievement.Type;
-    public uint Maximum() => Achievement.Maximum();
+    public AchievementCategory SubCategory() => achievement.AchievementCategory.Value;
+    public AchievementKind Category() => achievement.AchievementCategory.Value.AchievementKind.Value;
+    public uint Icon() => achievement.Icon;
+    public byte Points() => achievement.Points;
+    public byte AchievementType() => achievement.Type;
+    public uint Maximum() => achievement.Maximum();
 
-    private readonly string name = Achievement.Name.ToString();
+    private readonly string name;
     public string Name() => name;
-    private readonly string description = Achievement.Description.ToString();
+    private readonly string description;
     public string Description() => description;
-    private readonly string nameLowercase = Achievement.Name.ToString().ToLower();
+    private readonly string nameLowercase;
     public string NameLowercase() => nameLowercase;
-    private readonly string descriptionLowercase = Achievement.Description.ToString().ToLower();
+    private readonly string descriptionLowercase;
     public string DescriptionLowercase() => descriptionLowercase;
-    public string HowTo() => "";
-    public string HowToLowercase() => "";
-    private readonly uint? current = Plugin.AchievementProgressService.GetProgress(Achievement.RowId);
+    public string? HowTo() => null;
+    public string? HowToLowercase() => null;
+    private readonly uint? current;
     public uint? Current() => current;
-    private readonly bool unlocked = Plugin.UnlockState.IsAchievementComplete(Achievement);
+    private readonly bool unlocked;
     public bool Unlocked() => unlocked;
-    private readonly bool pinned = Plugin.Configuration.PinnedAchievements.Contains(Achievement.RowId);
+    private readonly bool pinned;
     public bool Pinned() => pinned;
-
-    public Title? Title() => Achievement.Title.ValueNullable;
+    public Title? Title() => achievement.Title.ValueNullable;
 
     public NearingCompletionCandidate? NearingCompletionCandidate() {
         if (Unlocked()) return null;

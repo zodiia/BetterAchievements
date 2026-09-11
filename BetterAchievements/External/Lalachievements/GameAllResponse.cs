@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using BetterAchievements.Helpers;
 
+// ReSharper disable ClassNeverInstantiated.Global
 namespace BetterAchievements.External.Lalachievements;
 
 public interface ITable {
@@ -12,8 +12,6 @@ public interface ITable {
     long UpdatedAt { get; init; }
     bool? Deleted { get; init; }
     string? HowTo { get; init; }
-
-    string PlainHowTo() => CompiledRegexes.HtmlTagStrip().Replace(HowTo ?? "", "\n");
 }
 
 public sealed record GameAllCache {
@@ -355,12 +353,12 @@ public sealed record BozjaNote : ITable {
     public bool Obtainable { get; init; }
 
     [JsonPropertyName("bozjaFates")]
-    public List<uint>? BozjaFateIds { get; init; }
+    public IReadOnlyList<uint>? BozjaFateIds { get; init; }
 
     public string Name { get; init; } = "";
     public string? HowTo { get; init; }
 
-    public List<BozjaFate> GetBozjaFates(GameAllResponse response) =>
+    public IReadOnlyList<BozjaFate> GetBozjaFates(GameAllResponse response) =>
         BozjaFateIds?.Select(response.GetRow<BozjaFate>).OfType<BozjaFate>().ToList() ?? [];
 }
 
@@ -441,16 +439,16 @@ public sealed record TripleTriadNpc : ITable {
     public string? HowTo { get; init; }
 
     [JsonPropertyName("fixedTtcardIds")]
-    public List<uint>? FixedTripleTriadCardIds { get; init; }
+    public IReadOnlyList<uint>? FixedTripleTriadCardIds { get; init; }
 
     [JsonPropertyName("variableTtcardIds")]
-    public List<uint>? VariableTripleTriadCardIds { get; init; }
+    public IReadOnlyList<uint>? VariableTripleTriadCardIds { get; init; }
 
     [JsonPropertyName("rewardTtcardIds")]
-    public List<uint>? RewardTripleTriadCardIds { get; init; }
+    public IReadOnlyList<uint>? RewardTripleTriadCardIds { get; init; }
 
     [JsonPropertyName("ttruleIds")]
-    public List<uint>? TripleTriadRuleIds { get; init; }
+    public IReadOnlyList<uint>? TripleTriadRuleIds { get; init; }
 
     public bool UsesRegionalRules { get; init; }
     public bool RequireAllPreviousQuest { get; init; }

@@ -246,7 +246,7 @@ public class UnlockablesState(Plugin plugin) {
     private bool MatchSearch(IUnlockable unlockable) {
         return unlockable.NameLowercase().Contains(search)
                || unlockable.DescriptionLowercase().Contains(search)
-               || unlockable.HowToLowercase().Contains(search);
+               || unlockable.HowToLowercase()?.Contains(search) == true;
     }
 
     private bool MatchUnlockFilter(bool unlocked) {
