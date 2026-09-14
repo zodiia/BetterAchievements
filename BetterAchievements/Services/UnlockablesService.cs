@@ -8,6 +8,7 @@ using BetterAchievements.Data.Unlockable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
+using Serilog;
 using LalachievementsService = BetterAchievements.External.Lalachievements.LalachievementsService;
 using ITableRow = BetterAchievements.External.Lalachievements.ITableRow;
 
@@ -64,47 +65,22 @@ public class UnlockablesService {
         return unlockable;
     }
 
-    private static IUnlockable CreateUnlockableCollectionItem(UnlockableType type, ITable row) {
-        var id = row.Id;
-
-        return type switch {
-            UnlockableType.Mount => new UnlockableMount(Plugin.DataManager.GetExcelSheet<Mount>().GetRow(id), row),
-            UnlockableType.Minion => new UnlockableMinion(Plugin.DataManager.GetExcelSheet<Companion>().GetRow(id), row),
-            UnlockableType.Title => new UnlockableTitle(Plugin.DataManager.GetExcelSheet<Title>().GetRow(id), row),
-            UnlockableType.TripleTriadCard => new UnlockableTripleTriadCard(Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRow(id), row),
-            UnlockableType.Barding => new UnlockableBarding(Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRow(id), row),
-            UnlockableType.FashionAccessory => new UnlockableFashionAccessory(Plugin.DataManager.GetExcelSheet<Ornament>().GetRow(id), row),
-            UnlockableType.Hairstyle => new UnlockableHairstyle(Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().First(it => it.FeatureID == id), row),
-            UnlockableType.Facewear => new UnlockableFacewear(Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRow(id), row),
-            UnlockableType.Emote => new UnlockableEmote(Plugin.DataManager.GetExcelSheet<Emote>().GetRow(id), row),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
+    private UnlockableTripleTriadNpc CreateUnlockableTripleTriadNpc(UnlockableKey key) {
+        var offset = Plugin.DataManager.GetExcelSheet<TripleTriad>().First().RowId;
+        var tt = Plugin.DataManager.GetExcelSheet<TripleTriad>().GetRow(offset + key.Id);
+        var ttResident = Plugin.DataManager.GetExcelSheet<TripleTriadResident>().GetRow(tt.RowId);
+        var eNpcBase = Plugin.DataManager.GetExcelSheet<ENpcBase>().FirstOrNull(it => it.ENpcData.Any(data => data.RowId == tt.RowId));
+        if (eNpcBase == null) {
+            throw new InvalidDataException($"Could not match any ENpcBase entry to the TripleTriadResident {ttResident.RowId}");
+        }
+        var eNpcResident = Plugin.DataManager.GetExcelSheet<ENpcResident>().GetRow(eNpcBase.Value.RowId);
+        var level = Plugin.DataManager.GetExcelSheet<Level>().FirstOrNull(it => it.Object.RowId == (eNpcBase.Value.RowId));
+        if (level == null) {
+            throw new InvalidDataException($"Could not match any Level entry to the ENpcBase {eNpcBase?.RowId}");
+        }
+        return new UnlockableTripleTriadNpc(tt, ttResident, eNpcResident, level.Value);
     }
 
-    public static bool IsValidCollectionItem(UnlockableType type, uint id) {
-        return type switch {
-            UnlockableType.Mount =>
-                Plugin.DataManager.GetExcelSheet<Mount>().GetRowOrDefault(id) is { Order: > -1, Singular.IsEmpty: false },
-            UnlockableType.Minion =>
-                Plugin.DataManager.GetExcelSheet<Companion>().GetRowOrDefault(id) is { Singular.IsEmpty: false },
-            UnlockableType.Title =>
-                Plugin.DataManager.GetExcelSheet<Title>().GetRowOrDefault(id) is { Masculine.IsEmpty: false },
-            UnlockableType.TripleTriadCard =>
-                Plugin.DataManager.GetExcelSheet<TripleTriadCard>().GetRowOrDefault(id) is { Name.IsEmpty: false },
-            UnlockableType.Barding => Plugin.DataManager.GetExcelSheet<BuddyEquip>().GetRowOrDefault(id) is { Order: > 0, Name.IsEmpty: false },
-            UnlockableType.FashionAccessory =>
-                Plugin.DataManager.GetExcelSheet<Ornament>().GetRowOrDefault(id) is { Singular.IsEmpty: false },
-            UnlockableType.Hairstyle =>
-                Plugin.DataManager.GetExcelSheet<CharaMakeCustomize>().TryGetFirst(it => it.FeatureID == id, out var hairstyle)
-                && hairstyle is { IsPurchasable: true, RowId: < 2400, FeatureID: not 130, FeatureID: not 159 },
-            UnlockableType.Facewear =>
-                Plugin.DataManager.GetExcelSheet<GlassesStyle>().GetRowOrDefault(id) is { Name.IsEmpty: false } facewear
-                && facewear.Glasses.FirstOrNull()?.IsValid == true && !facewear.Glasses.FirstOrNull()?.Value.Name.IsEmpty == true,
-            UnlockableType.Emote =>
-                Plugin.DataManager.GetExcelSheet<Emote>().GetRowOrDefault(id) is { Order: > 0, Name.IsEmpty: false },
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
-    }
     private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {
         UnlockableType.Mount =>
             new UnlockableMount(GetExcelSheet<Mount>(key.Type).GetRow(key.Id),
@@ -118,6 +94,7 @@ public class UnlockablesService {
         UnlockableType.TripleTriadCard =>
             new UnlockableTripleTriadCard(GetExcelSheet<TripleTriadCard>(key.Type).GetRow(key.Id),
                                           GetTableRow<External.Lalachievements.TripleTriadCard>(key.Id)),
+        UnlockableType.TripleTriadNpc => CreateUnlockableTripleTriadNpc(key),
         UnlockableType.Barding =>
             new UnlockableBarding(GetExcelSheet<BuddyEquip>(key.Type).GetRow(key.Id),
                                   GetTableRow<External.Lalachievements.Barding>(key.Id)),
@@ -133,6 +110,7 @@ public class UnlockablesService {
         UnlockableType.Emote =>
             new UnlockableEmote(GetExcelSheet<Emote>(key.Type).GetRow(key.Id),
                                 GetTableRow<External.Lalachievements.Emote>(key.Id)),
+        UnlockableType.CraftingLog => new UnlockableCraftingLog(GetExcelSheet<Recipe>(key.Type).GetRow(key.Id)),
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unimplemented unlockable type")
     };
 
@@ -203,6 +181,7 @@ public class UnlockablesService {
     }
 
     public void Refresh() {
+        Log.Information("Refreshed unlockables");
         achievements.Clear();
         tieredAchievements.Clear();
         collectionItems.Clear();

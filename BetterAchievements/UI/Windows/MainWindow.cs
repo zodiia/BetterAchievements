@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Component.Sidebar;
@@ -6,6 +7,7 @@ using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using Serilog;
 
 namespace BetterAchievements.UI.Windows;
 
@@ -34,7 +36,7 @@ public class MainWindow : Window, IDisposable {
         using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = UiSize.StatusBarHeight }, true);
         if (!statusBar) return;
 
-        ImGui.Text($"frame time {state.FrameTimes.AverageMs:F3}ms/f (highest {state.FrameTimes.WorstMs:F3}ms/f)");
+        ImGui.Text($"frame time {state.FrameTimes.AverageMs:F3}ms/f (highest {state.FrameTimes.WorstMs:F3}ms/f) | view: {state.Navigation.CurrentView.ToString()}");
     }
 
     public override void Draw() {

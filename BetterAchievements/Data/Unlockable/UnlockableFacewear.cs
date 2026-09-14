@@ -18,9 +18,9 @@ public sealed record UnlockableFacewear : IUnlockable {
     public UnlockableFacewear(GlassesStyle facewear, ITableRow tableRow) {
         this.facewear = facewear;
         name = facewear.Name.ToString();
-        description = DisplayDescription(facewear);
+        description = GetDescription(facewear);
         nameLowercase = facewear.Name.ToString().ToLower();
-        descriptionLowercase = DisplayDescription(facewear).ToLower();
+        descriptionLowercase = GetDescription(facewear).ToLower();
         howTo = tableRow.HowTo;
         howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsGlassesStyleUnlocked(facewear);
@@ -40,7 +40,7 @@ public sealed record UnlockableFacewear : IUnlockable {
     public bool Unlocked() => unlocked;
     public bool IsValid() => facewear.IsValidEntry();
 
-    private static string DisplayDescription(GlassesStyle style) {
+    private static string GetDescription(GlassesStyle style) {
         return style.Glasses.FirstOrNull()?.ValueNullable?.Description.ToString() ?? "";
     }
 }

@@ -20,9 +20,9 @@ public sealed record UnlockableEmote : IUnlockable {
     public UnlockableEmote(Emote emote, ITableRow tableRow) {
         this.emote = emote;
         name = emote.Name.ToString();
-        description = DisplayDescription(emote.TextCommand);
+        description = GetDescription(emote.TextCommand);
         nameLowercase = emote.Name.ToString().ToLower();
-        descriptionLowercase = DisplayDescription(emote.TextCommand).ToLower();
+        descriptionLowercase = GetDescription(emote.TextCommand).ToLower();
         howTo = tableRow.HowTo;
         howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsEmoteUnlocked(emote);
@@ -42,7 +42,7 @@ public sealed record UnlockableEmote : IUnlockable {
     public bool Unlocked() => unlocked;
     public bool IsValid() => emote.IsValidEntry();
 
-    private static string DisplayDescription(RowRef<TextCommand> textCommand) {
+    private static string GetDescription(RowRef<TextCommand> textCommand) {
         if (textCommand.ValueNullable is not { } command) return "";
 
         var aliases = new[] { command.Command, command.ShortCommand, command.Alias, command.ShortAlias }

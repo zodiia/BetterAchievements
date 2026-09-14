@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using BetterAchievements.Services;
 using BetterAchievements.Data.Unlockable;
@@ -15,12 +16,14 @@ public static partial class SidebarComponents {
             UnlockableType.Minion => FontAwesomeIcon.Cat,
             UnlockableType.Title => FontAwesomeIcon.Signature,
             UnlockableType.TripleTriadCard => FontAwesomeIcon.Clone,
+            UnlockableType.TripleTriadNpc => FontAwesomeIcon.UserFriends,
             UnlockableType.Barding => FontAwesomeIcon.HatCowboy,
             UnlockableType.FashionAccessory => FontAwesomeIcon.Hiking,
             UnlockableType.Hairstyle => FontAwesomeIcon.Cut,
             UnlockableType.Facewear => FontAwesomeIcon.Glasses,
             UnlockableType.Emote => FontAwesomeIcon.Smile,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            UnlockableType.CraftingLog => FontAwesomeIcon.Hammer,
+            _ => FontAwesomeIcon.Question,
         };
     }
 
@@ -51,6 +54,8 @@ public static partial class SidebarComponents {
     }
 
     private static void CollectionItem(MainWindowState state, UnlockableType type) {
+        var watch = new Stopwatch();
+        watch.Start();
         var progress = state.Unlockables.ComputeProgress(type);
         if (progress.VisibleCount == 0) return;
 

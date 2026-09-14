@@ -17,9 +17,9 @@ public sealed record UnlockableFashionAccessory : IUnlockable {
     public UnlockableFashionAccessory(Ornament ornament, ITableRow tableRow) {
         this.ornament = ornament;
         name = ornament.Singular.ToString();
-        description = DisplayDescription(ornament);
+        description = GetDescription(ornament);
         nameLowercase = ornament.Singular.ToString().ToLower();
-        descriptionLowercase = DisplayDescription(ornament).ToLower();
+        descriptionLowercase = GetDescription(ornament).ToLower();
         howTo = tableRow.HowTo;
         howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsOrnamentUnlocked(ornament);
@@ -39,7 +39,7 @@ public sealed record UnlockableFashionAccessory : IUnlockable {
     public bool Unlocked() => unlocked;
     public bool IsValid() => ornament.IsValidEntry();
 
-    private static string DisplayDescription(Ornament ornament) {
+    private static string GetDescription(Ornament ornament) {
         return Plugin.DataManager.GetExcelSheet<OrnamentTransient>().GetRowOrDefault(ornament.RowId)?.Text.ToString() ?? "";
     }
 }

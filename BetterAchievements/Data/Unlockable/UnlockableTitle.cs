@@ -19,8 +19,8 @@ public sealed record UnlockableTitle : IUnlockable {
 
     public UnlockableTitle(Title title, ITableRow tableRow) {
         this.title = title;
-        name = DisplayName(title);
-        nameLowercase = DisplayName(title).ToLower();
+        name = GetName(title);
+        nameLowercase = GetName(title).ToLower();
         howTo = GetHowTo();
         howToLowercase = GetHowTo().ToLower();
         unlocked = Plugin.UnlockState.IsTitleUnlocked(title);
@@ -45,7 +45,7 @@ public sealed record UnlockableTitle : IUnlockable {
     public bool Unlocked() => unlocked;
     public bool IsValid() => title.IsValidEntry();
 
-    private static string DisplayName(Title title) {
+    private static string GetName(Title title) {
         var feminine = Plugin.PlayerState.IsLoaded && Plugin.PlayerState.Sex == Sex.Female;
         var text = (feminine ? title.Feminine : title.Masculine).ToString();
         return title.IsPrefix ? $"{text}..." : $"...{text}";

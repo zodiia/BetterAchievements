@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.UI.State;
@@ -8,6 +9,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility.Numerics;
+using Serilog;
 
 namespace BetterAchievements.UI.Component.Sidebar;
 
@@ -89,7 +91,7 @@ public static partial class SidebarComponents {
         CollectionItem(state, UnlockableType.Title);
         FillerItems(state, UiColors.Blue(), "Fishing");
         CollectionItem(state, UnlockableType.TripleTriadCard);
-        FillerItems(state, UiColors.Blue(), "Triple Triad NPCs");
+        CollectionItem(state, UnlockableType.TripleTriadNpc);
         CollectionItem(state, UnlockableType.Barding);
         CollectionItem(state, UnlockableType.FashionAccessory);
         CollectionItem(state, UnlockableType.Hairstyle);
@@ -98,7 +100,9 @@ public static partial class SidebarComponents {
         FillerItems(state, UiColors.Blue(), "Framer's Kits");
 
         SectionHeader("Records");
-        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log", "Crafting Log", "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log");
+        CollectionItem(state, UnlockableType.CraftingLog);
+        FillerItems(state, UiColors.Green(), "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
         FillerItems(state, UiColors.Red(), "Yo-kai Watch", "The Rising");

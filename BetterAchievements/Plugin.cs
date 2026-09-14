@@ -15,9 +15,10 @@ using BetterAchievements.UI.Windows;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Achievement = Lumina.Excel.Sheets.Achievement;
+using NativeMonsterNoteManager = FFXIVClientStructs.FFXIV.Client.Game.MonsterNoteManager;
+using NativeQuestManager = FFXIVClientStructs.FFXIV.Client.Game.QuestManager;
 
 namespace BetterAchievements;
 
@@ -73,41 +74,25 @@ public sealed class Plugin : IDalamudPlugin {
     [PluginService]
     internal static IClientState ClientState { get; private set; } = null!;
 
-    internal static QuestManager? QuestManager {
-        get {
-            if (field != null) {
-                return null;
-            }
-
-            field = QuestManagerExtension.QuestManagerInstanceOrNull();
-            return field;
+    internal static readonly NativeRef<NativeQuestManager> QuestManager = new(() => {
+        unsafe {
+            return NativeQuestManager.Instance();
         }
-    }
+    });
 
-    internal static UIState? UiState {
-        get {
-            if (field != null) {
-                return null;
-            }
-
-            field = Pointers.UiStateInstanceOrNull();
-            return field;
+    internal static readonly NativeRef<UIState> UiState = new(() => {
+        unsafe {
+            return UIState.Instance();
         }
-    }
+    });
 
-    internal static MonsterNoteManager? MonsterNoteManager {
-        get {
-            if (field != null) {
-                return null;
-            }
-
-            field = Pointers.MonsterNoteManagerInstanceOrNull();
-            return field;
+    internal static readonly NativeRef<NativeMonsterNoteManager> MonsterNoteManager = new(() => {
+        unsafe {
+            return NativeMonsterNoteManager.Instance();
         }
-    }
+    });
 
     public IPluginManifest PluginManifest { get; private set; } = null!;
-
 
     public AchievementProgressService AchievementProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }

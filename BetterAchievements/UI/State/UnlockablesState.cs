@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.Services;
+using Serilog;
 
 namespace BetterAchievements.UI.State;
 
@@ -38,10 +40,13 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public void Refresh() {
+        var start = new Stopwatch();
+        start.Start();
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
         RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements();
+        Log.Information("Refreshed state in {E}ms", start.Elapsed.Microseconds / 1000);
     }
 
     public bool CollectionsLoaded => plugin.CollectionsService.Loaded;

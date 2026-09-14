@@ -22,11 +22,13 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Minion,
         UnlockableType.Title,
         UnlockableType.TripleTriadCard,
+        UnlockableType.TripleTriadNpc,
         UnlockableType.Barding,
         UnlockableType.FashionAccessory,
         UnlockableType.Hairstyle,
         UnlockableType.Facewear,
         UnlockableType.Emote,
+        UnlockableType.CraftingLog,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -84,20 +86,6 @@ public class CollectionsService(Plugin plugin) {
         }
     }
 
-    private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) {
-        return type switch {
-            UnlockableType.Mount => BuildCategories(type, response, response.GetTable<Mount>(), it => it.SourceTypeId),
-            UnlockableType.Minion => BuildCategories(type, response, response.GetTable<Minion>(), it => it.SourceTypeId),
-            UnlockableType.Title => BuildTitleCategory(response),
-            UnlockableType.TripleTriadCard => BuildCategories(type, response, response.GetTable<TripleTriadCard>(), it => it.SourceTypeId),
-            UnlockableType.Barding => BuildCategories(type, response, response.GetTable<Barding>(), it => it.SourceTypeId),
-            UnlockableType.FashionAccessory => BuildCategories(type, response, response.GetTable<Fashion>(), it => it.SourceTypeId),
-            UnlockableType.Hairstyle => BuildCategories(type, response, response.GetTable<Hair>(), it => it.SourceTypeId),
-            UnlockableType.Facewear => BuildCategories(type, response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
-            UnlockableType.Emote => BuildCategories(type, response, response.GetTable<Emote>(), it => it.SourceTypeId),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
-    }
     private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) => type switch {
         UnlockableType.Mount => BuildCategoriesWithGameAll(response, response.GetTable<Mount>(), it => it.SourceTypeId),
         UnlockableType.Minion => BuildCategoriesWithGameAll(response, response.GetTable<Minion>(), it => it.SourceTypeId),
@@ -108,6 +96,8 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Facewear => BuildCategoriesWithGameAll(response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
         UnlockableType.Emote => BuildCategoriesWithGameAll(response, response.GetTable<Emote>(), it => it.SourceTypeId),
         UnlockableType.Title => BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
+        UnlockableType.TripleTriadNpc => BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
+        UnlockableType.CraftingLog => BuildCraftingCategories(),
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
@@ -128,18 +118,15 @@ public class CollectionsService(Plugin plugin) {
         new() { Id = 0, Name = Label(type), Items = rows.Where(it => it.Deleted == false).OrderBy(it => it.Id).Select(it => it.Id).ToList() }
     ];
 
-    private static List<CollectionCategory> BuildTitleCategory(GameAllResponse response) {
-        var achievementNamesByTitleId = TitleUnlockAchievementNames.Value;
-
-        var items = response.GetTable<Title>()
-                            .Where(it => IsIncluded(UnlockableType.Title, it))
-                            .OrderBy(it => it.Id)
-                            .Select(ITable (it) => it with {
-                                HowTo = achievementNamesByTitleId.TryGetValue(it.Id, out var achievementName)
-                                    ? $"Obtain the achievement \"{achievementName}\"."
-                                    : "Could not find the required achievement."
-                            })
-                            .ToList();
+    private static List<CollectionCategory> BuildCraftingCategories() => Plugin.DataManager.GetExcelSheet<Recipe>()
+                                                                               .Where(it => it.IsValidEntry())
+                                                                               .GroupBy(it => it.CraftType.RowId)
+                                                                               .Select(group => new CollectionCategory {
+                                                                                   Id = group.Key,
+                                                                                   Name = group.First().CraftType.Value.Name.ToString(),
+                                                                                   Items = group.Select(it => it.RowId).ToList(),
+                                                                               })
+                                                                               .ToList();
 
     /// <summary>Orders categories by not changing their order, except putting Other and Unknown as the last two</summary>
     /// <param name="name">Category name</param>
