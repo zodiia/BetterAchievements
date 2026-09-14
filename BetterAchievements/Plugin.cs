@@ -8,12 +8,14 @@ using System.Text.Json;
 using BetterAchievements.Data;
 using BetterAchievements.Hooks;
 using BetterAchievements.External.Lalachievements;
+using BetterAchievements.Helpers;
 using BetterAchievements.Services;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Internal.Types.Manifest;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Achievement = Lumina.Excel.Sheets.Achievement;
 
@@ -71,9 +73,41 @@ public sealed class Plugin : IDalamudPlugin {
     [PluginService]
     internal static IClientState ClientState { get; private set; } = null!;
 
-    internal static unsafe UIState* UiState { get; } = UIState.Instance();
+    internal static QuestManager? QuestManager {
+        get {
+            if (field != null) {
+                return null;
+            }
+
+            field = QuestManagerExtension.QuestManagerInstanceOrNull();
+            return field;
+        }
+    }
+
+    internal static UIState? UiState {
+        get {
+            if (field != null) {
+                return null;
+            }
+
+            field = Pointers.UiStateInstanceOrNull();
+            return field;
+        }
+    }
+
+    internal static MonsterNoteManager? MonsterNoteManager {
+        get {
+            if (field != null) {
+                return null;
+            }
+
+            field = Pointers.MonsterNoteManagerInstanceOrNull();
+            return field;
+        }
+    }
 
     public IPluginManifest PluginManifest { get; private set; } = null!;
+
 
     public AchievementProgressService AchievementProgressService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
@@ -111,12 +145,12 @@ public sealed class Plugin : IDalamudPlugin {
 
         MainLayout = LoadMainWindowLayout();
 
+        LalachievementsService = new LalachievementsService();
         HistoryService = new HistoryService(this);
         AddonLifecycleService = new AddonLifecycleService();
+        CollectionsService = new CollectionsService(this);
         UnlockablesService = new UnlockablesService(this);
         AchievementProgressService = new AchievementProgressService(this);
-        LalachievementsService = new LalachievementsService();
-        CollectionsService = new CollectionsService(this);
         TrackerService = new TrackerService(this);
 
         UiFonts.Initialize();

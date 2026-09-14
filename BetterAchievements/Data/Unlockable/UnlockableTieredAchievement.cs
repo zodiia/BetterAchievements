@@ -6,6 +6,19 @@ using Lumina.Excel.Sheets;
 namespace BetterAchievements.Data.Unlockable;
 
 public record UnlockableTieredAchievement : IUnlockable {
+    private readonly bool spoilers;
+    private readonly string name;
+    private readonly string description;
+    private readonly string nameLowercase;
+    private readonly string descriptionLowercase;
+    private readonly List<uint> ids;
+    private readonly uint current;
+    private readonly uint currentPoints;
+    private readonly uint maximumPoints;
+    private readonly bool pinned;
+    private readonly List<UnlockableAchievement> providesAchievements;
+    public readonly List<Achievement> ExcelAchievements;
+
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin) {
         ExcelAchievements = excelAchievements;
         providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
@@ -25,41 +38,27 @@ public record UnlockableTieredAchievement : IUnlockable {
         ids = ExcelAchievements.Select(it => it.RowId).ToList();
     }
 
-    public readonly List<Achievement> ExcelAchievements;
-
-    private readonly bool spoilers;
-    private readonly string name;
-    private readonly string description;
-    private readonly uint maximumPoints;
-    private readonly uint currentPoints;
-    private readonly List<UnlockableAchievement> providesAchievements;
-
     public uint Id() => ExcelAchievements.Last().RowId;
-    private readonly List<uint> ids;
     public List<uint> Ids() => ids;
     public UnlockableType Type() => UnlockableType.Achievement;
     public uint Icon() => providesAchievements.Last().Icon();
     public string Name() => name;
     public string Description() => description;
-    private readonly string nameLowercase;
     public string NameLowercase() => nameLowercase;
-    private readonly string descriptionLowercase;
     public string DescriptionLowercase() => descriptionLowercase;
     public string HowTo() => "";
     public string HowToLowercase() => "";
-    private readonly uint current;
     public uint? Current() => current;
     public uint Maximum() => (uint)providesAchievements.Count;
     public bool Unlocked() => Current() == Maximum();
-    private readonly bool pinned;
     public bool Pinned() => pinned;
     public bool Spoilers() => spoilers;
-
     public uint CurrentPoints() => currentPoints;
     public uint MaximumPoints() => maximumPoints;
     public List<UnlockableAchievement> ProvidesAchievements() => providesAchievements;
+    public bool IsValid() => providesAchievements.All(it => it.IsValid());
 
-    public NearingCompletionCandidate? NearingCompletionCandidate() {
+    public AchievementCompletionRatio? AchievementCompletionRatio() {
         var currentTier = providesAchievements.Find(it => !it.Unlocked());
         if (currentTier == null) return null;
 
@@ -69,6 +68,6 @@ public record UnlockableTieredAchievement : IUnlockable {
         var ratio = (double)progress.Value / currentTier.Maximum();
         if (ratio >= 1.0) return null;
 
-        return new NearingCompletionCandidate(ratio, currentTier);
+        return new AchievementCompletionRatio(currentTier, ratio);
     }
 }

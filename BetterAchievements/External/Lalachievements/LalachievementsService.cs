@@ -15,21 +15,18 @@ public class LalachievementsService {
     private const string AchievementRarityUrl = "https://lalachievements.com/api/rarity/achievements/global";
     private const string GameAllCacheFileName = "lalachievements-all.json";
     private static readonly TimeSpan GameAllCacheDuration = TimeSpan.FromHours(24);
-
     private static readonly JsonSerializerOptions GameAllJsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
     public static readonly IPluginLog Log = Plugin.GetLogger<LalachievementsService>();
-
     public readonly ConcurrentDictionary<uint, uint> AchievementRarity = new();
-
     public GameAllResponse? GameAll { get; private set; }
+    public bool GameAllLoaded { get; private set; } = false;
 
     public LalachievementsService() {
         GetAchievementRarity();
         GetGameAll();
     }
 
-    public List<T> GetTable<T>() where T : ITable => GameAll?.GetTable<T>() ?? [];
+    public List<T> GetTable<T>() where T : ITableRow => GameAll?.GetTable<T>() ?? [];
 
     // this is dummy data
     public uint? GetWorldRank() => 128;
@@ -64,6 +61,7 @@ public class LalachievementsService {
 
             if (cache is not null && cache.GameVersion == gameVersion && DateTimeOffset.UtcNow - cache.CachedAt < GameAllCacheDuration) {
                 GameAll = cache.Response;
+                GameAllLoaded = true;
                 Log.Info("Loaded the Lalachievements game data from cache");
                 return;
             }
@@ -76,6 +74,7 @@ public class LalachievementsService {
             }
 
             GameAll = response;
+            GameAllLoaded = true;
             WriteGameAllCache(new GameAllCache { GameVersion = gameVersion, CachedAt = DateTimeOffset.UtcNow, Response = response });
         } catch (Exception exception) {
             Log.Error(exception, "Error requesting Lalachievements for game data");

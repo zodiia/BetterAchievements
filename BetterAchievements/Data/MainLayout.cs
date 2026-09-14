@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using BetterAchievements.Helpers;
 using Dalamud.Plugin.Services;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -9,23 +10,15 @@ using Lumina.Excel.Sheets;
 namespace BetterAchievements.Data;
 
 public record MainLayout {
-    private const string AchievementCategoryLegacy = "Legacy";
     public static readonly IPluginLog Log = Plugin.GetLogger<MainLayout>();
 
     public required List<AchievementLayout> Achievements { get; init; }
-
-    private static bool IsAchievementInvalid(Achievement ach) {
-        return ach.Name.IsEmpty
-               || !ach.AchievementCategory.IsValid || ach.AchievementCategory.Value.Name.IsEmpty
-               || !ach.AchievementCategory.Value.AchievementKind.IsValid || ach.AchievementCategory.Value.AchievementKind.Value.Name.IsEmpty
-               || ach.AchievementCategory.Value.AchievementKind.Value.Name.ToString().Equals(AchievementCategoryLegacy);
-    }
 
     public void CheckMissingAchievements(ExcelSheet<Achievement> excel) {
         var achievements = Achievements.SelectMany(it => it.GetAllAchievementIds()).ToList();
 
         foreach (var ach in excel) {
-            if (IsAchievementInvalid(ach)) continue;
+            if (!ach.IsValidEntry()) continue;
 
             if (!achievements.Contains(ach.RowId)) {
                 Log.Warning("Achievement #{Id}, \"{Name}: {Desc}\", in {Category}/{Subcategory}, is not currently mapped",
@@ -42,10 +35,22 @@ public record MainLayout {
 
             var ach = excel[id];
 
-            if (IsAchievementInvalid(ach)) {
+            if (!ach.IsValidEntry()) {
                 Log.Warning("Layout contains achievement #{Id} which is invalid", id);
             }
         }
+    }
+
+    internal Dictionary<uint, uint> GetHighestIdMap() {
+        var map = new Dictionary<uint, uint>();
+
+        foreach (var layout in Achievements) {
+            foreach (var (key, value) in layout.GetHighestIdMap()) {
+                map[key] = value;
+            }
+        }
+
+        return map;
     }
 }
 
@@ -57,6 +62,41 @@ public abstract record AchievementLayout {
 
     public abstract List<uint> GetAllAchievementIds();
     public abstract AchievementLayoutCategory? FindFirstCategory();
+
+    internal Dictionary<uint, uint> GetHighestIdMap() {
+        var map = new Dictionary<uint, uint>();
+
+        switch (this) {
+            case AchievementLayoutGroup group:
+                foreach (var subLayout in group.Items) {
+                    foreach (var (key, value) in subLayout.GetHighestIdMap()) {
+                        map[key] = value;
+                    }
+                }
+
+                break;
+
+            case AchievementLayoutCategory category:
+                foreach (var item in category.Items) {
+                    switch (item) {
+                        case AchievementLayoutItemSimple simple:
+                            map[simple.Id] = simple.Id;
+                            break;
+                        case AchievementLayoutItemTiered tiered:
+                            var lastId = tiered.Ids.Last();
+                            foreach (var id in tiered.Ids) {
+                                map[id] = lastId;
+                            }
+
+                            break;
+                    }
+                }
+
+                break;
+        }
+
+        return map;
+    }
 }
 
 public record AchievementLayoutGroup : AchievementLayout {

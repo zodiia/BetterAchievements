@@ -51,15 +51,15 @@ public static partial class SidebarComponents {
     }
 
     private static void CollectionItem(MainWindowState state, UnlockableType type) {
-        var (score, visible) = state.Unlockables.ComputeProgress(type);
-        if (visible == 0) return;
+        var progress = state.Unlockables.ComputeProgress(type);
+        if (progress.VisibleCount == 0) return;
 
         var target = new NavigationTarget.Collection(type);
         var isOpen = state.Navigation.IsGroupOpen(CollectionsService.Label(type));
         var selected = state.Navigation.IsSelected(target);
-        var progress = score.Total == 0 ? 0f : (float)score.Obtained / score.Total;
+        var progressPercentage = progress.Score.Total == 0 ? 0f : (float)progress.Score.Obtained / progress.Score.Total;
 
-        if (CategoryRow($"##Collection-{type}", CollectionIcon(type), CollectionsService.Label(type), progress, null, UiColors.Blue(), isOpen, selected)) {
+        if (CategoryRow($"##Collection-{type}", CollectionIcon(type), CollectionsService.Label(type), progressPercentage, null, UiColors.Blue(), isOpen, selected)) {
             state.Navigation.Navigate(target);
         }
 

@@ -31,8 +31,8 @@ public static partial class OverviewComponents {
 
     private static RankedEntry? NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
         var candidate = item switch {
-            AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).NearingCompletionCandidate(),
-            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).NearingCompletionCandidate(),
+            AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).AchievementCompletionRatio(),
+            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).AchievementCompletionRatio(),
             _ => null
         };
 

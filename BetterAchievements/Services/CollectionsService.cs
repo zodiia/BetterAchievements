@@ -4,11 +4,16 @@ using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.External.Lalachievements;
+using BetterAchievements.Helpers;
+using Lumina.Excel.Sheets;
+using Emote = BetterAchievements.External.Lalachievements.Emote;
+using Mount = BetterAchievements.External.Lalachievements.Mount;
+using Title = BetterAchievements.External.Lalachievements.Title;
+using TripleTriadCard = BetterAchievements.External.Lalachievements.TripleTriadCard;
 
 namespace BetterAchievements.Services;
 
 public class CollectionsService(Plugin plugin) {
-    private const uint TitlesCategoryId = 0;
     private const string OtherCategoryName = "Other";
     private const string UnknownCategoryName = "Unknown";
 
@@ -25,27 +30,33 @@ public class CollectionsService(Plugin plugin) {
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
-    private GameAllResponse? builtFrom;
+    public bool Loaded { get; private set; } = false;
 
-    private static readonly Lazy<Dictionary<uint, string>> TitleUnlockAchievementNames = new(BuildTitleUnlockAchievementNames);
-
-    public bool Loaded => builtFrom != null;
-
-    public static string Label(UnlockableType type) {
-        return type switch {
-            UnlockableType.Achievement => "Achievements",
-            UnlockableType.Mount => "Mounts",
-            UnlockableType.Minion => "Minions",
-            UnlockableType.Title => "Titles",
-            UnlockableType.TripleTriadCard => "Triple Triad Cards",
-            UnlockableType.Barding => "Bardings",
-            UnlockableType.FashionAccessory => "Fashion Accessories",
-            UnlockableType.Hairstyle => "Hairstyles",
-            UnlockableType.Facewear => "Facewears",
-            UnlockableType.Emote => "Emotes",
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
-    }
+    public static string Label(UnlockableType type) => type switch {
+        UnlockableType.Achievement => "Achievements",
+        UnlockableType.Mount => "Mounts",
+        UnlockableType.Minion => "Minions",
+        UnlockableType.Title => "Titles",
+        UnlockableType.TripleTriadCard => "Triple Triad Cards",
+        UnlockableType.TripleTriadNpc => "Triple Triad NPCs",
+        UnlockableType.Barding => "Bardings",
+        UnlockableType.FashionAccessory => "Fashion Accessories",
+        UnlockableType.Hairstyle => "Hairstyles",
+        UnlockableType.Facewear => "Facewears",
+        UnlockableType.Emote => "Emotes",
+        UnlockableType.CraftingLog => "Crafting Log",
+        UnlockableType.Fish => "Fishing",
+        UnlockableType.Spearfish => "Spearfishing",
+        UnlockableType.FramersKit => "Framer's Kits",
+        UnlockableType.HuntingLog => "Hunting Log",
+        UnlockableType.GatheringLog => "Gathering Log",
+        UnlockableType.OrchestrionRoll => "Orchestrion Rolls",
+        UnlockableType.AetherCurrent => "Aether Currents",
+        UnlockableType.FieldRecord => "Field Records",
+        UnlockableType.OccultRecord => "Occult Records",
+        UnlockableType.SurveyRecord => "Survey Records",
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
 
     public List<CollectionCategory> Categories(UnlockableType type) {
         return categories.GetValueOrDefault(type, []);
@@ -56,10 +67,12 @@ public class CollectionsService(Plugin plugin) {
     }
 
     public bool CheckForUpdates() {
-        var response = plugin.LalachievementsService.GameAll;
-        if (response == null || ReferenceEquals(response, builtFrom)) return false;
+        if (plugin.LalachievementsService.GameAllLoaded == Loaded || plugin.LalachievementsService.GameAll == null) {
+            return false;
+        }
 
-        Rebuild(response);
+        Rebuild(plugin.LalachievementsService.GameAll);
+        Loaded = plugin.LalachievementsService.GameAllLoaded;
         return true;
     }
 
@@ -69,8 +82,6 @@ public class CollectionsService(Plugin plugin) {
         foreach (var type in Collections) {
             categories[type] = BuildCategories(type, response);
         }
-
-        builtFrom = response;
     }
 
     private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) {
@@ -87,28 +98,35 @@ public class CollectionsService(Plugin plugin) {
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
+    private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) => type switch {
+        UnlockableType.Mount => BuildCategoriesWithGameAll(response, response.GetTable<Mount>(), it => it.SourceTypeId),
+        UnlockableType.Minion => BuildCategoriesWithGameAll(response, response.GetTable<Minion>(), it => it.SourceTypeId),
+        UnlockableType.TripleTriadCard => BuildCategoriesWithGameAll(response, response.GetTable<TripleTriadCard>(), it => it.SourceTypeId),
+        UnlockableType.Barding => BuildCategoriesWithGameAll(response, response.GetTable<Barding>(), it => it.SourceTypeId),
+        UnlockableType.FashionAccessory => BuildCategoriesWithGameAll(response, response.GetTable<Fashion>(), it => it.SourceTypeId),
+        UnlockableType.Hairstyle => BuildCategoriesWithGameAll(response, response.GetTable<Hair>(), it => it.SourceTypeId),
+        UnlockableType.Facewear => BuildCategoriesWithGameAll(response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
+        UnlockableType.Emote => BuildCategoriesWithGameAll(response, response.GetTable<Emote>(), it => it.SourceTypeId),
+        UnlockableType.Title => BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
 
-    private static List<CollectionCategory> BuildCategories<T>(
-        UnlockableType type, GameAllResponse response, List<T> rows, Func<T, uint?> getSourceTypeId)
-        where T : ITable {
-        return rows.Where(it => IsIncluded(type, it))
-                   .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
-                   .Select(group => new CollectionCategory {
-                       Id = group.Key.Id,
-                       Name = group.Key.Name,
-                       Items = group.OrderBy(it => it.Id).Select(ITable (it) => it).ToList()
-                   })
-                   .Where(it => it.Items.Count > 0)
-                   .OrderBy(it => CategorySortRank(it.Name))
-                   .ThenBy(it => it.Id)
-                   .ToList();
-    }
+    private static List<CollectionCategory> BuildCategoriesWithGameAll<T>(GameAllResponse response, List<T> rows, Func<T, uint?> getSourceTypeId)
+        where T : ITableRow => rows.Where(it => it.Deleted is false)
+                                   .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
+                                   .Select(group => new CollectionCategory {
+                                       Id = group.Key.Id,
+                                       Name = group.Key.Name,
+                                       Items = group.OrderBy(it => it.Id).Select(it => it.Id).ToList()
+                                   })
+                                   .Where(it => it.Items.Count > 0)
+                                   .OrderBy(it => CategorySortRank(it.Name))
+                                   .ThenBy(it => it.Id)
+                                   .ToList();
 
-    private static int CategorySortRank(string name) {
-        if (name == OtherCategoryName) return 1;
-        if (name == UnknownCategoryName) return 2;
-        return 0;
-    }
+    private static List<CollectionCategory> BuildSingleCategoryWithGameAll<T>(List<T> rows, UnlockableType type) where T : ITableRow => [
+        new() { Id = 0, Name = Label(type), Items = rows.Where(it => it.Deleted == false).OrderBy(it => it.Id).Select(it => it.Id).ToList() }
+    ];
 
     private static List<CollectionCategory> BuildTitleCategory(GameAllResponse response) {
         var achievementNamesByTitleId = TitleUnlockAchievementNames.Value;
@@ -123,16 +141,12 @@ public class CollectionsService(Plugin plugin) {
                             })
                             .ToList();
 
-        return [new CollectionCategory { Id = TitlesCategoryId, Name = Label(UnlockableType.Title), Items = items }];
-    }
-
-    private static Dictionary<uint, string> BuildTitleUnlockAchievementNames() {
-        return Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Achievement>()
-                     .Where(it => it.Title.IsValid)
-                     .ToDictionary(it => it.RowId, it => it.Name.ToString());
-    }
-
-    private static bool IsIncluded(UnlockableType type, ITable row) {
-        return row.Deleted != true && UnlockablesService.IsValidCollectionItem(type, row.Id);
-    }
+    /// <summary>Orders categories by not changing their order, except putting Other and Unknown as the last two</summary>
+    /// <param name="name">Category name</param>
+    /// <returns>1 for Other, 2 for Unknown, 0 otherwise</returns>
+    private static int CategorySortRank(string name) => name switch {
+        OtherCategoryName => 1,
+        UnknownCategoryName => 2,
+        _ => 0
+    };
 }

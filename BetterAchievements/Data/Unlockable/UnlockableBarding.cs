@@ -1,35 +1,38 @@
+using BetterAchievements.External.Lalachievements;
+using BetterAchievements.Helpers;
 using Lumina.Excel.Sheets;
-using ITable = BetterAchievements.External.Lalachievements.ITable;
 
 namespace BetterAchievements.Data.Unlockable;
 
 public sealed record UnlockableBarding : IUnlockable {
     private readonly BuddyEquip barding;
+    private readonly string name;
+    private readonly string nameLowercase;
+    private readonly string? howTo;
+    private readonly string? howToLowercase;
+    private readonly bool unlocked;
 
-    public UnlockableBarding(BuddyEquip barding, ITable table) {
+    public UnlockableBarding(BuddyEquip barding, ITableRow tableRow) {
         this.barding = barding;
         name = barding.Name.ToString();
         nameLowercase = barding.Name.ToString().ToLower();
-        howTo = table.HowTo;
-        howToLowercase = table.HowTo?.ToLower();
+        howTo = tableRow.HowTo;
+        howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsBuddyEquipUnlocked(barding);
     }
 
     public uint Id() => barding.RowId;
     public UnlockableType Type() => UnlockableType.Barding;
     public uint Icon() => barding.IconBody;
-    private readonly string name;
     public string Name() => name;
     public string Description() => "";
-    private readonly string nameLowercase;
     public string NameLowercase() => nameLowercase;
     public string DescriptionLowercase() => "";
-    private readonly string? howTo;
     public string? HowTo() => howTo;
-    private readonly string? howToLowercase;
     public string? HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
-    private readonly bool unlocked;
     public bool Unlocked() => unlocked;
+    public bool IsValid() => barding.IsValidEntry();
+
 }

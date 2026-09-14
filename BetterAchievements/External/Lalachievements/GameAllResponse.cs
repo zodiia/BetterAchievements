@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 // ReSharper disable ClassNeverInstantiated.Global
 namespace BetterAchievements.External.Lalachievements;
 
-public interface ITable {
+public interface ITableRow {
     uint Id { get; init; }
     long UpdatedAt { get; init; }
     bool? Deleted { get; init; }
@@ -21,16 +21,16 @@ public sealed record GameAllCache {
 }
 
 public sealed record GameAllResponse {
-    private readonly ConcurrentDictionary<Type, Dictionary<uint, ITable>> rowsById = new();
+    private readonly ConcurrentDictionary<Type, Dictionary<uint, ITableRow>> rowsById = new();
 
     public long GenerateTime { get; init; }
     public long DeployTime { get; init; }
     public required GameAllTables Tables { get; init; }
 
-    public List<T> GetTable<T>() where T : ITable => Tables.GetTable<T>();
+    public List<T> GetTable<T>() where T : ITableRow => Tables.GetTable<T>();
 
-    public T? GetRow<T>(uint id) where T : class, ITable {
-        var rows = rowsById.GetOrAdd(typeof(T), _ => GetTable<T>().ToDictionary(it => it.Id, ITable (it) => it));
+    public T? GetRow<T>(uint id) where T : class, ITableRow {
+        var rows = rowsById.GetOrAdd(typeof(T), _ => GetTable<T>().ToDictionary(it => it.Id, ITableRow (it) => it));
 
         return rows.GetValueOrDefault(id) as T;
     }
@@ -74,7 +74,7 @@ public sealed record GameAllTables {
     [JsonPropertyName("ttnpcs")]
     public required List<TripleTriadNpc> TripleTriadNpcs { get; init; }
 
-    public List<T> GetTable<T>() where T : ITable {
+    public List<T> GetTable<T>() where T : ITableRow {
         object table = typeof(T).Name switch {
             nameof(Barding) => Bardings,
             nameof(BozjaFate) => BozjaFates,
@@ -107,7 +107,7 @@ public sealed record GameAllTables {
     }
 }
 
-public sealed record SourceType : ITable {
+public sealed record SourceType : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -115,7 +115,7 @@ public sealed record SourceType : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record Item : ITable {
+public sealed record Item : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -123,7 +123,7 @@ public sealed record Item : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record PlaceName : ITable {
+public sealed record PlaceName : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -131,32 +131,7 @@ public sealed record PlaceName : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record Barding : ITable {
-    public uint Id { get; init; }
-    public long UpdatedAt { get; init; }
-    public bool? Deleted { get; init; }
-    public uint Sort { get; init; }
-    public uint? SourceTypeId { get; init; }
-    public bool? Obtainable { get; init; }
-    public string Name { get; init; } = "";
-    public string? HowTo { get; init; }
-
-    public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
-}
-
-public sealed record Hair : ITable {
-    public uint Id { get; init; }
-    public long UpdatedAt { get; init; }
-    public bool? Deleted { get; init; }
-    public uint? SourceTypeId { get; init; }
-    public bool? Obtainable { get; init; }
-    public string Name { get; init; } = "";
-    public string? HowTo { get; init; }
-
-    public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
-}
-
-public sealed record Fashion : ITable {
+public sealed record Barding : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -169,7 +144,19 @@ public sealed record Fashion : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Spectacle : ITable {
+public sealed record Hair : ITableRow {
+    public uint Id { get; init; }
+    public long UpdatedAt { get; init; }
+    public bool? Deleted { get; init; }
+    public uint? SourceTypeId { get; init; }
+    public bool? Obtainable { get; init; }
+    public string Name { get; init; } = "";
+    public string? HowTo { get; init; }
+
+    public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
+}
+
+public sealed record Fashion : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -182,7 +169,20 @@ public sealed record Spectacle : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Emote : ITable {
+public sealed record Spectacle : ITableRow {
+    public uint Id { get; init; }
+    public long UpdatedAt { get; init; }
+    public bool? Deleted { get; init; }
+    public uint Sort { get; init; }
+    public uint? SourceTypeId { get; init; }
+    public bool? Obtainable { get; init; }
+    public string Name { get; init; } = "";
+    public string? HowTo { get; init; }
+
+    public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
+}
+
+public sealed record Emote : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -196,7 +196,7 @@ public sealed record Emote : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Mount : ITable {
+public sealed record Mount : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -213,7 +213,7 @@ public sealed record Mount : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Minion : ITable {
+public sealed record Minion : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -230,7 +230,7 @@ public sealed record Minion : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Orchestrion : ITable {
+public sealed record Orchestrion : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -241,7 +241,7 @@ public sealed record Orchestrion : ITable {
     public string Description { get; init; } = "";
 }
 
-public sealed record Title : ITable {
+public sealed record Title : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -252,7 +252,7 @@ public sealed record Title : ITable {
     public string Feminine { get; init; } = "";
 }
 
-public sealed record Fish : ITable {
+public sealed record Fish : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -264,7 +264,7 @@ public sealed record Fish : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record Raid : ITable {
+public sealed record Raid : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -274,7 +274,7 @@ public sealed record Raid : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record Npc : ITable {
+public sealed record Npc : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -296,7 +296,7 @@ public sealed record Npc : ITable {
     public PlaceName? GetPlaceNameRegion(GameAllResponse response) => response.GetRow<PlaceName>(PlaceNameRegionId);
 }
 
-public sealed record Leve : ITable {
+public sealed record Leve : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -328,7 +328,7 @@ public sealed record Leve : ITable {
     public Npc? GetDestinationNpc(GameAllResponse response) => response.GetRow<Npc>(DestinationNpcId);
 }
 
-public sealed record BozjaFate : ITable {
+public sealed record BozjaFate : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -344,7 +344,7 @@ public sealed record BozjaFate : ITable {
     public string? SpawnedBy { get; init; }
 }
 
-public sealed record BozjaNote : ITable {
+public sealed record BozjaNote : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -362,7 +362,7 @@ public sealed record BozjaNote : ITable {
         BozjaFateIds?.Select(response.GetRow<BozjaFate>).OfType<BozjaFate>().ToList() ?? [];
 }
 
-public sealed record PortraitCondition : ITable {
+public sealed record PortraitCondition : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -376,7 +376,7 @@ public sealed record PortraitCondition : ITable {
     public SourceType GetSourceType(GameAllResponse response) => response.GetSourceType(SourceTypeId);
 }
 
-public sealed record Portrait : ITable {
+public sealed record Portrait : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -390,7 +390,7 @@ public sealed record Portrait : ITable {
     public PortraitCondition? GetPortraitCondition(GameAllResponse response) => response.GetRow<PortraitCondition>(PortraitConditionId);
 }
 
-public sealed record TripleTriadCardType : ITable {
+public sealed record TripleTriadCardType : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -398,7 +398,7 @@ public sealed record TripleTriadCardType : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record TripleTriadRule : ITable {
+public sealed record TripleTriadRule : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -406,7 +406,7 @@ public sealed record TripleTriadRule : ITable {
     public string Name { get; init; } = "";
 }
 
-public sealed record TripleTriadCard : ITable {
+public sealed record TripleTriadCard : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }
@@ -432,7 +432,7 @@ public sealed record TripleTriadCard : ITable {
     public TripleTriadCardType? GetTripleTriadCardType(GameAllResponse response) => response.GetRow<TripleTriadCardType>(TripleTriadCardTypeId);
 }
 
-public sealed record TripleTriadNpc : ITable {
+public sealed record TripleTriadNpc : ITableRow {
     public uint Id { get; init; }
     public long UpdatedAt { get; init; }
     public bool? Deleted { get; init; }

@@ -1,84 +1,46 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
-using ITable = BetterAchievements.External.Lalachievements.ITable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
+using LalachievementsService = BetterAchievements.External.Lalachievements.LalachievementsService;
+using ITableRow = BetterAchievements.External.Lalachievements.ITableRow;
 
 namespace BetterAchievements.Services;
 
 public class UnlockablesService {
     private readonly Plugin plugin;
-    private readonly ExcelSheet<Achievement> achievementSheet = Plugin.DataManager.GetExcelSheet<Achievement>();
-
+    private readonly LalachievementsService lalachievementsService;
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
-    private bool achievementArrayUpdatedForUi = false;
+    private readonly ConcurrentDictionary<UnlockableType, object> excelSheetCache = new();
+    public readonly Dictionary<uint, uint> HighestAchievementIdMap;
+    private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
-
-    public readonly Dictionary<uint, uint> HighestIdMap;
 
     public UnlockablesService(Plugin plugin) {
         this.plugin = plugin;
-
-        HighestIdMap = CalculateHighestIdMap(plugin.MainLayout);
+        lalachievementsService = plugin.LalachievementsService;
+        HighestAchievementIdMap = plugin.MainLayout.GetHighestIdMap();
         Plugin.UnlockState.Unlock += OnUnlock;
     }
 
     private void OnUnlock(RowRef _) {
-        achievementArrayUpdatedForUi = true;
+        unlocksUpdatedForUi = true;
     }
 
-    private static Dictionary<uint, uint> CalculateHighestIdMap(AchievementLayout layout) {
-        var map = new Dictionary<uint, uint>();
-
-        switch (layout) {
-            case AchievementLayoutGroup group:
-                foreach (var subLayout in group.Items) {
-                    foreach (var (key, value) in CalculateHighestIdMap(subLayout)) {
-                        map[key] = value;
-                    }
-                }
-
-                break;
-
-            case AchievementLayoutCategory category:
-                foreach (var item in category.Items) {
-                    switch (item) {
-                        case AchievementLayoutItemSimple simple:
-                            map[simple.Id] = simple.Id;
-                            break;
-                        case AchievementLayoutItemTiered tiered:
-                            var lastId = tiered.Ids.Last();
-                            foreach (var id in tiered.Ids) {
-                                map[id] = lastId;
-                            }
-
-                            break;
-                    }
-                }
-
-                break;
-        }
-
-        return map;
+    private ExcelSheet<T> GetExcelSheet<T>(UnlockableType type) where T : struct, IExcelRow<T> {
+        return (ExcelSheet<T>)excelSheetCache.GetOrAdd(type, static _ => Plugin.DataManager.GetExcelSheet<T>());
     }
 
-    private static Dictionary<uint, uint> CalculateHighestIdMap(MainLayout mainLayout) {
-        var map = new Dictionary<uint, uint>();
-
-        foreach (var layout in mainLayout.Achievements) {
-            foreach (var (key, value) in CalculateHighestIdMap(layout)) {
-                map[key] = value;
-            }
-        }
-
-        return map;
+    private ITableRow GetTableRow<T>(uint id) where T : ITableRow {
+        return lalachievementsService.GetTable<T>().First(it => it.Id == id);
     }
 
     public UnlockableAchievement GetUnlockableAchievement(uint achievementId) {
@@ -86,7 +48,7 @@ public class UnlockablesService {
             return it;
         }
 
-        var unlockable = new UnlockableAchievement(achievementSheet.GetRow(achievementId), plugin);
+        var unlockable = new UnlockableAchievement(GetExcelSheet<Achievement>(UnlockableType.Achievement).GetRow(achievementId), plugin);
         achievements[achievementId] = unlockable;
         return unlockable;
     }
@@ -96,7 +58,7 @@ public class UnlockablesService {
             return it;
         }
 
-        var achievementList = achievementIds.Select(id => achievementSheet.GetRow(id)).ToList();
+        var achievementList = achievementIds.Select(id => GetExcelSheet<Achievement>(UnlockableType.Achievement).GetRow(id)).ToList();
         var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
         achievementIds.ForEach(id => tieredAchievements[id] = unlockable);
         return unlockable;
@@ -143,17 +105,38 @@ public class UnlockablesService {
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
+    private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {
+        UnlockableType.Mount =>
+            new UnlockableMount(GetExcelSheet<Mount>(key.Type).GetRow(key.Id),
+                                GetTableRow<External.Lalachievements.Mount>(key.Id)),
+        UnlockableType.Minion =>
+            new UnlockableMinion(GetExcelSheet<Companion>(key.Type).GetRow(key.Id),
+                                 GetTableRow<External.Lalachievements.Minion>(key.Id)),
+        UnlockableType.Title =>
+            new UnlockableTitle(GetExcelSheet<Title>(key.Type).GetRow(key.Id),
+                                GetTableRow<External.Lalachievements.Title>(key.Id)),
+        UnlockableType.TripleTriadCard =>
+            new UnlockableTripleTriadCard(GetExcelSheet<TripleTriadCard>(key.Type).GetRow(key.Id),
+                                          GetTableRow<External.Lalachievements.TripleTriadCard>(key.Id)),
+        UnlockableType.Barding =>
+            new UnlockableBarding(GetExcelSheet<BuddyEquip>(key.Type).GetRow(key.Id),
+                                  GetTableRow<External.Lalachievements.Barding>(key.Id)),
+        UnlockableType.FashionAccessory =>
+            new UnlockableFashionAccessory(GetExcelSheet<Ornament>(key.Type).GetRow(key.Id),
+                                           GetTableRow<External.Lalachievements.Fashion>(key.Id)),
+        UnlockableType.Hairstyle =>
+            new UnlockableHairstyle(GetExcelSheet<CharaMakeCustomize>(key.Type).First(it => it.FeatureID == key.Id),
+                                    GetTableRow<External.Lalachievements.Hair>(key.Id)),
+        UnlockableType.Facewear =>
+            new UnlockableFacewear(GetExcelSheet<GlassesStyle>(key.Type).GetRow(key.Id),
+                                   GetTableRow<External.Lalachievements.Spectacle>(key.Id)),
+        UnlockableType.Emote =>
+            new UnlockableEmote(GetExcelSheet<Emote>(key.Type).GetRow(key.Id),
+                                GetTableRow<External.Lalachievements.Emote>(key.Id)),
+        _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unimplemented unlockable type")
+    };
 
-    public IUnlockable GetUnlockableCollectionItem(UnlockableType type, ITable row) {
-        var key = new UnlockableKey(type, row.Id);
-        if (collectionItems.TryGetValue(key, out var it)) {
-            return it;
-        }
-
-        var unlockable = CreateUnlockableCollectionItem(type, row);
-        collectionItems[key] = unlockable;
-        return unlockable;
-    }
+    public IUnlockable GetUnlockable(UnlockableType type, uint rowId) => collectionItems.GetOrAdd(new UnlockableKey(type, rowId), CreateUnlockable);
 
     public IUnlockable? GetExistingAchievement(uint achievementId) {
         return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
@@ -211,8 +194,8 @@ public class UnlockablesService {
             return true;
         }
 
-        if (achievementArrayUpdatedForUi) {
-            achievementArrayUpdatedForUi = false;
+        if (unlocksUpdatedForUi) {
+            unlocksUpdatedForUi = false;
             return true;
         }
 

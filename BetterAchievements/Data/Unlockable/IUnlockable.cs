@@ -6,11 +6,23 @@ public enum UnlockableType {
     Minion,
     Title,
     TripleTriadCard,
+    TripleTriadNpc,
     Barding,
     FashionAccessory,
     Hairstyle,
     Facewear,
     Emote,
+    Fish,
+    Spearfish,
+    FramersKit,
+    HuntingLog,
+    CraftingLog,
+    GatheringLog,
+    OrchestrionRoll,
+    AetherCurrent,
+    FieldRecord,
+    OccultRecord,
+    SurveyRecord,
 }
 
 public interface IUnlockable {
@@ -26,4 +38,5 @@ public interface IUnlockable {
     uint? Current();
     uint Maximum();
     bool Unlocked();
+    bool IsValid();
 }

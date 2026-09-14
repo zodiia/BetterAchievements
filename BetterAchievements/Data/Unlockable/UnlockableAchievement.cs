@@ -1,10 +1,19 @@
+using System;
 using System.Collections.Generic;
+using BetterAchievements.Helpers;
 using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
 
 public sealed record UnlockableAchievement : IUnlockable {
     private readonly Achievement achievement;
+    private readonly string name;
+    private readonly string description;
+    private readonly string nameLowercase;
+    private readonly string descriptionLowercase;
+    private readonly uint? current;
+    private readonly bool unlocked;
+    private readonly bool pinned;
 
     public UnlockableAchievement(Achievement achievement, Plugin plugin) {
         this.achievement = achievement;
@@ -25,35 +34,20 @@ public sealed record UnlockableAchievement : IUnlockable {
     public byte Points() => achievement.Points;
     public byte AchievementType() => achievement.Type;
     public uint Maximum() => achievement.Maximum();
-
-    private readonly string name;
     public string Name() => name;
-    private readonly string description;
     public string Description() => description;
-    private readonly string nameLowercase;
     public string NameLowercase() => nameLowercase;
-    private readonly string descriptionLowercase;
     public string DescriptionLowercase() => descriptionLowercase;
     public string? HowTo() => null;
     public string? HowToLowercase() => null;
-    private readonly uint? current;
     public uint? Current() => current;
-    private readonly bool unlocked;
     public bool Unlocked() => unlocked;
-    private readonly bool pinned;
     public bool Pinned() => pinned;
     public Title? Title() => achievement.Title.ValueNullable;
+    public bool IsValid() => achievement.IsValidEntry();
 
-    public NearingCompletionCandidate? NearingCompletionCandidate() {
-        if (Unlocked()) return null;
-
-        var progress = Current();
-        if (progress is null or 0) return null;
-
-        var ratio = (double)progress.Value / Maximum();
-        if (ratio >= 1.0) return null;
-
-        return new NearingCompletionCandidate(ratio, this);
+    public AchievementCompletionRatio? AchievementCompletionRatio() {
+        return current != null ? new AchievementCompletionRatio(this, Math.Clamp((double)current.Value / Maximum(), 0.0, 1.0)) : null;
     }
 }
 

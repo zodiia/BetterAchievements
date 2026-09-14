@@ -2,7 +2,7 @@ using BetterAchievements.Data.Unlockable;
 
 namespace BetterAchievements.Data;
 
-public sealed record NearingCompletionCandidate(double Ratio, UnlockableAchievement Achievement);
+public sealed record AchievementCompletionRatio(UnlockableAchievement Achievement, double Ratio);
 
 public sealed record PointsScore(uint Obtained, uint Total);
 

@@ -1,5 +1,6 @@
-using Lumina.Excel.Sheets;
-using ITable = BetterAchievements.External.Lalachievements.ITable;
+using BetterAchievements.External.Lalachievements;
+using BetterAchievements.Helpers;
+using TripleTriadCard = Lumina.Excel.Sheets.TripleTriadCard;
 
 namespace BetterAchievements.Data.Unlockable;
 
@@ -7,14 +8,14 @@ public sealed record UnlockableTripleTriadCard : IUnlockable {
     private const uint CardIconOffset = 87000;
     private readonly TripleTriadCard card;
 
-    public UnlockableTripleTriadCard(TripleTriadCard card, ITable table) {
+    public UnlockableTripleTriadCard(TripleTriadCard card, ITableRow tableRow) {
         this.card = card;
         name = card.Name.ToString();
         description = card.Description.ToString();
         nameLowercase = card.Name.ToString().ToLower();
         descriptionLowercase = card.Description.ToString().ToLower();
-        howTo = table.HowTo;
-        howToLowercase = table.HowTo?.ToLower();
+        howTo = tableRow.HowTo;
+        howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsTripleTriadCardUnlocked(card);
     }
 
@@ -37,4 +38,5 @@ public sealed record UnlockableTripleTriadCard : IUnlockable {
     public uint Maximum() => 1;
     private readonly bool unlocked;
     public bool Unlocked() => unlocked;
+    public bool IsValid() => card.IsValidEntry();
 }

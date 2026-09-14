@@ -30,9 +30,7 @@ public class UnlockablesState(Plugin plugin) {
     public void ApplyFilters() {
         progressAchievementIds.Clear();
 
-        FilteredLayout = mainLayout with {
-            Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList()
-        };
+        FilteredLayout = new MainLayout { Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList() };
         progressCache.Clear();
         achievementCountCache.Clear();
         collectionCategoryCache.Clear();
@@ -80,7 +78,7 @@ public class UnlockablesState(Plugin plugin) {
         uint visible = 0;
 
         foreach (var item in category.Items) {
-            var unlockable = plugin.UnlockablesService.GetUnlockableCollectionItem(type, item);
+            var unlockable = plugin.UnlockablesService.GetUnlockable(type, item);
             if (!MatchSearch(unlockable)) continue;
 
             total++;
@@ -200,7 +198,7 @@ public class UnlockablesState(Plugin plugin) {
 
     public List<IUnlockable> SortedCollectionUnlockables(UnlockableType type, CollectionCategory category) {
         var unlockables = category.Items
-                                  .Select(it => plugin.UnlockablesService.GetUnlockableCollectionItem(type, it))
+                                  .Select(it => plugin.UnlockablesService.GetUnlockable(type, it))
                                   .Where(it => MatchSearch(it) && MatchUnlockFilter(it.Unlocked()))
                                   .ToList();
 
