@@ -1,4 +1,5 @@
 using BetterAchievements.Helpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 
 namespace BetterAchievements.Data.Unlockable;
@@ -17,7 +18,7 @@ public sealed record UnlockableCraftingLog : IUnlockable {
         description = recipe.ItemResult.Value.Description.ToString();
         nameLowercase = recipe.ItemResult.Value.Name.ToString().ToLower();
         descriptionLowercase = recipe.ItemResult.Value.Description.ToString().ToLower();
-        unlocked = Plugin.QuestManager.Valid && Plugin.QuestManager.Value.IsRecipeCompleted(recipe.RowId);
+        unlocked = Plugin.QuestManager.Valid && QuestManager.IsRecipeComplete(recipe.RowId);
     }
 
     public uint Id() => recipe.RowId;
@@ -32,5 +33,5 @@ public sealed record UnlockableCraftingLog : IUnlockable {
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
     public bool Unlocked() => unlocked;
-    public bool IsValid() => true; // TODO
+    public bool IsValid() => recipe.IsValidEntry();
 }

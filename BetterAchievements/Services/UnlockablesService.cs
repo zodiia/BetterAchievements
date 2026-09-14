@@ -7,7 +7,6 @@ using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
-using Lumina.Extensions;
 using Serilog;
 using LalachievementsService = BetterAchievements.External.Lalachievements.LalachievementsService;
 using ITableRow = BetterAchievements.External.Lalachievements.ITableRow;
@@ -22,6 +21,7 @@ public class UnlockablesService {
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
     private readonly ConcurrentDictionary<UnlockableType, object> excelSheetCache = new();
     public readonly Dictionary<uint, uint> HighestAchievementIdMap;
+    private readonly Lazy<Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>> ttLinkCache = new(BuildTripleTriadLinkCache);
     private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
 
@@ -65,20 +65,39 @@ public class UnlockablesService {
         return unlockable;
     }
 
+    private static Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> BuildTripleTriadLinkCache() {
+        var eNpcBaseToLevel = new Dictionary<uint, uint>();
+        var map = new Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>();
+        var tripleTriadSheet = Plugin.DataManager.GetExcelSheet<TripleTriad>();
+
+        foreach (var level in Plugin.DataManager.GetExcelSheet<Level>()) {
+            eNpcBaseToLevel.TryAdd(level.Object.RowId, level.RowId);
+        }
+        foreach (var eNpcBase in Plugin.DataManager.GetExcelSheet<ENpcBase>()) {
+            foreach (var data in eNpcBase.ENpcData) {
+                if (tripleTriadSheet.HasRow(data.RowId)) {
+                    var levelRowId = eNpcBaseToLevel.TryGetValue(eNpcBase.RowId, out var lvl) ? lvl : 0;
+                    map[data.RowId] = (eNpcBase.RowId, levelRowId);
+                }
+            }
+        }
+        return map;
+    }
+
     private UnlockableTripleTriadNpc CreateUnlockableTripleTriadNpc(UnlockableKey key) {
         var offset = Plugin.DataManager.GetExcelSheet<TripleTriad>().First().RowId;
         var tt = Plugin.DataManager.GetExcelSheet<TripleTriad>().GetRow(offset + key.Id);
         var ttResident = Plugin.DataManager.GetExcelSheet<TripleTriadResident>().GetRow(tt.RowId);
-        var eNpcBase = Plugin.DataManager.GetExcelSheet<ENpcBase>().FirstOrNull(it => it.ENpcData.Any(data => data.RowId == tt.RowId));
-        if (eNpcBase == null) {
+        if (!ttLinkCache.Value.TryGetValue(tt.RowId, out var match)) {
             throw new InvalidDataException($"Could not match any ENpcBase entry to the TripleTriadResident {ttResident.RowId}");
         }
-        var eNpcResident = Plugin.DataManager.GetExcelSheet<ENpcResident>().GetRow(eNpcBase.Value.RowId);
-        var level = Plugin.DataManager.GetExcelSheet<Level>().FirstOrNull(it => it.Object.RowId == (eNpcBase.Value.RowId));
-        if (level == null) {
-            throw new InvalidDataException($"Could not match any Level entry to the ENpcBase {eNpcBase?.RowId}");
+        var eNpcBase = Plugin.DataManager.GetExcelSheet<ENpcBase>().GetRow(match.eNpcBaseRowId);
+        var eNpcResident = Plugin.DataManager.GetExcelSheet<ENpcResident>().GetRow(eNpcBase.RowId);
+        if (match.levelRowId == 0) {
+            throw new InvalidDataException($"Could not match any Level entry to the ENpcBase {eNpcBase.RowId}");
         }
-        return new UnlockableTripleTriadNpc(tt, ttResident, eNpcResident, level.Value);
+        var level = Plugin.DataManager.GetExcelSheet<Level>().GetRow(match.levelRowId);
+        return new UnlockableTripleTriadNpc(tt, ttResident, eNpcResident, level);
     }
 
     private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {

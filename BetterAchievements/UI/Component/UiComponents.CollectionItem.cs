@@ -79,7 +79,7 @@ public static partial class UiComponents {
         return howTo?.Length is > 0 ? howTo : Unknown;
     }
 
-    public static void CollectionItem(IUnlockable unlockable) {
+    public static void CollectionItem(IUnlockable unlockable, Configuration config) {
         using var group = ImRaii.Group();
 
         var start = ImGui.GetCursorPos();
@@ -94,6 +94,10 @@ public static partial class UiComponents {
         }
 
         CollectionItemTitle(unlockable.Name(), textX, start.Y, lineHeight);
+        if (config.DisplayIds) {
+            ImGui.SameLine();
+            ImGui.TextDisabled($"#{unlockable.Id()}");
+        }
         CollectionItemStatus(unlockable.Unlocked(), start.X + availableWidth, start.Y, lineHeight);
         IndentedWrappedText(CollectionItemHowTo(unlockable), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
 

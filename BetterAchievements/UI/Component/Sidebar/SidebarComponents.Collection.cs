@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics;
 using System.Numerics;
 using BetterAchievements.Services;
 using BetterAchievements.Data.Unlockable;
@@ -54,8 +52,6 @@ public static partial class SidebarComponents {
     }
 
     private static void CollectionItem(MainWindowState state, UnlockableType type) {
-        var watch = new Stopwatch();
-        watch.Start();
         var progress = state.Unlockables.ComputeProgress(type);
         if (progress.VisibleCount == 0) return;
 

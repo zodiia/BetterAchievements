@@ -6,6 +6,7 @@ namespace BetterAchievements.Helpers;
 public static class ExcelSheetsExtension {
     private const string AchievementCategoryLegacy = "Legacy";
     private const uint CharaMakeCustomizeFacePaintIds = 2400;
+    private const uint MaxRecordableRecipeId = 30000;
 
     public static bool IsValidEntry(this Mount mount) => mount is { Order: > -1, Singular.IsEmpty: false };
     public static bool IsValidEntry(this Companion companion) => companion is { Singular.IsEmpty: false };
@@ -14,7 +15,7 @@ public static class ExcelSheetsExtension {
     public static bool IsValidEntry(this BuddyEquip equip) => equip is { Order: > 0, Name.IsEmpty: false };
     public static bool IsValidEntry(this Ornament ornament) => ornament is { Singular.IsEmpty: false };
     public static bool IsValidEntry(this Emote emote) => emote is { Order: > 0, Name.IsEmpty: false };
-    public static bool IsValidEntry(this Recipe recipe) => recipe is { ItemResult: { IsValid: true, RowId: > 0 } };
+    public static bool IsValidEntry(this Recipe recipe) => recipe is { RowId: < MaxRecordableRecipeId, ItemResult: { IsValid: true, RowId: > 0 } };
 
     public static bool IsValidEntry(this GlassesStyle facewear) => facewear is { Name.IsEmpty: false } && facewear.Glasses.FirstOrNull()?.IsValid == true &&
                                                                    !facewear.Glasses.FirstOrNull()?.Value.Name.IsEmpty == true;

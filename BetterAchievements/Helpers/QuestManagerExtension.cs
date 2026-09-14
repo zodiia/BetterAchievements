@@ -9,6 +9,5 @@ public static class QuestManagerExtension {
 
     extension(QuestManager manager) {
         public bool IsRecipeCompletable(uint recipeRowId) => recipeRowId < manager.CompletedRecipesBitArray.BitCount;
-        public bool IsRecipeCompleted(uint recipeRowId) => manager.IsRecipeCompletable(recipeRowId) && manager.CompletedRecipesBitArray[(int)recipeRowId];
     }
 }

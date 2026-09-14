@@ -37,9 +37,9 @@ public class CollectionView(
         return true;
     }
 
-    private void DrawMainContent() {
+    private void DrawMainContent(Configuration config) {
         clipper.Draw(entries.Count, i => {
-            UiComponents.CollectionItem(entries[i]);
+            UiComponents.CollectionItem(entries[i], config);
 
             if (i != entries.Count - 1) {
                 ImGui.Separator();
@@ -55,6 +55,6 @@ public class CollectionView(
         if (DrawWarnings()) return;
 
         DrawHeader();
-        DrawMainContent();
+        DrawMainContent(plugin.Configuration);
     }
 }
