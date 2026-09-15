@@ -93,7 +93,8 @@ public static partial class SidebarComponents {
         SectionHeader("Records");
         FillerItems(state, "Challenge Log", "Wondrous Tales", "Hunting Log");
         CollectionItem(state, UnlockableType.CraftingLog, UiColors.Green());
-        FillerItems(state, "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        CollectionItem(state, UnlockableType.GatheringLog, UiColors.Green());
+        FillerItems(state, "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
         FillerItems(state, "Yo-kai Watch", "The Rising");

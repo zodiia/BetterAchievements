@@ -21,6 +21,7 @@ public static partial class SidebarComponents {
             UnlockableType.Facewear => FontAwesomeIcon.Glasses,
             UnlockableType.Emote => FontAwesomeIcon.Smile,
             UnlockableType.CraftingLog => FontAwesomeIcon.Hammer,
+            UnlockableType.GatheringLog => FontAwesomeIcon.Gem,
             _ => FontAwesomeIcon.Question,
         };
     }

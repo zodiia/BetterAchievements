@@ -5,6 +5,7 @@ using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
 using BetterAchievements.External.Lalachievements;
 using BetterAchievements.Helpers;
+using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Emote = BetterAchievements.External.Lalachievements.Emote;
 using Mount = BetterAchievements.External.Lalachievements.Mount;
@@ -16,6 +17,7 @@ namespace BetterAchievements.Services;
 public class CollectionsService(Plugin plugin) {
     private const string OtherCategoryName = "Other";
     private const string UnknownCategoryName = "Unknown";
+    private const uint MaxRecordableGatheringItemId = 10000;
 
     public static readonly List<UnlockableType> Collections = [
         UnlockableType.Mount,
@@ -29,6 +31,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Facewear,
         UnlockableType.Emote,
         UnlockableType.CraftingLog,
+        UnlockableType.GatheringLog,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -98,6 +101,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Title => BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
         UnlockableType.TripleTriadNpc => BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
         UnlockableType.CraftingLog => BuildCraftingCategories(),
+        UnlockableType.GatheringLog => BuildGatheringCategories(),
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
@@ -124,9 +128,28 @@ public class CollectionsService(Plugin plugin) {
                                                                                .Select(group => new CollectionCategory {
                                                                                    Id = group.Key,
                                                                                    Name = group.First().CraftType.Value.Name.ToString(),
-                                                                                   Items = group.Select(it => it.RowId).ToList(),
+                                                                                   Items = group.Where(it => it.IsValidEntry()).Select(it => it.RowId).ToList(),
                                                                                })
                                                                                .ToList();
+
+    private static List<CollectionCategory> BuildGatheringCategories() => Plugin.DataManager.GetExcelSheet<GatheringPoint>()
+                                                                                .Where(it => it.IsValidEntry())
+                                                                                .GroupBy(it => it.GatheringPointBase.Value.GatheringType,
+                                                                                         new GatheringTypeComparer())
+                                                                                .Select(group => new CollectionCategory {
+                                                                                    Id = group.Key.RowId,
+                                                                                    Name = group.Key.Value.Name.ToString(),
+                                                                                    Items = group.SelectMany(it => it.GatheringPointBase.Value.Item
+                                                                                                 .Where(row => row.GetValueOrDefault<GatheringItem>()
+                                                                                                                ?.IsValidEntry() ?? false)
+                                                                                                 .Select(row => row.RowId))
+                                                                                                 .GroupBy(row => row)
+                                                                                                 .Select(rows => rows.First())
+                                                                                                 .Order()
+                                                                                                 .ToList(),
+                                                                                })
+                                                                                .OrderBy(it => it.Id)
+                                                                                .ToList();
 
     /// <summary>Orders categories by not changing their order, except putting Other and Unknown as the last two</summary>
     /// <param name="name">Category name</param>
@@ -136,4 +159,10 @@ public class CollectionsService(Plugin plugin) {
         UnknownCategoryName => 2,
         _ => 0
     };
+}
+
+// c# what do you make me do...
+class GatheringTypeComparer : IEqualityComparer<RowRef<GatheringType>> {
+    public bool Equals(RowRef<GatheringType> x, RowRef<GatheringType> y) => x.RowId == y.RowId;
+    public int GetHashCode(RowRef<GatheringType> obj) => base.GetHashCode();
 }
