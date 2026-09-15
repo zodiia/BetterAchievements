@@ -10,14 +10,12 @@ namespace BetterAchievements.Data.Unlockable;
 
 public sealed record UnlockableTitle : IUnlockable {
     private static readonly Lazy<Dictionary<uint, string>> TitleUnlockAchievementNames =
-        new(() => Plugin.DataManager
-                        .GetExcelSheet<Lumina.Excel.Sheets.Achievement>()
-                        .Where(it => it.Title.IsValid)
-                        .ToDictionary(it => it.RowId, it => it.Name.ToString()));
+        new(() => ExcelSheets.Achievement.Value.Where(it => it.Title.IsValid)
+                             .ToDictionary(it => it.RowId, it => it.Name.ToString()));
 
     private readonly Title title;
 
-    public UnlockableTitle(Title title, ITableRow tableRow) {
+    public UnlockableTitle(Title title) {
         this.title = title;
         name = GetName(title);
         nameLowercase = GetName(title).ToLower();

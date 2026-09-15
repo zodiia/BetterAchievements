@@ -18,9 +18,9 @@ public sealed record UnlockableMount : IUnlockable {
     public UnlockableMount(Mount mount, ITableRow tableRow) {
         this.mount = mount;
         name = mount.Singular.ToString();
-        description = Plugin.DataManager.GetExcelSheet<MountTransient>().GetRow(mount.RowId).DescriptionEnhanced.ToString();
+        description = ExcelSheets.MountTransient.Value.GetRow(mount.RowId).DescriptionEnhanced.ToString();
         nameLowercase = mount.Singular.ToString().ToLower();
-        descriptionLowercase = Plugin.DataManager.GetExcelSheet<MountTransient>().GetRow(mount.RowId).DescriptionEnhanced.ToString().ToLower();
+        descriptionLowercase = ExcelSheets.MountTransient.Value.GetRow(mount.RowId).DescriptionEnhanced.ToString().ToLower();
         howTo = tableRow.HowTo;
         howToLowercase = tableRow.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsMountUnlocked(mount);

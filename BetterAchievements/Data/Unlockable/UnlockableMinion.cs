@@ -17,9 +17,9 @@ public sealed record UnlockableMinion : IUnlockable {
     public UnlockableMinion(Companion minion, ITableRow tabke) {
         this.minion = minion;
         name = minion.Singular.ToString();
-        description = Plugin.DataManager.GetExcelSheet<CompanionTransient>().GetRow(minion.RowId).Description.ToString();
+        description = ExcelSheets.CompanionTransient.Value.GetRow(minion.RowId).Description.ToString();
         nameLowercase = minion.Singular.ToString().ToLower();
-        descriptionLowercase = Plugin.DataManager.GetExcelSheet<CompanionTransient>().GetRow(minion.RowId).DescriptionEnhanced.ToString().ToLower();
+        descriptionLowercase = ExcelSheets.CompanionTransient.Value.GetRow(minion.RowId).DescriptionEnhanced.ToString().ToLower();
         howTo = tabke.HowTo;
         howToLowercase = tabke.HowTo?.ToLower();
         unlocked = Plugin.UnlockState.IsCompanionUnlocked(minion);

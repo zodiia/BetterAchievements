@@ -122,34 +122,34 @@ public class CollectionsService(Plugin plugin) {
         new() { Id = 0, Name = Label(type), Items = rows.Where(it => it.Deleted == false).OrderBy(it => it.Id).Select(it => it.Id).ToList() }
     ];
 
-    private static List<CollectionCategory> BuildCraftingCategories() => Plugin.DataManager.GetExcelSheet<Recipe>()
-                                                                               .Where(it => it.IsValidEntry())
-                                                                               .GroupBy(it => it.CraftType.RowId)
-                                                                               .Select(group => new CollectionCategory {
-                                                                                   Id = group.Key,
-                                                                                   Name = group.First().CraftType.Value.Name.ToString(),
-                                                                                   Items = group.Where(it => it.IsValidEntry()).Select(it => it.RowId).ToList(),
-                                                                               })
-                                                                               .ToList();
+    private static List<CollectionCategory> BuildCraftingCategories() =>
+        ExcelSheets.Recipe.Value.Where(it => it.IsValidEntry())
+                   .GroupBy(it => it.CraftType.RowId)
+                   .Select(group => new CollectionCategory {
+                       Id = group.Key,
+                       Name = group.First().CraftType.Value.Name.ToString(),
+                       Items = group.Where(it => it.IsValidEntry()).Select(it => it.RowId)
+                                    .ToList(),
+                   })
+                   .ToList();
 
-    private static List<CollectionCategory> BuildGatheringCategories() => Plugin.DataManager.GetExcelSheet<GatheringPoint>()
-                                                                                .Where(it => it.IsValidEntry())
-                                                                                .GroupBy(it => it.GatheringPointBase.Value.GatheringType,
-                                                                                         new GatheringTypeComparer())
-                                                                                .Select(group => new CollectionCategory {
-                                                                                    Id = group.Key.RowId,
-                                                                                    Name = group.Key.Value.Name.ToString(),
-                                                                                    Items = group.SelectMany(it => it.GatheringPointBase.Value.Item
-                                                                                                 .Where(row => row.GetValueOrDefault<GatheringItem>()
-                                                                                                                ?.IsValidEntry() ?? false)
-                                                                                                 .Select(row => row.RowId))
-                                                                                                 .GroupBy(row => row)
-                                                                                                 .Select(rows => rows.First())
-                                                                                                 .Order()
-                                                                                                 .ToList(),
-                                                                                })
-                                                                                .OrderBy(it => it.Id)
-                                                                                .ToList();
+    private static List<CollectionCategory> BuildGatheringCategories() =>
+        ExcelSheets.GatheringPoint.Value
+                   .Where(it => it.IsValidEntry())
+                   .GroupBy(it => it.GatheringPointBase.Value.GatheringType, new GatheringTypeComparer())
+                   .Select(group => new CollectionCategory {
+                       Id = group.Key.RowId,
+                       Name = group.Key.Value.Name.ToString(),
+                       Items = group.SelectMany(it => it.GatheringPointBase.Value.Item
+                                                        .Where(row => row.GetValueOrDefault<GatheringItem>()?.IsValidEntry() ?? false)
+                                                        .Select(row => row.RowId))
+                                    .GroupBy(row => row)
+                                    .Select(rows => rows.First())
+                                    .Order()
+                                    .ToList(),
+                   })
+                   .OrderBy(it => it.Id)
+                   .ToList();
 
     /// <summary>Orders categories by not changing their order, except putting Other and Unknown as the last two</summary>
     /// <param name="name">Category name</param>

@@ -40,6 +40,6 @@ public sealed record UnlockableFashionAccessory : IUnlockable {
     public bool IsValid() => ornament.IsValidEntry();
 
     private static string GetDescription(Ornament ornament) {
-        return Plugin.DataManager.GetExcelSheet<OrnamentTransient>().GetRowOrDefault(ornament.RowId)?.Text.ToString() ?? "";
+        return ExcelSheets.OrnamentTransient.Value.GetRowOrDefault(ornament.RowId)?.Text.ToString() ?? "";
     }
 }

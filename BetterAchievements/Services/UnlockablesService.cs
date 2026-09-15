@@ -5,12 +5,10 @@ using System.IO;
 using System.Linq;
 using BetterAchievements.Data;
 using BetterAchievements.Data.Unlockable;
+using BetterAchievements.External.Lalachievements;
 using BetterAchievements.Helpers;
 using Lumina.Excel;
-using Lumina.Excel.Sheets;
 using Serilog;
-using LalachievementsService = BetterAchievements.External.Lalachievements.LalachievementsService;
-using ITableRow = BetterAchievements.External.Lalachievements.ITableRow;
 
 namespace BetterAchievements.Services;
 
@@ -20,17 +18,18 @@ public class UnlockablesService {
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
-    private readonly ConcurrentDictionary<UnlockableType, object> excelSheetCache = new();
     public readonly Dictionary<uint, uint> HighestAchievementIdMap;
     private readonly Lazy<Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>> ttLinkCache = new(BuildTripleTriadLinkCache);
-    private readonly Lazy<Dictionary<uint, uint>> gatheringNodeCache = new(() => Plugin.DataManager.GetExcelSheet<GatheringPoint>()
-                                                                                       .Where(it => it.IsValidEntry())
-                                                                                       .SelectMany(it => it.GatheringPointBase.Value.Item
-                                                                                                       .Where(item => item.RowId > 0)
-                                                                                                       .Select(item => (item.RowId, it.RowId)))
-                                                                                       .GroupBy(it => it.Item1)
-                                                                                       .Select(it => it.First(item => item.Item2 > 0))
-                                                                                       .ToDictionary());
+
+    private readonly Lazy<Dictionary<uint, uint>> gatheringNodeCache = new(() => ExcelSheets.GatheringPoint.Value
+                                                                                            .Where(it => it.IsValidEntry())
+                                                                                            .SelectMany(it => it.GatheringPointBase.Value.Item
+                                                                                                            .Where(item => item.RowId > 0)
+                                                                                                            .Select(item => (item.RowId, it.RowId)))
+                                                                                            .GroupBy(it => it.Item1)
+                                                                                            .Select(it => it.First(item => item.Item2 > 0))
+                                                                                            .ToDictionary());
+
     private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
 
@@ -48,12 +47,13 @@ public class UnlockablesService {
     private static Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> BuildTripleTriadLinkCache() {
         var eNpcBaseToLevel = new Dictionary<uint, uint>();
         var map = new Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>();
-        var tripleTriadSheet = Plugin.DataManager.GetExcelSheet<TripleTriad>();
+        var tripleTriadSheet = ExcelSheets.TripleTriad.Value;
 
-        foreach (var level in Plugin.DataManager.GetExcelSheet<Level>()) {
+        foreach (var level in ExcelSheets.Level.Value) {
             eNpcBaseToLevel.TryAdd(level.Object.RowId, level.RowId);
         }
-        foreach (var eNpcBase in Plugin.DataManager.GetExcelSheet<ENpcBase>()) {
+
+        foreach (var eNpcBase in ExcelSheets.ENpcBase.Value) {
             foreach (var data in eNpcBase.ENpcData) {
                 if (tripleTriadSheet.HasRow(data.RowId)) {
                     var levelRowId = eNpcBaseToLevel.TryGetValue(eNpcBase.RowId, out var lvl) ? lvl : 0;
@@ -61,11 +61,8 @@ public class UnlockablesService {
                 }
             }
         }
-        return map;
-    }
 
-    private ExcelSheet<T> GetExcelSheet<T>(UnlockableType type) where T : struct, IExcelRow<T> {
-        return (ExcelSheet<T>)excelSheetCache.GetOrAdd(type, static _ => Plugin.DataManager.GetExcelSheet<T>());
+        return map;
     }
 
     private ITableRow GetTableRow<T>(uint id) where T : ITableRow {
@@ -77,7 +74,7 @@ public class UnlockablesService {
             return it;
         }
 
-        var unlockable = new UnlockableAchievement(GetExcelSheet<Achievement>(UnlockableType.Achievement).GetRow(achievementId), plugin);
+        var unlockable = new UnlockableAchievement(ExcelSheets.Achievement.Value.GetRow(achievementId), plugin);
         achievements[achievementId] = unlockable;
         return unlockable;
     }
@@ -87,67 +84,63 @@ public class UnlockablesService {
             return it;
         }
 
-        var achievementList = achievementIds.Select(id => GetExcelSheet<Achievement>(UnlockableType.Achievement).GetRow(id)).ToList();
+        var achievementList = achievementIds.Select(id => ExcelSheets.Achievement.Value.GetRow(id)).ToList();
         var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
         achievementIds.ForEach(id => tieredAchievements[id] = unlockable);
         return unlockable;
     }
 
     private UnlockableTripleTriadNpc CreateUnlockableTripleTriadNpc(UnlockableKey key) {
-        var offset = Plugin.DataManager.GetExcelSheet<TripleTriad>().First().RowId;
-        var tt = Plugin.DataManager.GetExcelSheet<TripleTriad>().GetRow(offset + key.Id);
-        var ttResident = Plugin.DataManager.GetExcelSheet<TripleTriadResident>().GetRow(tt.RowId);
+        var offset = ExcelSheets.TripleTriad.Value.First().RowId;
+        var tt = ExcelSheets.TripleTriad.Value.GetRow(offset + key.Id);
+        var ttResident = ExcelSheets.TripleTriadResident.Value.GetRow(tt.RowId);
         if (!ttLinkCache.Value.TryGetValue(tt.RowId, out var match)) {
             throw new InvalidDataException($"Could not match any ENpcBase entry to the TripleTriadResident {ttResident.RowId}");
         }
-        var eNpcBase = Plugin.DataManager.GetExcelSheet<ENpcBase>().GetRow(match.eNpcBaseRowId);
-        var eNpcResident = Plugin.DataManager.GetExcelSheet<ENpcResident>().GetRow(eNpcBase.RowId);
+
+        var eNpcBase = ExcelSheets.ENpcBase.Value.GetRow(match.eNpcBaseRowId);
+        var eNpcResident = ExcelSheets.ENpcResident.Value.GetRow(eNpcBase.RowId);
         if (match.levelRowId == 0) {
             throw new InvalidDataException($"Could not match any Level entry to the ENpcBase {eNpcBase.RowId}");
         }
-        var level = Plugin.DataManager.GetExcelSheet<Level>().GetRow(match.levelRowId);
+
+        var level = ExcelSheets.Level.Value.GetRow(match.levelRowId);
         return new UnlockableTripleTriadNpc(tt, ttResident, eNpcResident, level);
     }
 
     private UnlockableGatheringLog CreateUnlockableGatheringLog(UnlockableKey key) {
-        var point = Plugin.DataManager.GetExcelSheet<GatheringPoint>().GetRow(gatheringNodeCache.Value[key.Id]);
-        var item = Plugin.DataManager.GetExcelSheet<GatheringItem>().GetRow(key.Id);
-        var exported = Plugin.DataManager.GetExcelSheet<ExportedGatheringPoint>().GetRow(point.GatheringPointBase.RowId);
+        var point = ExcelSheets.GatheringPoint.Value.GetRow(gatheringNodeCache.Value[key.Id]);
+        var item = ExcelSheets.GatheringItem.Value.GetRow(key.Id);
+        var exported = ExcelSheets.ExportedGatheringPoint.Value.GetRow(point.GatheringPointBase.RowId);
 
         return new(item, point, exported);
     }
 
     private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {
         UnlockableType.Mount =>
-            new UnlockableMount(GetExcelSheet<Mount>(key.Type).GetRow(key.Id),
-                                GetTableRow<External.Lalachievements.Mount>(key.Id)),
+            new UnlockableMount(ExcelSheets.Mount.Value.GetRow(key.Id), GetTableRow<Mount>(key.Id)),
         UnlockableType.Minion =>
-            new UnlockableMinion(GetExcelSheet<Companion>(key.Type).GetRow(key.Id),
-                                 GetTableRow<External.Lalachievements.Minion>(key.Id)),
+            new UnlockableMinion(ExcelSheets.Companion.Value.GetRow(key.Id), GetTableRow<Minion>(key.Id)),
         UnlockableType.Title =>
-            new UnlockableTitle(GetExcelSheet<Title>(key.Type).GetRow(key.Id),
-                                GetTableRow<External.Lalachievements.Title>(key.Id)),
+            new UnlockableTitle(ExcelSheets.Title.Value.GetRow(key.Id)),
         UnlockableType.TripleTriadCard =>
-            new UnlockableTripleTriadCard(GetExcelSheet<TripleTriadCard>(key.Type).GetRow(key.Id),
-                                          GetTableRow<External.Lalachievements.TripleTriadCard>(key.Id)),
-        UnlockableType.TripleTriadNpc => CreateUnlockableTripleTriadNpc(key),
+            new UnlockableTripleTriadCard(ExcelSheets.TripleTriadCard.Value.GetRow(key.Id), GetTableRow<TripleTriadCard>(key.Id)),
+        UnlockableType.TripleTriadNpc =>
+            CreateUnlockableTripleTriadNpc(key),
         UnlockableType.Barding =>
-            new UnlockableBarding(GetExcelSheet<BuddyEquip>(key.Type).GetRow(key.Id),
-                                  GetTableRow<External.Lalachievements.Barding>(key.Id)),
+            new UnlockableBarding(ExcelSheets.BuddyEquip.Value.GetRow(key.Id), GetTableRow<Barding>(key.Id)),
         UnlockableType.FashionAccessory =>
-            new UnlockableFashionAccessory(GetExcelSheet<Ornament>(key.Type).GetRow(key.Id),
-                                           GetTableRow<External.Lalachievements.Fashion>(key.Id)),
+            new UnlockableFashionAccessory(ExcelSheets.Ornament.Value.GetRow(key.Id), GetTableRow<Fashion>(key.Id)),
         UnlockableType.Hairstyle =>
-            new UnlockableHairstyle(GetExcelSheet<CharaMakeCustomize>(key.Type).First(it => it.FeatureID == key.Id),
-                                    GetTableRow<External.Lalachievements.Hair>(key.Id)),
+            new UnlockableHairstyle(ExcelSheets.CharaMakeCustomize.Value.First(it => it.FeatureID == key.Id), GetTableRow<Hair>(key.Id)),
         UnlockableType.Facewear =>
-            new UnlockableFacewear(GetExcelSheet<GlassesStyle>(key.Type).GetRow(key.Id),
-                                   GetTableRow<External.Lalachievements.Spectacle>(key.Id)),
+            new UnlockableFacewear(ExcelSheets.GlassesStyle.Value.GetRow(key.Id), GetTableRow<Spectacle>(key.Id)),
         UnlockableType.Emote =>
-            new UnlockableEmote(GetExcelSheet<Emote>(key.Type).GetRow(key.Id),
-                                GetTableRow<External.Lalachievements.Emote>(key.Id)),
-        UnlockableType.CraftingLog => new UnlockableCraftingLog(GetExcelSheet<Recipe>(key.Type).GetRow(key.Id)),
-        UnlockableType.GatheringLog => CreateUnlockableGatheringLog(key),
+            new UnlockableEmote(ExcelSheets.Emote.Value.GetRow(key.Id), GetTableRow<Emote>(key.Id)),
+        UnlockableType.CraftingLog =>
+            new UnlockableCraftingLog(ExcelSheets.Recipe.Value.GetRow(key.Id)),
+        UnlockableType.GatheringLog =>
+            CreateUnlockableGatheringLog(key),
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unimplemented unlockable type")
     };
 
@@ -193,7 +186,7 @@ public class UnlockablesService {
         uint obtained = 0;
         uint total = 0;
 
-        foreach (var achievement in Plugin.DataManager.GetExcelSheet<Achievement>()) {
+        foreach (var achievement in ExcelSheets.Achievement.Value) {
             total += achievement.Points;
             if (Plugin.UnlockState.IsAchievementComplete(achievement)) {
                 obtained += achievement.Points;

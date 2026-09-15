@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BetterAchievements.Data;
+using BetterAchievements.Helpers;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.NativeWrapper;
@@ -36,7 +37,7 @@ public class AddonLifecycleService {
             0 => FateMedal.Gold, 1 => FateMedal.Silver, 2 => FateMedal.Bronze, _ => FateMedal.Unknown
         };
 
-        var fate = Plugin.DataManager.GetExcelSheet<Fate>().FirstOrNull(fate => fate.Name.ToString().Equals(name));
+        var fate = ExcelSheets.Fate.Value.FirstOrNull(fate => fate.Name.ToString().Equals(name));
         if (!fate.HasValue) {
             Log.Warning("Fate {Name} could not be matched to an existing Fate line in the excel sheet", name);
             return;
