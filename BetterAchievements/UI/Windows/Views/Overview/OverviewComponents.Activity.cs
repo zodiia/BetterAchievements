@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using BetterAchievements.Data;
@@ -29,14 +30,12 @@ public static partial class OverviewComponents {
 
     private static string FormatPercentage(double ratio) => $"{(int)MathF.Round((float)ratio * 100)}%";
 
-    private static RankedEntry? NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
+    private static RankedEntry NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
         var candidate = item switch {
             AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).AchievementCompletionRatio(),
             AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).AchievementCompletionRatio(),
-            _ => null
+            _ => throw new InvalidDataException("Unmapped achievement layout item type")
         };
-
-        if (candidate == null) return null;
 
         var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id());
         return new RankedEntry(candidate.Ratio, new ActivityEntry(candidate.Achievement, breadcrumb, FormatPercentage(candidate.Ratio)));
@@ -49,8 +48,7 @@ public static partial class OverviewComponents {
         NearingCompletionCache = plugin.MainLayout.Achievements
                                         .SelectMany(AllItems)
                                         .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
-                                        .Where(it => it != null)
-                                        .Select(it => it!.Value)
+                                        .Where(it => it.Ratio < 1.0)
                                         .OrderByDescending(it => it.Ratio)
                                         .Take(ActivityRowCount)
                                         .Select(it => it.Entry)

@@ -46,8 +46,8 @@ public sealed record UnlockableAchievement : IUnlockable {
     public Title? Title() => achievement.Title.ValueNullable;
     public bool IsValid() => achievement.IsValidEntry();
 
-    public AchievementCompletionRatio? AchievementCompletionRatio() {
-        return current != null ? new AchievementCompletionRatio(this, Math.Clamp((double)current.Value / Maximum(), 0.0, 1.0)) : null;
+    public AchievementCompletionRatio AchievementCompletionRatio() {
+        return new AchievementCompletionRatio(this, Math.Clamp((current ?? 0.0) / Maximum(), 0.0, 1.0));
     }
 }
 

@@ -58,16 +58,6 @@ public record UnlockableTieredAchievement : IUnlockable {
     public List<UnlockableAchievement> ProvidesAchievements() => providesAchievements;
     public bool IsValid() => providesAchievements.All(it => it.IsValid());
 
-    public AchievementCompletionRatio? AchievementCompletionRatio() {
-        var currentTier = providesAchievements.Find(it => !it.Unlocked());
-        if (currentTier == null) return null;
-
-        var progress = providesAchievements.Last().Current();
-        if (progress is null or 0) return null;
-
-        var ratio = (double)progress.Value / currentTier.Maximum();
-        if (ratio >= 1.0) return null;
-
-        return new AchievementCompletionRatio(currentTier, ratio);
-    }
+    public AchievementCompletionRatio AchievementCompletionRatio() =>
+        (providesAchievements.Find(it => !it.Unlocked()) ?? providesAchievements.Last()).AchievementCompletionRatio();
 }
