@@ -21,20 +21,11 @@ public static partial class SidebarComponents {
         UiComponents.SeparatorText(name, UiFonts.FontSize100, UiColors.Grey(), paddingAbove, paddingBelow);
     }
 
-    private static float FillerProgressFor(string name) {
-        var hash = 17;
-        unchecked {
-            foreach (var c in name) hash = (hash * 31) + c;
-        }
-
-        return (float)new Random(hash).NextDouble();
-    }
-
-    private static void FillerItems(MainWindowState state, Vector4 defaultColor, params string[] names) {
+    private static void FillerItems(MainWindowState state, params string[] names) {
         foreach (var name in names) {
             var target = new NavigationTarget.Todo(name);
             var selected = state.Navigation.IsSelected(target);
-            if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, FillerProgressFor(name), null, defaultColor, selected, selected)) {
+            if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, 1.0f, null, UiColors.Red(), selected, selected)) {
                 state.Navigation.Navigate(target);
             }
         }
@@ -86,25 +77,25 @@ public static partial class SidebarComponents {
 
         SectionHeader("Collections");
         if (!state.Unlockables.CollectionsLoaded) CollectionsLoading();
-        CollectionItem(state, UnlockableType.Mount);
-        CollectionItem(state, UnlockableType.Minion);
-        CollectionItem(state, UnlockableType.Title);
-        FillerItems(state, UiColors.Blue(), "Fishing");
-        CollectionItem(state, UnlockableType.TripleTriadCard);
-        CollectionItem(state, UnlockableType.TripleTriadNpc);
-        CollectionItem(state, UnlockableType.Barding);
-        CollectionItem(state, UnlockableType.FashionAccessory);
-        CollectionItem(state, UnlockableType.Hairstyle);
-        CollectionItem(state, UnlockableType.Facewear);
-        CollectionItem(state, UnlockableType.Emote);
-        FillerItems(state, UiColors.Blue(), "Framer's Kits");
+        CollectionItem(state, UnlockableType.Mount, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Minion, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Title, UiColors.Blue());
+        FillerItems(state, "Fishing");
+        CollectionItem(state, UnlockableType.TripleTriadCard, UiColors.Blue());
+        CollectionItem(state, UnlockableType.TripleTriadNpc, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Barding, UiColors.Blue());
+        CollectionItem(state, UnlockableType.FashionAccessory, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Hairstyle, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Facewear, UiColors.Blue());
+        CollectionItem(state, UnlockableType.Emote, UiColors.Blue());
+        FillerItems(state, "Framer's Kits");
 
         SectionHeader("Records");
-        FillerItems(state, UiColors.Green(), "Challenge Log", "Wondrous Tales", "Hunting Log");
-        CollectionItem(state, UnlockableType.CraftingLog);
-        FillerItems(state, UiColors.Green(), "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(state, "Challenge Log", "Wondrous Tales", "Hunting Log");
+        CollectionItem(state, UnlockableType.CraftingLog, UiColors.Green());
+        FillerItems(state, "Gathering Log", "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
-        FillerItems(state, UiColors.Red(), "Yo-kai Watch", "The Rising");
+        FillerItems(state, "Yo-kai Watch", "The Rising");
     }
 }

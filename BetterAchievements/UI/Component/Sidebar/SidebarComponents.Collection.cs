@@ -51,7 +51,7 @@ public static partial class SidebarComponents {
         ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm)));
     }
 
-    private static void CollectionItem(MainWindowState state, UnlockableType type) {
+    private static void CollectionItem(MainWindowState state, UnlockableType type, Vector4 color) {
         var progress = state.Unlockables.ComputeProgress(type);
         if (progress.VisibleCount == 0) return;
 
@@ -60,7 +60,7 @@ public static partial class SidebarComponents {
         var selected = state.Navigation.IsSelected(target);
         var progressPercentage = progress.Score.Total == 0 ? 0f : (float)progress.Score.Obtained / progress.Score.Total;
 
-        if (CategoryRow($"##Collection-{type}", CollectionIcon(type), CollectionsService.Label(type), progressPercentage, null, UiColors.Blue(), isOpen, selected)) {
+        if (CategoryRow($"##Collection-{type}", CollectionIcon(type), CollectionsService.Label(type), progressPercentage, null, color, isOpen, selected)) {
             state.Navigation.Navigate(target);
         }
 
