@@ -21,11 +21,11 @@ public static partial class SidebarComponents {
         UiComponents.SeparatorText(name, UiFonts.FontSize100, UiColors.Grey(), paddingAbove, paddingBelow);
     }
 
-    private static void FillerItems(MainWindowState state, params string[] names) {
+    private static void FillerItems(Plugin plugin, MainWindowState state, params string[] names) {
         foreach (var name in names) {
             var target = new NavigationTarget.Todo(name);
             var selected = state.Navigation.IsSelected(target);
-            if (CategoryRow($"##Filler-{name}", FontAwesomeIcon.Lock, name, 1.0f, null, UiColors.Red(), selected, selected)) {
+            if (CategoryRow(plugin, $"##Filler-{name}", FontAwesomeIcon.Lock, name, 1.0f, null, UiColors.Red(), selected, selected)) {
                 state.Navigation.Navigate(target);
             }
         }
@@ -70,33 +70,33 @@ public static partial class SidebarComponents {
 
         SectionHeader("Achievements");
         PinnedAchievementsItem(plugin, state);
-        OverviewItem(state);
+        OverviewItem(plugin, state);
         foreach (var layout in state.Unlockables.FilteredLayout.Achievements) {
-            MainCategoryItem(state, layout);
+            MainCategoryItem(plugin, state, layout);
         }
 
         SectionHeader("Collections");
         if (!state.Unlockables.CollectionsLoaded) CollectionsLoading();
-        CollectionItem(state, UnlockableType.Mount, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Minion, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Title, UiColors.Blue());
-        FillerItems(state, "Fishing");
-        CollectionItem(state, UnlockableType.TripleTriadCard, UiColors.Blue());
-        CollectionItem(state, UnlockableType.TripleTriadNpc, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Barding, UiColors.Blue());
-        CollectionItem(state, UnlockableType.FashionAccessory, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Hairstyle, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Facewear, UiColors.Blue());
-        CollectionItem(state, UnlockableType.Emote, UiColors.Blue());
-        FillerItems(state, "Framer's Kits");
+        CollectionItem(plugin, state, UnlockableType.Mount, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Minion, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Title, UiColors.Blue());
+        FillerItems(plugin, state, "Fishing");
+        CollectionItem(plugin, state, UnlockableType.TripleTriadCard, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.TripleTriadNpc, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Barding, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.FashionAccessory, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Hairstyle, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Facewear, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.Emote, UiColors.Blue());
+        FillerItems(plugin, state, "Framer's Kits");
 
         SectionHeader("Records");
-        FillerItems(state, "Challenge Log", "Wondrous Tales", "Hunting Log");
-        CollectionItem(state, UnlockableType.CraftingLog, UiColors.Green());
-        CollectionItem(state, UnlockableType.GatheringLog, UiColors.Green());
-        FillerItems(state, "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(plugin, state, "Challenge Log", "Wondrous Tales", "Hunting Log");
+        CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Green());
+        CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Green());
+        FillerItems(plugin, state, "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
-        FillerItems(state, "Yo-kai Watch", "The Rising");
+        FillerItems(plugin, state, "Yo-kai Watch", "The Rising");
     }
 }

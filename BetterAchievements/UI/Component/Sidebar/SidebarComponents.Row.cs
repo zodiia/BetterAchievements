@@ -55,9 +55,9 @@ public static partial class SidebarComponents {
         UiComponents.ProgressBar(progress, color, height: height);
     }
 
-    private static bool CategoryRow(string id, FontAwesomeIcon icon, string name, float progress, Vector4? color, Vector4 defaultColor, bool active, bool selected) {
+    private static bool CategoryRow(Plugin plugin, string id, FontAwesomeIcon icon, string name, float progress, Vector4? color, Vector4 defaultColor, bool active, bool selected) {
         var style = ImGui.GetStyle();
-        var barHeight = UiSize.Em(0.2f);
+        var barHeight = UiSize.Em(plugin.Configuration.SidebarProgressBarHeight);
         var lineHeight = ImGui.GetTextLineHeight();
         var contentHeight = lineHeight + style.ItemSpacing.Y + barHeight;
         var padding = new Vector2(UiSize.Em(CategoryRowPaddingEm), UiSize.Em(CategoryRowPaddingEm));

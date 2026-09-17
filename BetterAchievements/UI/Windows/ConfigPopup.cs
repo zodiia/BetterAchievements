@@ -14,7 +14,7 @@ public static class ConfigPopup {
                                      Action<Configuration, T> apply, ConfigurationEffect effect) where T : struct, Enum {
         ImGui.Text(label);
 
-        using var combo = ImRaii.Combo("", preview, ImGuiComboFlags.HeightLargest);
+        using var combo = ImRaii.Combo($"##{label}", preview, ImGuiComboFlags.HeightLargest);
         if (!combo) return;
 
         foreach (var value in Enum.GetValues<T>()) {
@@ -36,17 +36,17 @@ public static class ConfigPopup {
         ImGui.Dummy(new(0, UiSize.Em(0.25f)));
         EnumCombo("Unlock status", configuration.UnlockStatusFilter.DisplayName(),
                   state, configuration.UnlockStatusFilter,
-                  FilterEnumsExtensions.DisplayName, (it, value) => it.UnlockStatusFilter = value,
+                  ConfigEnumsExtensions.DisplayName, (it, value) => it.UnlockStatusFilter = value,
                   ConfigurationEffect.Refilter);
         ImGui.Dummy(new(0, UiSize.Em(0.25f)));
         EnumCombo("Counts towards rankings", configuration.RankedFilter.DisplayName(),
                   state, configuration.RankedFilter,
-                  FilterEnumsExtensions.DisplayName, (it, value) => it.RankedFilter = value,
+                  ConfigEnumsExtensions.DisplayName, (it, value) => it.RankedFilter = value,
                   ConfigurationEffect.Refilter);
         ImGui.Dummy(new(0, UiSize.Em(0.25f)));
         EnumCombo("Sort by", configuration.SortBy.DisplayName(),
                   state, configuration.SortBy,
-                  FilterEnumsExtensions.DisplayName, (it, value) => it.SortBy = value,
+                  ConfigEnumsExtensions.DisplayName, (it, value) => it.SortBy = value,
                   ConfigurationEffect.RebuildView);
         ImGui.Dummy(new(0, UiSize.Em(0.5f)));
         if (ImGui.Button("All settings")) {

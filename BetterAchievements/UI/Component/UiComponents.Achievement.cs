@@ -128,7 +128,7 @@ public static partial class UiComponents {
         SameLineRightTextColored(UiColors.Progress(), pointsText);
     }
 
-    private static void AchievementDescriptionSimple(UnlockableAchievement achievement) {
+    private static void AchievementDescriptionSimple(UnlockableAchievement achievement, Configuration configuration) {
         ImGui.TextWrapped(achievement.Description());
 
         if (achievement.Maximum() <= 1 || achievement.Unlocked()) return;
@@ -138,6 +138,7 @@ public static partial class UiComponents {
         ProgressBar(
             (progress ?? 1.0f) / achievement.Maximum(),
             progress != null ? UiColors.Progress() : UiColors.Red(),
+            height: UiSize.Em(configuration.ProgressBarHeight),
             insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progress != null,
@@ -190,6 +191,7 @@ public static partial class UiComponents {
                 ProgressBar(
                     (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
                     progressLoaded ? UiColors.Progress() : UiColors.Red(),
+                    height: UiSize.Em(configuration.ProgressBarHeight),
                     insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
                     tooltip: "Click to refresh",
                     enabled: progressLoaded,
@@ -205,6 +207,7 @@ public static partial class UiComponents {
                 ProgressBar(
                     (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
                     progressLoaded ? UiColors.Progress() : UiColors.Red(),
+                    height: UiSize.Em(configuration.ProgressBarHeight),
                     insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
                     tooltip: "Click to refresh",
                     enabled: progressLoaded,
@@ -263,7 +266,7 @@ public static partial class UiComponents {
         AchievementHeaderLine2($"{achievement.Points()} points");
         ImGui.EndGroup();
 
-        AchievementDescriptionSimple(achievement);
+        AchievementDescriptionSimple(achievement, configuration);
 
         ImGui.EndGroup();
     }

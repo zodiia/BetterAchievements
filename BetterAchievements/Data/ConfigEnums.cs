@@ -32,7 +32,7 @@ public enum SortBy {
     Rarest
 }
 
-public static class FilterEnumsExtensions {
+public static class ConfigEnumsExtensions {
     extension(UnlockStatusFilter filter) {
         public string DisplayName() => filter switch {
             UnlockStatusFilter.All => "All",
@@ -88,7 +88,7 @@ public static class FilterEnumsExtensions {
 
         public string DisplayDescription() => filter switch {
             SortBy.Default => "Keeps the original sorting method (for most items, it is the order in which they also appear in vanilla interfaces)",
-            SortBy.Alphabetically => "Sorts all items alphabetically in descending order",
+            SortBy.Alphabetically => "Sorts all items alphabetically in ascending order",
             SortBy.MostCommon => "Puts the most commonly obtained items first (note: currently only works with achievements)",
             SortBy.Rarest => "Puts the rarest items first (note: currently only works with achievements)",
             _ => throw new ArgumentOutOfRangeException($"{filter} not implemented.")

@@ -9,15 +9,22 @@ namespace BetterAchievements;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 4;
+    public int Version { get; set; } = 5;
 
+    // UI settings
+    public float ProgressBarHeight = 1.5f;
+    public float SidebarProgressBarHeight = 0.2f;
+    public bool NeverHideProgressBars { get; set; } = false;
+
+    // Filters and sorting options
     public UnlockStatusFilter UnlockStatusFilter { get; set; } = UnlockStatusFilter.All;
     public ContainsRewardsFilter ContainsRewardsFilter { get; set; } = ContainsRewardsFilter.All;
     public RankedFilter RankedFilter { get; set; } = RankedFilter.All;
     public AreaFilter AreaFilter { get; set; } = AreaFilter.All;
     public SortBy SortBy { get; set; } = SortBy.Default;
+
+    // Other settings
     public bool DisplayIds { get; set; } = false;
-    public bool NeverHideProgressBars { get; set; } = false;
     public bool DebugMode { get; set; } = false;
 
     // Not shown in the config UI
