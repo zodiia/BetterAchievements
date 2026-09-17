@@ -44,6 +44,7 @@ public static class UiColors {
     public static Vector4 Blue() => StyleModel.GetFromCurrent().BuiltInColors?.ParsedBlue ?? DefaultBlue;
     public static Vector4 Text() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.Text));
     public static Vector4 WindowBackground() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.WindowBg));
+    public static Vector4 PopupBackground() => UIntColorToVector(ImGui.GetColorU32(ImGuiCol.PopupBg));
 
     public static Vector4? Parse(string? value) {
         if (value == null) return null;

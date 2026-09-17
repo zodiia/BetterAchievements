@@ -6,6 +6,7 @@ using BetterAchievements.Services;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Windows.Views;
 using BetterAchievements.UI.Windows.Views.Overview;
+using BetterAchievements.UI.Windows.Views.Settings;
 
 namespace BetterAchievements.UI.State;
 
@@ -17,6 +18,7 @@ public abstract record NavigationTarget {
     public sealed record Collection(UnlockableType Type) : NavigationTarget;
     public sealed record CollectionCategory(UnlockableType Type, uint Id) : NavigationTarget;
     public sealed record Todo(string Name) : NavigationTarget;
+    public sealed record Settings : NavigationTarget;
 }
 
 public class NavigationState {
@@ -130,6 +132,10 @@ public class NavigationState {
                     unlockables.ComputeProgress(plugin.Configuration.PinnedAchievements),
                     unlockables.ComputeAchievementCount(plugin.Configuration.PinnedAchievements),
                     ClipperFor(target)));
+                break;
+
+            case NavigationTarget.Settings:
+                SetNavigation(target, null, new SettingsView(plugin, unlockables));
                 break;
 
             case NavigationTarget.Todo:

@@ -28,6 +28,8 @@ public sealed class Plugin : IDalamudPlugin {
     private const string CommandName = "/betterachievements";
     private const string CommandAlias = "/bach";
     private const string CommandHelp = "Open the main achievements interface";
+    private const string SettingsCommandName = "/bachsettings";
+    private const string SettingsCommandHelp = "Open the settings interface";
 
     [PluginService]
     internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
@@ -146,6 +148,7 @@ public sealed class Plugin : IDalamudPlugin {
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand) { HelpMessage = CommandHelp });
         CommandManager.AddHandler(CommandAlias, new CommandInfo(OnCommand) { HelpMessage = CommandHelp });
+        CommandManager.AddHandler(SettingsCommandName, new CommandInfo(OnSettingsCommand) { HelpMessage = SettingsCommandHelp });
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
@@ -170,17 +173,22 @@ public sealed class Plugin : IDalamudPlugin {
         UiFonts.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+        CommandManager.RemoveHandler(SettingsCommandName);
     }
 
     private void OnCommand(string command, string args) {
         MainWindow.Toggle();
     }
 
+    private void OnSettingsCommand(string command, string args) {
+        MainWindow.OpenSettings();
+    }
+
     private void HandleWarnings() {
         MainLayout.CheckMissingAchievements(ExcelSheets.Achievement.Value);
     }
 
-    public void ToggleConfigUi() => MainWindow.Toggle();
+    public void ToggleConfigUi() => MainWindow.OpenSettings();
     public void ToggleMainUi() => MainWindow.Toggle();
 
     private static MainLayout LoadMainWindowLayout() {

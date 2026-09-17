@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Numerics;
 using BetterAchievements.UI.Component;
 using BetterAchievements.UI.Component.Sidebar;
@@ -7,7 +6,6 @@ using BetterAchievements.UI.State;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using Serilog;
 
 namespace BetterAchievements.UI.Windows;
 
@@ -29,6 +27,11 @@ public class MainWindow : Window, IDisposable {
     }
 
     public void Dispose() { }
+
+    public void OpenSettings() {
+        IsOpen = true;
+        state.Navigation.Navigate(new NavigationTarget.Settings());
+    }
 
     private void DrawStatusBar() {
         if (!plugin.Configuration.DebugMode) return;

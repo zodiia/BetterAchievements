@@ -1,7 +1,9 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using BetterAchievements.Data;
+using Newtonsoft.Json;
 
 namespace BetterAchievements;
 
@@ -24,5 +26,10 @@ public class Configuration : IPluginConfiguration {
     // The below exists just to make saving less cumbersome
     public void Save() {
         Plugin.PluginInterface.SavePluginConfig(this);
+    }
+
+    public Configuration Clone() {
+        var settings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
+        return JsonConvert.DeserializeObject<Configuration>(JsonConvert.SerializeObject(this, settings), settings)!;
     }
 }

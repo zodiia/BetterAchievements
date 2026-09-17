@@ -10,6 +10,6 @@ public static class UiSize {
     }
 
     public static float MainContentHeight(Configuration configuration) {
-        return ImGui.GetContentRegionAvail().Y - (configuration.DebugMode ? StatusBarHeight : 0f);
+        return ImGui.GetContentRegionAvail().Y - (configuration.DebugMode ? StatusBarHeight + ImGui.GetStyle().ItemSpacing.Y : 0f);
     }
 }
