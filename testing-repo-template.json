@@ -1,24 +1,32 @@
 [
     {
         "Author": "zodiia",
-        "InternalName": "BetterAchievements",
-        "Name": "Better Achievements",
+        "InternalName": "Recollection",
+        "Name": "Recollection",
         "AssemblyVersion": "$(git describe --tags --abbrev=0 --exclude latest).$(git rev-list --count origin/main)",
-        "Punchline": "The vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
-        "Description": "Git commit hash: $(git rev-parse --short HEAD), built on $(TZ=UTC date).\\nThe vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
+        "Punchline": "All your achievements and collections, in one place.",
+        "Description": "Keep track of achievements and collections in FFXIV. Quickly see your progress in an achievement, or how to obtain that mount you really wanna get.\n\nFeatures:\n- Display every achievements and collectable item in a neat, easy-to-use UI\n- Search anything based on names, descriptions, locations, etc...\n- Keep track of progress in any achievement\n- Automatically update achievement progress (currently supported in a very limited set of achievements)\n- Quickly see how to obtain any collection item\n\nCurrently in active development, please report bugs directly to me.",
         "ApplicableVersion": "any",
-        "RepoUrl": "https://git.zodiia.moe/xiv/BetterAchievements",
+        "RepoUrl": "https://git.zodiia.moe/xiv/Recollection",
         "DalamudApiLevel": 15,
         "DownloadCount": 67,
         "IsHide": false,
         "IsTestingExclusive": false,
-        "DownloadLinkInstall": "https://git.zodiia.moe/xiv/BetterAchievements/releases/download/latest/latest.zip",
-        "DownloadLinkUpdate": "https://git.zodiia.moe/xiv/BetterAchievements/releases/download/latest/latest.zip",
+        "DownloadLinkInstall": "https://git.zodiia.moe/xiv/Recollection/releases/download/latest/latest.zip",
+        "DownloadLinkUpdate": "https://git.zodiia.moe/xiv/Recollection/releases/download/latest/latest.zip",
         "LastUpdate": "$(date +%s)",
         "Tags": [
             "achievements",
             "tracker",
-            "better"
+            "better",
+            "collections",
+            "collectables",
+            "mounts",
+            "minions",
+            "titles",
+            "fishing",
+            "logs",
+            "records"
         ]
     }
 ]

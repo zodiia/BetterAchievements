@@ -9,7 +9,7 @@ processes:
     review: hint
     deployment: none
 components:
-    BetterAchievements/UI: assist
+    Recollection/UI: assist
 ---
 
 This format is based on [AI-DECLARATION.md](https://ai-declaration.md/en/0.1.2/)

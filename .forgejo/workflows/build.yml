@@ -16,7 +16,7 @@ jobs:
     if: ${{ github.event_name == 'push' || !github.event.release.prerelease }}
 
     env:
-      Solution_Name: BetterAchievements
+      Solution_Name: Recollection
 
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
       - name: Stage release files
         run: |
           mkdir -p dist/forgejo-release
-          cp BetterAchievements/bin/x64/Release/BetterAchievements/* dist/forgejo-release/
+          cp Recollection/bin/x64/Release/Recollection/* dist/forgejo-release/
           cp testing-repo.json dist/forgejo-release/
 
       - name: Update Latest Release
@@ -54,7 +54,7 @@ jobs:
         with:
           direction: upload
           token: ${{ secrets.RELEASE_TOKEN }}
-          repo: xiv/BetterAchievements
+          repo: xiv/Recollection
           url: https://git.zodiia.moe
           tag: latest
           release-notes: "Latest build from main"

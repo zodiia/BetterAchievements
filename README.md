@@ -1,4 +1,4 @@
-# BetterAchievements
+# Recollection
 
 The vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.
 
