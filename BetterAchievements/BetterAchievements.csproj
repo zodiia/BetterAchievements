@@ -4,7 +4,7 @@
         <Exec Command="git describe --tags --abbrev=0 --exclude latest" ConsoleToMSBuild="true" StandardOutputImportance="low">
             <Output TaskParameter="ConsoleOutput" ItemName="TagVersion" />
         </Exec>
-        <Exec Command="git rev-list --count main" ConsoleToMSBuild="true" StandardOutputImportance="low">
+        <Exec Command="git rev-list --count origin/main" ConsoleToMSBuild="true" StandardOutputImportance="low">
             <Output TaskParameter="ConsoleOutput" ItemName="CommitCount" />
         </Exec>
 
