@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/14.0.2">
-  <PropertyGroup>
-    <Version>0.0.0.1</Version>
-    <PackageProjectUrl>https://github.com/zodiia/BetterAchievements</PackageProjectUrl>
-    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+    <Target Name="GetTagVersion" BeforeTargets="BeforeBuild;CoreCompile">
+        <Exec Command="git describe --tags --abbrev=0 --exclude latest" ConsoleToMSBuild="true" StandardOutputImportance="low">
+            <Output TaskParameter="ConsoleOutput" ItemName="TagVersion" />
+        </Exec>
+        <Exec Command="git rev-list --count main" ConsoleToMSBuild="true" StandardOutputImportance="low">
+            <Output TaskParameter="ConsoleOutput" ItemName="CommitCount" />
+        </Exec>
 
-  <ItemGroup>
-    <Content Include="BetterAchievements.json" />
-  </ItemGroup>
+        <PropertyGroup>
+            <Version>@(TagVersion).@(CommitCount)</Version>
+        </PropertyGroup>
+    </Target>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\layout.jsonc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+    <PropertyGroup>
+        <PackageProjectUrl>https://github.com/zodiia/BetterAchievements</PackageProjectUrl>
+        <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Update="DalamudPackager" Version="15.0.0" />
-    <PackageReference Include="Dapper" Version="2.1.79" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="BetterAchievements.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\layout.jsonc">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Update="DalamudPackager" Version="14.0.2" />
+        <PackageReference Include="Dapper" Version="2.1.86" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    </ItemGroup>
 </Project>

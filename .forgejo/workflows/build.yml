@@ -3,11 +3,17 @@ name: Build latest on main
 on:
   push:
     branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
+
+    # if running on a release event, only run it if it's not a prerelease
+    #   (otherwise we're in for an infinite loop! not yay)
+    if: ${{ github.event_name == 'push' || !github.event.release.prerelease }}
 
     env:
       Solution_Name: BetterAchievements
@@ -28,18 +34,11 @@ jobs:
         with:
           branch: release
 
-      - name: Generate testing repo JSON and get current commit count
+      - name: Generate testing repo JSON
         id: eval-vars
         shell: bash
         run: |
           eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
-          echo "commitcount=$(git rev-list --count main)" >> "$GITHUB_OUTPUT"
-
-      - name: Correctly set .csproj Version field
-        uses: https://github.com/vers-one/dotnet-project-version-updater@v1.8
-        with:
-          file: "**/*.csproj"
-          version: "*.*.*.${{ steps.eval-vars.outputs.commitcount }}"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release

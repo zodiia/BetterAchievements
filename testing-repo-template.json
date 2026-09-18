@@ -3,7 +3,7 @@
         "Author": "zodiia",
         "InternalName": "BetterAchievements",
         "Name": "Better Achievements",
-        "AssemblyVersion": "0.0.0.$(git rev-list --count main)",
+        "AssemblyVersion": "$(git describe --tags --abbrev=0 --exclude latest).$(git rev-list --count main)",
         "Punchline": "The vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
         "Description": "Git commit hash: $(git rev-parse --short HEAD), built on $(TZ=UTC date).\\nThe vanilla achievement UI pissed me off, so here's a better achievement interface and tracker.",
         "ApplicableVersion": "any",
