@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/14.0.2">
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
     <Target Name="GetTagVersion" BeforeTargets="BeforeBuild;CoreCompile">
         <Exec Command="git describe --tags --abbrev=0 --exclude latest" ConsoleToMSBuild="true" StandardOutputImportance="low">
             <Output TaskParameter="ConsoleOutput" ItemName="TagVersion" />
@@ -30,8 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="DalamudPackager" Version="14.0.2" />
+        <PackageReference Update="DalamudPackager" Version="15.0.0" />
         <PackageReference Include="Dapper" Version="2.1.86" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+        <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.5" />
     </ItemGroup>
 </Project>
