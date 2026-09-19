@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -9,7 +8,6 @@ using Dalamud.Utility.Numerics;
 using Recollection.Data.Unlockable;
 using Recollection.UI.State;
 using Recollection.UI.Windows;
-using Serilog;
 
 namespace Recollection.UI.Component.Sidebar;
 

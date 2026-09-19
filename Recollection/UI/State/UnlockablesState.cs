@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Dalamud.Plugin.Services;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.Services;
-using Serilog;
 
 namespace Recollection.UI.State;
 
 public class UnlockablesState(Plugin plugin) {
+    private readonly IPluginLog log = Plugin.GetLogger<UnlockablesState>();
     private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
@@ -46,7 +47,7 @@ public class UnlockablesState(Plugin plugin) {
         ApplyFilters();
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
         RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements();
-        Log.Information("Refreshed state in {E}ms", start.Elapsed.Microseconds / 1000);
+        log.Information("Refreshed state in {E}ms", start.Elapsed.Microseconds / 1000);
     }
 
     public bool CollectionsLoaded => plugin.CollectionsService.Loaded;

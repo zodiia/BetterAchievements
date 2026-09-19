@@ -205,8 +205,5 @@ public sealed class Plugin : IDalamudPlugin {
         return reader.ReadToEnd();
     }
 
-    // todo: better logging of which class is logging
-    public static IPluginLog GetLogger<T>() {
-        return Log;
-    }
+    public static IPluginLog GetLogger<T>() => new PluginLogger<T>(Log);
 }

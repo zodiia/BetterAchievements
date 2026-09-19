@@ -3,16 +3,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Dalamud.Plugin.Services;
 using Lumina.Excel;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
 using Recollection.Helpers;
-using Serilog;
 
 namespace Recollection.Services;
 
 public class UnlockablesService {
+    private readonly IPluginLog log = Plugin.GetLogger<UnlockablesService>();
     private readonly Plugin plugin;
     private readonly LalachievementsService lalachievementsService;
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
@@ -211,7 +212,7 @@ public class UnlockablesService {
     }
 
     public void Refresh() {
-        Log.Information("Refreshed unlockables");
+        log.Information("Refreshed unlockables");
         achievements.Clear();
         tieredAchievements.Clear();
         collectionItems.Clear();

@@ -11,7 +11,6 @@ using Dapper;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Microsoft.Data.Sqlite;
-using Serilog;
 
 namespace Recollection.Services;
 
@@ -207,7 +206,7 @@ public class HistoryService : IDisposable {
                                   .ToList();
 
         ImportAchievementStatuses(statuses);
-        Log.Information("[Recollection] Imported achievement progress from history database in {E}ms", stopwatch.Elapsed.Microseconds / 1000.0);
+        log.Information($"Imported achievement progress from history database in {stopwatch.Elapsed.Microseconds / 1000.0}ms");
     }
 
     public void Dispose() {
