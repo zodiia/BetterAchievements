@@ -8,4 +8,7 @@ public static partial class CompiledRegexes {
 
     [GeneratedRegex(@"<.*?>(\\n)?", RegexOptions.Compiled)]
     public static partial Regex HtmlTagStrip();
+
+    [GeneratedRegex(@" ?\d\d", RegexOptions.Compiled)]
+    public static partial Regex HuntingLogCategoryExtract();
 }

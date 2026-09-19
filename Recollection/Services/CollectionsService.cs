@@ -33,6 +33,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.CraftingLog,
         UnlockableType.GatheringLog,
         UnlockableType.OrchestrionRoll,
+        UnlockableType.HuntingLog,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -104,6 +105,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.CraftingLog => BuildCraftingCategories(),
         UnlockableType.GatheringLog => BuildGatheringCategories(),
         UnlockableType.OrchestrionRoll => BuildOrchestrionCategories(),
+        UnlockableType.HuntingLog => BuildHuntingLogCategories(),
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
@@ -161,6 +163,23 @@ public class CollectionsService(Plugin plugin) {
                        Id = group.Key.Value.Order,
                        Name = group.Key.Value.Name.ToString(),
                        Items = group.OrderBy(it => it.Order).Select(it => it.RowId).ToList(),
+                   })
+                   .OrderBy(it => it.Id)
+                   .ToList();
+
+    private static List<CollectionCategory> BuildHuntingLogCategories() =>
+        ExcelSheets.MonsterNote.Value
+                   .Where(it => it.IsValidEntry())
+                   .GroupBy(it => CompiledRegexes.HuntingLogCategoryExtract().Replace(it.Name.ToString(), ""))
+                   .Select(group => new CollectionCategory {
+                       Id = HuntingLogType.GetByMonsterNoteRowId(group.First().RowId).Offset,
+                       Name = group.Key,
+                       Items = group.SelectMany(note => note.MonsterNoteTarget
+                                                            .Index()
+                                                            .Where(it => it.Item.IsValid && it.Item.Value.IsValidEntry())
+                                                            // id will contain both MonsterNote.RowId and the Target index within it
+                                                            // maybe one day I'll find a better solution
+                                                            .Select(it => note.RowId * 10 + (uint)it.Index).ToList()).ToList()
                    })
                    .OrderBy(it => it.Id)
                    .ToList();

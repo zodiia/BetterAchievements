@@ -119,6 +119,15 @@ public class UnlockablesService {
         return new(item, point, exported);
     }
 
+    private UnlockableHuntingLog CreateUnlockableHuntingLog(UnlockableKey key) {
+        // see how hunting log categories are built for why divided by 10 and modulo 10
+        var note = ExcelSheets.MonsterNote.Value.GetRow(key.Id / 10);
+        var target = note.MonsterNoteTarget[(int)key.Id % 10].Value;
+        var type = HuntingLogType.GetByMonsterNoteRowId(note.RowId);
+
+        return new(type, note, target, note.Count[(int)key.Id % 10]);
+    }
+
     private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {
         UnlockableType.Mount =>
             new UnlockableMount(ExcelSheets.Mount.Value.GetRow(key.Id), GetTableRow<Mount>(key.Id)),
@@ -146,6 +155,8 @@ public class UnlockablesService {
             CreateUnlockableGatheringLog(key),
         UnlockableType.OrchestrionRoll =>
             new UnlockableOrchestrionRoll(ExcelSheets.Orchestrion.Value.GetRow(key.Id)),
+        UnlockableType.HuntingLog =>
+            CreateUnlockableHuntingLog(key),
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unimplemented unlockable type")
     };
 
