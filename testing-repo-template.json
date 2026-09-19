@@ -15,6 +15,7 @@
         "DownloadLinkInstall": "https://git.zodiia.moe/xiv/Recollection/releases/download/latest/latest.zip",
         "DownloadLinkUpdate": "https://git.zodiia.moe/xiv/Recollection/releases/download/latest/latest.zip",
         "LastUpdate": "$(date +%s)",
+        "Changelog": "$(curl -fsSL 'https://git.zodiia.moe/api/v1/repos/xiv/Recollection/releases/latest' | jq -r '.body' | tr '\r\n' '\\n')",
         "Tags": [
             "achievements",
             "tracker",
