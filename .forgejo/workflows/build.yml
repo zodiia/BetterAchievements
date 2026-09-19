@@ -38,6 +38,7 @@ jobs:
         id: eval-vars
         shell: bash
         run: |
+          changelog=$(curl -fsSL 'https://git.zodiia.moe/api/v1/repos/xiv/Recollection/releases/latest' | jq -r '.body | gsub("\""; "\\\"") | gsub("\r?\n"; "\\n")')
           eval "echo \"$(sed 's/"/\\"/g' testing-repo-template.json)\"" > testing-repo.json
 
       - name: Build with dotnet
