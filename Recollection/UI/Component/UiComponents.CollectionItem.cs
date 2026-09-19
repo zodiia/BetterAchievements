@@ -9,8 +9,6 @@ using Recollection.Data.Unlockable;
 namespace Recollection.UI.Component;
 
 public static partial class UiComponents {
-    private const string Unknown = "Unknown";
-
     private static void CollectionItemTitle(string name, float x, float y, float lineHeight) {
         using (UiFonts.FontSize110().Push()) {
             ImGui.SetCursorPos(new Vector2(x, y + ((lineHeight - ImGui.GetTextLineHeight()) / 2f)));
@@ -74,11 +72,6 @@ public static partial class UiComponents {
         }
     }
 
-    private static string CollectionItemHowTo(IUnlockable unlockable) {
-        var howTo = unlockable.HowTo();
-        return howTo?.Length is > 0 ? howTo : Unknown;
-    }
-
     public static void CollectionItem(IUnlockable unlockable, Configuration config) {
         using var group = ImRaii.Group();
 
@@ -88,22 +81,44 @@ public static partial class UiComponents {
         var lineHeight = iconSize / 2f;
         var hasIcon = unlockable.Icon() != 0;
         var textX = hasIcon ? start.X + iconSize + ImGui.GetStyle().ItemSpacing.X : start.X;
+        var howTo = unlockable.HowTo();
+        var howToY = start.Y + lineHeight + 4;
+        var howToHeight = ImGui.GetTextLineHeight();
 
         if (hasIcon) {
             AchievementIcon(unlockable.Icon(), iconSize);
         }
 
-        CollectionItemTitle(unlockable.Name(), textX, start.Y, lineHeight);
+        CollectionItemTitle(unlockable.Name(), textX, start.Y, howTo?.Length is > 0 ? lineHeight : howToY - start.Y + howToHeight);
         if (config.DisplayIds) {
             ImGui.SameLine();
             ImGui.TextDisabled($"#{unlockable.Id()}");
         }
+
         CollectionItemStatus(unlockable.Unlocked(), start.X + availableWidth, start.Y, lineHeight);
-        IndentedWrappedText(CollectionItemHowTo(unlockable), start.X, start.Y + lineHeight + 4, textX, availableWidth - (textX - start.X), availableWidth);
+        if (howTo?.Length is > 0) {
+            IndentedWrappedText(howTo, start.X, howToY, textX, availableWidth - (textX - start.X), availableWidth);
+        } else {
+            ImGui.SetCursorPos(start with { Y = howToY });
+            ImGui.Dummy(new Vector2(0f, howToHeight));
+        }
 
         if (unlockable.Description().Length > 0) {
             ImGui.TextColoredWrapped(UiColors.Grey(), unlockable.Description());
         }
+
+        if (unlockable.Maximum() > 1 && (!unlockable.Unlocked() || config.NeverHideProgressBars)) {
+            var progress = unlockable.Current();
+
+            ProgressBar(
+                (progress ?? 1.0f) / unlockable.Maximum(),
+                progress != null ? UiColors.Progress() : UiColors.Red(),
+                height: UiSize.Em(config.ProgressBarHeight),
+                insideText: progress != null ? $"{progress}/{unlockable.Maximum()}" : "Not loaded",
+                enabled: progress != null);
+        }
+
+
         ImGui.Dummy(Vector2.Zero);
     }
 }
