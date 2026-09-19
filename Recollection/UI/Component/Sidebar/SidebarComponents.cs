@@ -78,6 +78,7 @@ public static partial class SidebarComponents {
         CollectionItem(plugin, state, UnlockableType.Mount, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Minion, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Title, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.OrchestrionRoll, UiColors.Blue());
         FillerItems(plugin, state, "Fishing");
         CollectionItem(plugin, state, UnlockableType.TripleTriadCard, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.TripleTriadNpc, UiColors.Blue());
@@ -92,7 +93,7 @@ public static partial class SidebarComponents {
         FillerItems(plugin, state, "Challenge Log", "Wondrous Tales", "Hunting Log");
         CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Green());
-        FillerItems(plugin, state, "Orchestrion Rolls", "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
+        FillerItems(plugin, state, "Shared FATEs", "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
         SectionHeader("Seasonal & Others");
         FillerItems(plugin, state, "Yo-kai Watch", "The Rising");

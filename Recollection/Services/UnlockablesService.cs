@@ -21,15 +21,7 @@ public class UnlockablesService {
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
     public readonly Dictionary<uint, uint> HighestAchievementIdMap;
     private readonly Lazy<Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>> ttLinkCache = new(BuildTripleTriadLinkCache);
-
-    private readonly Lazy<Dictionary<uint, uint>> gatheringNodeCache = new(() => ExcelSheets.GatheringPoint.Value
-                                                                                            .Where(it => it.IsValidEntry())
-                                                                                            .SelectMany(it => it.GatheringPointBase.Value.Item
-                                                                                                            .Where(item => item.RowId > 0)
-                                                                                                            .Select(item => (item.RowId, it.RowId)))
-                                                                                            .GroupBy(it => it.Item1)
-                                                                                            .Select(it => it.First(item => item.Item2 > 0))
-                                                                                            .ToDictionary());
+    private readonly Lazy<Dictionary<uint, uint>> gatheringNodeCache = new(BuildGatheringNodeCache);
 
     private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
@@ -65,6 +57,16 @@ public class UnlockablesService {
 
         return map;
     }
+
+    private static Dictionary<uint, uint> BuildGatheringNodeCache() =>
+        ExcelSheets.GatheringPoint.Value
+                   .Where(it => it.IsValidEntry())
+                   .SelectMany(it => it.GatheringPointBase.Value.Item
+                                       .Where(item => item.RowId > 0)
+                                       .Select(item => (item.RowId, it.RowId)))
+                   .GroupBy(it => it.Item1)
+                   .Select(it => it.First(item => item.Item2 > 0))
+                   .ToDictionary();
 
     private ITableRow GetTableRow<T>(uint id) where T : ITableRow {
         return lalachievementsService.GetTable<T>().First(it => it.Id == id);
@@ -142,6 +144,8 @@ public class UnlockablesService {
             new UnlockableCraftingLog(ExcelSheets.Recipe.Value.GetRow(key.Id)),
         UnlockableType.GatheringLog =>
             CreateUnlockableGatheringLog(key),
+        UnlockableType.OrchestrionRoll =>
+            new UnlockableOrchestrionRoll(ExcelSheets.Orchestrion.Value.GetRow(key.Id)),
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unimplemented unlockable type")
     };
 

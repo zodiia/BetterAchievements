@@ -21,6 +21,8 @@ public static class ExcelSheetsExtension {
     public static bool IsValidEntry(this Emote emote) => emote is { Order: > 0, Name.IsEmpty: false };
     public static bool IsValidEntry(this Recipe recipe) => recipe is { RowId: < MaxRecordableRecipeId, ItemResult: { IsValid: true, RowId: > 0 } };
     public static bool IsValidEntry(this GatheringItem item) => item is { RowId: < MaxRecordableGatheringItemId, RowId: > 0 } && item.Item.RowType == ItemType;
+    public static bool IsValidEntry(this Orchestrion orchestrion) => orchestrion is { Name.IsEmpty: false };
+    public static bool IsValidEntry(this OrchestrionUiparam uiparam) => uiparam is { OrchestrionCategory.RowId: > 0 };
 
     public static bool IsValidEntry(this GatheringPoint point) => point is {
         GatheringPointBase: { IsValid: true, Value.GatheringType.RowId: < MaxGatheringTypeId }, PlaceName: { IsValid: true, Value.Name.IsEmpty: false }, TerritoryType.IsValid: true

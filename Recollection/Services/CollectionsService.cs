@@ -32,6 +32,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Emote,
         UnlockableType.CraftingLog,
         UnlockableType.GatheringLog,
+        UnlockableType.OrchestrionRoll,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -102,6 +103,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.TripleTriadNpc => BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
         UnlockableType.CraftingLog => BuildCraftingCategories(),
         UnlockableType.GatheringLog => BuildGatheringCategories(),
+        UnlockableType.OrchestrionRoll => BuildOrchestrionCategories(),
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
@@ -136,7 +138,7 @@ public class CollectionsService(Plugin plugin) {
     private static List<CollectionCategory> BuildGatheringCategories() =>
         ExcelSheets.GatheringPoint.Value
                    .Where(it => it.IsValidEntry())
-                   .GroupBy(it => it.GatheringPointBase.Value.GatheringType, new GatheringTypeComparer())
+                   .GroupBy(it => it.GatheringPointBase.Value.GatheringType, new ExcelRowComparer<GatheringType>())
                    .Select(group => new CollectionCategory {
                        Id = group.Key.RowId,
                        Name = group.Key.Value.Name.ToString(),
@@ -147,6 +149,18 @@ public class CollectionsService(Plugin plugin) {
                                     .Select(rows => rows.First())
                                     .Order()
                                     .ToList(),
+                   })
+                   .OrderBy(it => it.Id)
+                   .ToList();
+
+    private static List<CollectionCategory> BuildOrchestrionCategories() =>
+        ExcelSheets.OrchestrionUiparam.Value
+                   .Where(it => it.IsValidEntry())
+                   .GroupBy(it => it.OrchestrionCategory, new ExcelRowComparer<OrchestrionCategory>())
+                   .Select(group => new CollectionCategory {
+                       Id = group.Key.Value.Order,
+                       Name = group.Key.Value.Name.ToString(),
+                       Items = group.OrderBy(it => it.Order).Select(it => it.RowId).ToList(),
                    })
                    .OrderBy(it => it.Id)
                    .ToList();
@@ -162,7 +176,7 @@ public class CollectionsService(Plugin plugin) {
 }
 
 // c# what do you make me do...
-class GatheringTypeComparer : IEqualityComparer<RowRef<GatheringType>> {
-    public bool Equals(RowRef<GatheringType> x, RowRef<GatheringType> y) => x.RowId == y.RowId;
-    public int GetHashCode(RowRef<GatheringType> obj) => base.GetHashCode();
+internal class ExcelRowComparer<T> : IEqualityComparer<RowRef<T>> where T : struct, IExcelRow<T> {
+    public bool Equals(RowRef<T> x, RowRef<T> y) => x.RowId == y.RowId;
+    public int GetHashCode(RowRef<T> obj) => base.GetHashCode();
 }
