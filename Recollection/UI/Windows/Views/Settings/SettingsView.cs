@@ -18,8 +18,8 @@ public class SettingsView : IView {
         new("UI settings", [
             new FloatSetting<float> {
                 Name = "Progress bars size in collections",
-                Description = "Must be between 0.5 and 5.0.",
-                Validator = it => it is >= 0.5f and <= 5.0f,
+                Description = "Must be between 1.0 and 5.0.",
+                Validator = it => it is >= 1.0f and <= 5.0f,
                 Getter = it => it.ProgressBarHeight,
                 Setter = (it, value) => it.ProgressBarHeight = value,
             },
