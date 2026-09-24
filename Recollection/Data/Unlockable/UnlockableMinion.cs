@@ -4,7 +4,7 @@ using Recollection.Helpers;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableMinion : IUnlockable {
+public sealed class UnlockableMinion : IUnlockable {
     private readonly Companion minion;
     private readonly string name;
     private readonly string description;
@@ -14,14 +14,14 @@ public sealed record UnlockableMinion : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
-    public UnlockableMinion(Companion minion, ITableRow tabke) {
+    public UnlockableMinion(Companion minion, ITableRow table) {
         this.minion = minion;
         name = minion.Singular.ToString();
         description = ExcelSheets.CompanionTransient.Value.GetRow(minion.RowId).Description.ToString();
-        nameLowercase = minion.Singular.ToString().ToLower();
-        descriptionLowercase = ExcelSheets.CompanionTransient.Value.GetRow(minion.RowId).DescriptionEnhanced.ToString().ToLower();
-        howTo = tabke.HowTo;
-        howToLowercase = tabke.HowTo?.ToLower();
+        howTo = table.HowTo;
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsCompanionUnlocked(minion);
     }
 

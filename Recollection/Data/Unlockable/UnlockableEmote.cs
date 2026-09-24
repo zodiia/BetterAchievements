@@ -7,7 +7,7 @@ using Emote = Lumina.Excel.Sheets.Emote;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableEmote : IUnlockable {
+public sealed class UnlockableEmote : IUnlockable {
     private readonly Emote emote;
     private readonly string name;
     private readonly string description;
@@ -21,10 +21,10 @@ public sealed record UnlockableEmote : IUnlockable {
         this.emote = emote;
         name = emote.Name.ToString();
         description = GetDescription(emote.TextCommand);
-        nameLowercase = emote.Name.ToString().ToLower();
-        descriptionLowercase = GetDescription(emote.TextCommand).ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsEmoteUnlocked(emote);
     }
 

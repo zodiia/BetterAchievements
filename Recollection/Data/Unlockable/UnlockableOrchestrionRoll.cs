@@ -3,7 +3,7 @@ using Recollection.Helpers;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableOrchestrionRoll : IUnlockable {
+public sealed class UnlockableOrchestrionRoll : IUnlockable {
     private const uint StaticIcon = 25945;
     private readonly Orchestrion orchestrion;
     private readonly string name;
@@ -15,9 +15,9 @@ public sealed record UnlockableOrchestrionRoll : IUnlockable {
     public UnlockableOrchestrionRoll(Orchestrion orchestrion) {
         this.orchestrion = orchestrion;
         name = orchestrion.Name.ToString();
-        nameLowercase = orchestrion.Name.ToString().ToLower();
         howTo = orchestrion.Description.ToString();
-        howToLowercase = orchestrion.Description.ToString().ToLower();
+        nameLowercase = name.ToLower();
+        howToLowercase = howTo.ToLower();
         unlocked = Plugin.UnlockState.IsOrchestrionUnlocked(orchestrion);
     }
 

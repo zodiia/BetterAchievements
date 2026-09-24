@@ -5,7 +5,7 @@ using Lumina.Excel.Sheets;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableAchievement : IUnlockable {
+public sealed class UnlockableAchievement : IUnlockable {
     private readonly Achievement achievement;
     private readonly string name;
     private readonly string description;
@@ -19,8 +19,8 @@ public sealed record UnlockableAchievement : IUnlockable {
         this.achievement = achievement;
         name = achievement.Name.ToString();
         description = achievement.Description.ToString();
-        nameLowercase = achievement.Name.ToString().ToLower();
-        descriptionLowercase = achievement.Description.ToString().ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
         current = plugin.AchievementProgressService.GetProgress(achievement.RowId);
         unlocked = Plugin.UnlockState.IsAchievementComplete(achievement);
         pinned = plugin.Configuration.PinnedAchievements.Contains(achievement.RowId);

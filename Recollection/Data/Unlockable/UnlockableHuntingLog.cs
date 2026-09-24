@@ -24,7 +24,7 @@ public sealed record HuntingLogType(int Id, uint Offset) {
     public static HuntingLogType GetByMonsterNoteRowId(uint id) => All.First(it => id / 10000 == it.Offset);
 }
 
-public sealed record UnlockableHuntingLog : IUnlockable {
+public sealed class UnlockableHuntingLog : IUnlockable {
     private readonly MonsterNote note;
     private readonly uint icon;
     private readonly uint current;
@@ -39,8 +39,8 @@ public sealed record UnlockableHuntingLog : IUnlockable {
         this.max = max;
         icon = (uint)note.MonsterNoteTarget.First().Value.Icon;
         name = GetName(note, target, max);
-        nameLowercase = name.ToLower();
         description = GetDescription(target);
+        nameLowercase = name.ToLower();
         descriptionLowercase = description.ToLower();
         current = (uint)GetCurrent(type, note, target, max);
     }

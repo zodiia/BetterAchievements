@@ -4,7 +4,7 @@ using Recollection.Helpers;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableFashionAccessory : IUnlockable {
+public sealed class UnlockableFashionAccessory : IUnlockable {
     private readonly Ornament ornament;
     private readonly string name;
     private readonly string description;
@@ -18,10 +18,10 @@ public sealed record UnlockableFashionAccessory : IUnlockable {
         this.ornament = ornament;
         name = ornament.Singular.ToString();
         description = GetDescription(ornament);
-        nameLowercase = ornament.Singular.ToString().ToLower();
-        descriptionLowercase = GetDescription(ornament).ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsOrnamentUnlocked(ornament);
     }
 

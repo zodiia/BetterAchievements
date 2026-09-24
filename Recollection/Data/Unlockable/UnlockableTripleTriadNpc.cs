@@ -1,6 +1,3 @@
-using System.Linq;
-using Recollection.External.Lalachievements;
-using Lumina.Excel;
 using Lumina.Excel.Sheets;
 
 namespace Recollection.Data.Unlockable;
@@ -14,7 +11,7 @@ namespace Recollection.Data.Unlockable;
 /// - ENpcResident.RowId == ENpcBase.RowId
 /// - Level.Object == ENpcBase.RowId
 /// </summary>
-public sealed record UnlockableTripleTriadNpc : IUnlockable {
+public sealed class UnlockableTripleTriadNpc : IUnlockable {
     private readonly TripleTriad tt;
     private readonly Level level;
     private readonly string name;
@@ -28,8 +25,8 @@ public sealed record UnlockableTripleTriadNpc : IUnlockable {
         this.level = level;
         name = eNpcResident.Singular.ToString();
         howTo = GetHowTo();
-        nameLowercase = eNpcResident.Singular.ToString().ToLower();
-        howToLowercase = GetHowTo().ToLower();
+        nameLowercase = name.ToLower();
+        howToLowercase = howTo.ToLower();
         unlocked = Plugin.UiState.Valid && Plugin.UiState.Value.IsTripleTriadNpcBeaten(ttResident.RowId);
     }
 
@@ -40,8 +37,8 @@ public sealed record UnlockableTripleTriadNpc : IUnlockable {
     public string Description() => "";
     public string NameLowercase() => nameLowercase;
     public string DescriptionLowercase() => "";
-    public string? HowTo() => howTo;
-    public string? HowToLowercase() => howToLowercase;
+    public string HowTo() => howTo;
+    public string HowToLowercase() => howToLowercase;
     public uint? Current() => Unlocked() ? 1u : 0u;
     public uint Maximum() => 1;
     public bool Unlocked() => unlocked;

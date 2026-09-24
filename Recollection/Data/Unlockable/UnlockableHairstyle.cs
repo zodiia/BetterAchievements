@@ -4,7 +4,7 @@ using Recollection.External.Lalachievements;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableHairstyle : IUnlockable {
+public sealed class UnlockableHairstyle : IUnlockable {
     private readonly CharaMakeCustomize hairstyle;
     private readonly string name;
     private readonly string description;
@@ -18,10 +18,10 @@ public sealed record UnlockableHairstyle : IUnlockable {
         this.hairstyle = hairstyle;
         name = hairstyle.HintItem.ValueNullable?.Name.ToString() ?? "";
         description = hairstyle.HintItem.ValueNullable?.Description.ToString() ?? "";
-        nameLowercase = (hairstyle.HintItem.ValueNullable?.Name.ToString() ?? "").ToLower();
-        descriptionLowercase = (hairstyle.HintItem.ValueNullable?.Description.ToString() ?? "").ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsCharaMakeCustomizeUnlocked(hairstyle);
     }
 

@@ -5,7 +5,7 @@ using Recollection.Helpers;
 
 namespace Recollection.Data.Unlockable;
 
-public record UnlockableTieredAchievement : IUnlockable {
+public sealed class UnlockableTieredAchievement : IUnlockable {
     private readonly bool spoilers;
     private readonly string name;
     private readonly string description;
@@ -21,13 +21,13 @@ public record UnlockableTieredAchievement : IUnlockable {
 
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin) {
         ExcelAchievements = excelAchievements;
+        this.spoilers = spoilers;
         providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
         name = spoilers switch {
             false => CompiledRegexes.AchievementNameReplace().Replace(providesAchievements.Last().Name(), ""),
             true => CompiledRegexes.AchievementNameReplace()
                                    .Replace((providesAchievements.FindLast(it => it.Unlocked()) ?? providesAchievements.First()).Name(), "")
         };
-        this.spoilers = spoilers;
         description = excelAchievements.Last().Description.ToString();
         nameLowercase = name.ToLower();
         descriptionLowercase = string.Join(" ", providesAchievements.Select(it => it.Description().ToLower()).ToList());

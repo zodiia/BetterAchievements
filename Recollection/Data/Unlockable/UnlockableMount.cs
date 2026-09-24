@@ -5,7 +5,7 @@ using Mount = Lumina.Excel.Sheets.Mount;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableMount : IUnlockable {
+public sealed class UnlockableMount : IUnlockable {
     private readonly Mount mount;
     private readonly string name;
     private readonly string description;
@@ -19,10 +19,10 @@ public sealed record UnlockableMount : IUnlockable {
         this.mount = mount;
         name = mount.Singular.ToString();
         description = ExcelSheets.MountTransient.Value.GetRow(mount.RowId).DescriptionEnhanced.ToString();
-        nameLowercase = mount.Singular.ToString().ToLower();
-        descriptionLowercase = ExcelSheets.MountTransient.Value.GetRow(mount.RowId).DescriptionEnhanced.ToString().ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsMountUnlocked(mount);
     }
 

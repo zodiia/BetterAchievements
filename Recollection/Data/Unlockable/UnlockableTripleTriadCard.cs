@@ -4,14 +4,14 @@ using TripleTriadCard = Lumina.Excel.Sheets.TripleTriadCard;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableTripleTriadCard : IUnlockable {
+public sealed class UnlockableTripleTriadCard : IUnlockable {
     private const uint CardIconOffset = 87000;
     private readonly TripleTriadCard card;
     private readonly string name;
-    private readonly string description;
-    private readonly string? howTo;
     private readonly string nameLowercase;
+    private readonly string description;
     private readonly string descriptionLowercase;
+    private readonly string? howTo;
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
@@ -19,10 +19,10 @@ public sealed record UnlockableTripleTriadCard : IUnlockable {
         this.card = card;
         name = card.Name.ToString();
         description = card.Description.ToString();
-        nameLowercase = card.Name.ToString().ToLower();
-        descriptionLowercase = card.Description.ToString().ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsTripleTriadCardUnlocked(card);
     }
 

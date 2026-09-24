@@ -5,7 +5,7 @@ using Recollection.External.Lalachievements;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableFacewear : IUnlockable {
+public sealed class UnlockableFacewear : IUnlockable {
     private readonly GlassesStyle facewear;
     private readonly string name;
     private readonly string description;
@@ -19,10 +19,10 @@ public sealed record UnlockableFacewear : IUnlockable {
         this.facewear = facewear;
         name = facewear.Name.ToString();
         description = GetDescription(facewear);
-        nameLowercase = facewear.Name.ToString().ToLower();
-        descriptionLowercase = GetDescription(facewear).ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsGlassesStyleUnlocked(facewear);
     }
 

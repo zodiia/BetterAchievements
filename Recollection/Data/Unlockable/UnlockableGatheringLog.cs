@@ -6,7 +6,7 @@ using Lumina.Excel.Sheets;
 
 namespace Recollection.Data.Unlockable;
 
-public class UnlockableGatheringLog : IUnlockable {
+public sealed class UnlockableGatheringLog : IUnlockable {
     private readonly GatheringItem item;
     private readonly GatheringPoint point;
     private readonly ExportedGatheringPoint exported;
@@ -25,9 +25,9 @@ public class UnlockableGatheringLog : IUnlockable {
         this.exported = exported;
         name = item.Item.GetValueOrDefault<Item>()?.Name.ToString() ?? "Unknown";
         description = item.Item.GetValueOrDefault<Item>()?.Description.ToString() ?? "Unknown";
-        nameLowercase = item.Item.GetValueOrDefault<Item>()?.Name.ToString().ToLower() ?? "unknown";
-        descriptionLowercase = item.Item.GetValueOrDefault<Item>()?.Description.ToString().ToLower() ?? "unknown";
         howTo = GetHowTo();
+        nameLowercase = name.ToLower();
+        descriptionLowercase = description.ToLower();
         howToLowercase = howTo.ToLower();
         icon = item.Item.GetValueOrDefault<Item>()?.Icon ?? 0;
         unlocked = Plugin.QuestManager.Valid && QuestManager.IsGatheringItemGathered((ushort)item.RowId);

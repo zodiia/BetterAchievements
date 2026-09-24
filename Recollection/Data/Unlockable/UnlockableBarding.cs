@@ -4,7 +4,7 @@ using Recollection.External.Lalachievements;
 
 namespace Recollection.Data.Unlockable;
 
-public sealed record UnlockableBarding : IUnlockable {
+public sealed class UnlockableBarding : IUnlockable {
     private readonly BuddyEquip barding;
     private readonly string name;
     private readonly string nameLowercase;
@@ -15,9 +15,9 @@ public sealed record UnlockableBarding : IUnlockable {
     public UnlockableBarding(BuddyEquip barding, ITableRow tableRow) {
         this.barding = barding;
         name = barding.Name.ToString();
-        nameLowercase = barding.Name.ToString().ToLower();
         howTo = tableRow.HowTo;
-        howToLowercase = tableRow.HowTo?.ToLower();
+        nameLowercase = name.ToLower();
+        howToLowercase = howTo?.ToLower();
         unlocked = Plugin.UnlockState.IsBuddyEquipUnlocked(barding);
     }
 
