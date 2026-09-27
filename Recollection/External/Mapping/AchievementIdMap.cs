@@ -1,10 +1,9 @@
-
 // This is a generated file, DO NOT EDIT MANUALLY
 // Generated on 2026-09-27T12:16:48.713Z
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global
-namespace BetterAchievements.External.Mapping;
+namespace Recollection.External.Mapping;
 
 public enum AchievementIdMap : uint {
     ToCrushYourEnemiesI = 1,
