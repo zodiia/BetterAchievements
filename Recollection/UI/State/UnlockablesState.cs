@@ -46,7 +46,7 @@ public class UnlockablesState(Plugin plugin) {
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
-        RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements();
+        RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
         log.Information("Refreshed state in {E}ms", start.Elapsed.Microseconds / 1000);
     }
 
