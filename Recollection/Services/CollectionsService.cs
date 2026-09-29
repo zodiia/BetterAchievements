@@ -8,6 +8,7 @@ using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
 using Recollection.Helpers;
 using Emote = Recollection.External.Lalachievements.Emote;
+using Leve = Recollection.External.Lalachievements.Leve;
 using Mount = Recollection.External.Lalachievements.Mount;
 using Title = Recollection.External.Lalachievements.Title;
 using TripleTriadCard = Recollection.External.Lalachievements.TripleTriadCard;
@@ -34,6 +35,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.GatheringLog,
         UnlockableType.OrchestrionRoll,
         UnlockableType.HuntingLog,
+        UnlockableType.Leve,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -62,6 +64,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.FieldRecord => "Field Records",
         UnlockableType.OccultRecord => "Occult Records",
         UnlockableType.SurveyRecord => "Survey Records",
+        UnlockableType.Leve => "Levequest",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
@@ -92,24 +95,40 @@ public class CollectionsService(Plugin plugin) {
     }
 
     private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) => type switch {
-        UnlockableType.Mount => BuildCategoriesWithGameAll(response, response.GetTable<Mount>(), it => it.SourceTypeId),
-        UnlockableType.Minion => BuildCategoriesWithGameAll(response, response.GetTable<Minion>(), it => it.SourceTypeId),
-        UnlockableType.TripleTriadCard => BuildCategoriesWithGameAll(response, response.GetTable<TripleTriadCard>(), it => it.SourceTypeId),
-        UnlockableType.Barding => BuildCategoriesWithGameAll(response, response.GetTable<Barding>(), it => it.SourceTypeId),
-        UnlockableType.FashionAccessory => BuildCategoriesWithGameAll(response, response.GetTable<Fashion>(), it => it.SourceTypeId),
-        UnlockableType.Hairstyle => BuildCategoriesWithGameAll(response, response.GetTable<Hair>(), it => it.SourceTypeId),
-        UnlockableType.Facewear => BuildCategoriesWithGameAll(response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
-        UnlockableType.Emote => BuildCategoriesWithGameAll(response, response.GetTable<Emote>(), it => it.SourceTypeId),
-        UnlockableType.Title => BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
-        UnlockableType.TripleTriadNpc => BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
-        UnlockableType.CraftingLog => BuildCraftingCategories(),
-        UnlockableType.GatheringLog => BuildGatheringCategories(),
-        UnlockableType.OrchestrionRoll => BuildOrchestrionCategories(),
-        UnlockableType.HuntingLog => BuildHuntingLogCategories(),
+        UnlockableType.Mount =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Mount>(), it => it.SourceTypeId),
+        UnlockableType.Minion =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Minion>(), it => it.SourceTypeId),
+        UnlockableType.TripleTriadCard =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<TripleTriadCard>(), it => it.SourceTypeId),
+        UnlockableType.Barding =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Barding>(), it => it.SourceTypeId),
+        UnlockableType.FashionAccessory =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Fashion>(), it => it.SourceTypeId),
+        UnlockableType.Hairstyle =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Hair>(), it => it.SourceTypeId),
+        UnlockableType.Facewear =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
+        UnlockableType.Emote =>
+            BuildCategoriesWithSourceTypes(response, response.GetTable<Emote>(), it => it.SourceTypeId),
+        UnlockableType.Leve =>
+            BuildLeveCategories(response.GetTable<Leve>()),
+        UnlockableType.Title =>
+            BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
+        UnlockableType.TripleTriadNpc =>
+            BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
+        UnlockableType.CraftingLog =>
+            BuildCraftingCategories(),
+        UnlockableType.GatheringLog =>
+            BuildGatheringCategories(),
+        UnlockableType.OrchestrionRoll =>
+            BuildOrchestrionCategories(),
+        UnlockableType.HuntingLog =>
+            BuildHuntingLogCategories(),
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
-    private static List<CollectionCategory> BuildCategoriesWithGameAll<T>(GameAllResponse response, List<T> rows, Func<T, uint?> getSourceTypeId)
+    private static List<CollectionCategory> BuildCategoriesWithSourceTypes<T>(GameAllResponse response, List<T> rows, Func<T, uint?> getSourceTypeId)
         where T : ITableRow => rows.Where(it => it.Deleted is false)
                                    .GroupBy(it => response.GetSourceType(getSourceTypeId(it)))
                                    .Select(group => new CollectionCategory {
@@ -125,6 +144,19 @@ public class CollectionsService(Plugin plugin) {
     private static List<CollectionCategory> BuildSingleCategoryWithGameAll<T>(List<T> rows, UnlockableType type) where T : ITableRow => [
         new() { Id = 0, Name = Label(type), Items = rows.Where(it => it.Deleted == false).OrderBy(it => it.Id).Select(it => it.Id).ToList() }
     ];
+
+    private static List<CollectionCategory> BuildLeveCategories(List<Leve> rows) =>
+        rows.Where(it => it.Deleted is false)
+            .Select(it => ExcelSheets.Leve.Value.GetRow(it.Id))
+            .GroupBy(it => it.JournalGenre.RowId)
+            .Select(group => new CollectionCategory {
+                Id = group.Key,
+                Name = group.First().JournalGenre.Value.Name.ToString(),
+                Items = group.OrderBy(it => it.ClassJobLevel).ThenBy(it => it.RowId).Select(it => it.RowId).ToList(),
+            })
+            .Where(it => it.Items.Count > 0)
+            .OrderBy(it => it.Id)
+            .ToList();
 
     private static List<CollectionCategory> BuildCraftingCategories() =>
         ExcelSheets.Recipe.Value.Where(it => it.IsValidEntry())
@@ -184,9 +216,7 @@ public class CollectionsService(Plugin plugin) {
                    .OrderBy(it => it.Id)
                    .ToList();
 
-    /// <summary>Orders categories by not changing their order, except putting Other and Unknown as the last two</summary>
-    /// <param name="name">Category name</param>
-    /// <returns>1 for Other, 2 for Unknown, 0 otherwise</returns>
+    // placing other and unknown at the bottom of the category list
     private static int CategorySortRank(string name) => name switch {
         OtherCategoryName => 1,
         UnknownCategoryName => 2,

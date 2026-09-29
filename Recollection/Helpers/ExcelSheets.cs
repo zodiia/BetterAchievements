@@ -21,6 +21,7 @@ public static class ExcelSheets {
     public static readonly Lazy<ExcelSheet<MonsterNote>> MonsterNote = new(() => Plugin.DataManager.GetExcelSheet<MonsterNote>());
     public static readonly Lazy<ExcelSheet<Mount>> Mount = new(() => Plugin.DataManager.GetExcelSheet<Mount>());
     public static readonly Lazy<ExcelSheet<MountTransient>> MountTransient = new(() => Plugin.DataManager.GetExcelSheet<MountTransient>());
+    public static readonly Lazy<ExcelSheet<Leve>> Leve = new(() => Plugin.DataManager.GetExcelSheet<Leve>());
     public static readonly Lazy<ExcelSheet<Level>> Level = new(() => Plugin.DataManager.GetExcelSheet<Level>());
     public static readonly Lazy<ExcelSheet<Orchestrion>> Orchestrion = new(() => Plugin.DataManager.GetExcelSheet<Orchestrion>());
     public static readonly Lazy<ExcelSheet<OrchestrionUiparam>> OrchestrionUiparam = new(() => Plugin.DataManager.GetExcelSheet<OrchestrionUiparam>());

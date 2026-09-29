@@ -23,6 +23,7 @@ public enum UnlockableType {
     FieldRecord,
     OccultRecord,
     SurveyRecord,
+    Leve,
 }
 
 public interface IUnlockable {

@@ -149,6 +149,8 @@ public class UnlockablesService {
             new UnlockableFacewear(ExcelSheets.GlassesStyle.Value.GetRow(key.Id), GetTableRow<Spectacle>(key.Id)),
         UnlockableType.Emote =>
             new UnlockableEmote(ExcelSheets.Emote.Value.GetRow(key.Id), GetTableRow<Emote>(key.Id)),
+        UnlockableType.Leve =>
+            new UnlockableLeve(ExcelSheets.Leve.Value.GetRow(key.Id)),
         UnlockableType.CraftingLog =>
             new UnlockableCraftingLog(ExcelSheets.Recipe.Value.GetRow(key.Id)),
         UnlockableType.GatheringLog =>
