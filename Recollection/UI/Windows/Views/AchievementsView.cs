@@ -36,14 +36,16 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
         var (obtainedCount, totalCount) = achievementCount;
         var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
-        UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);
+        ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
+
+        UiComponents.SeparatorText(breadcrumb, plugin.Configuration.UiDensity);
 
         DrawHeaderStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
         UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100 :0.#}%");
 
-        UiComponents.SeparatorText("Achievements");
+        UiComponents.SeparatorText("Achievements", plugin.Configuration.UiDensity);
     }
 
     private bool DrawWarnings() {

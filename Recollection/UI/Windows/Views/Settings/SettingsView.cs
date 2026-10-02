@@ -30,6 +30,13 @@ public class SettingsView : IView {
                 Getter = it => it.SidebarProgressBarHeight,
                 Setter = (it, value) => it.SidebarProgressBarHeight = value,
             },
+            new FloatSetting<float> {
+                Name = "UI density",
+                Description = "Must be between 0.2 and 2.0. Changing this value will make padding between some elements smaller or bigger.",
+                Validator = it => it is >= 0.2f and <= 2.0f,
+                Getter = it => it.UiDensity,
+                Setter = (it, value) => it.UiDensity = value,
+            },
             new BooleanSetting {
                 Name = "Never hide progress bars",
                 Description = "By default, progress bars are hidden under certain conditions, like when the progress is 100%. Turn this on to disable that behavior.",
@@ -141,7 +148,7 @@ public class SettingsView : IView {
                 ImGui.Dummy(new(0, UiSize.Em(0.5f)));
 
                 foreach (var section in sections) {
-                    SettingsComponents.Section(section, draft);
+                    SettingsComponents.Section(plugin, section, draft);
                 }
             }
         }

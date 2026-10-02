@@ -29,15 +29,13 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
             return;
         }
 
-        ImGui.Dummy(new(0, UiSize.Em(1f)));
+        ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
-        // OverviewComponents.PlayerHeader();
+        UiComponents.SeparatorText("Overview", plugin.Configuration.UiDensity);
+        OverviewComponents.OverviewStats(plugin, unlockables);
 
-        UiComponents.SeparatorText("Overview");
-        OverviewComponents.OverviewStats(unlockables);
-
-        UiComponents.SeparatorText("Categories");
-        OverviewComponents.CategoriesGrid(unlockables, navigation);
+        UiComponents.SeparatorText("Categories", plugin.Configuration.UiDensity);
+        OverviewComponents.CategoriesGrid(plugin, unlockables, navigation);
 
         OverviewComponents.ActivityColumns(plugin, unlockables);
 

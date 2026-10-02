@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Recollection.External.Lalachievements;
 
 namespace Recollection.Data;
 

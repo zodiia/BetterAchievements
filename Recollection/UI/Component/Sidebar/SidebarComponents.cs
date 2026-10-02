@@ -15,8 +15,8 @@ public static partial class SidebarComponents {
     private const float SectionPaddingAboveEm = 0.5f;
     private const float SectionPaddingBelowEm = 0.25f;
 
-    private static void SectionHeader(string name, float paddingAbove = SectionPaddingAboveEm, float paddingBelow = SectionPaddingBelowEm) {
-        UiComponents.SeparatorText(name, UiFonts.FontSize100, UiColors.Grey(), paddingAbove, paddingBelow);
+    private static void SectionHeader(Plugin plugin, string name) {
+        UiComponents.SeparatorText(name, plugin.Configuration.UiDensity, UiFonts.FontSize100, UiColors.Grey(), SectionPaddingAboveEm, SectionPaddingBelowEm);
     }
 
     private static void FillerItems(Plugin plugin, MainWindowState state, params string[] names) {
@@ -66,14 +66,14 @@ public static partial class SidebarComponents {
 
         SearchAndSettings(plugin, state);
 
-        SectionHeader("Achievements");
+        SectionHeader(plugin, "Achievements");
         PinnedAchievementsItem(plugin, state);
         OverviewItem(plugin, state);
         foreach (var layout in state.Unlockables.FilteredLayout.Achievements) {
             MainCategoryItem(plugin, state, layout);
         }
 
-        SectionHeader("Collections");
+        SectionHeader(plugin, "Collections");
         if (!state.Unlockables.CollectionsLoaded) CollectionsLoading();
         CollectionItem(plugin, state, UnlockableType.Mount, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Minion, UiColors.Blue());
@@ -90,13 +90,13 @@ public static partial class SidebarComponents {
         FillerItems(plugin, state, "Framer's Kits");
         CollectionItem(plugin, state, UnlockableType.Leve, UiColors.Blue());
 
-        SectionHeader("Records");
+        SectionHeader(plugin, "Records");
         CollectionItem(plugin, state, UnlockableType.HuntingLog, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Green());
         FillerItems(plugin, state, "Mount Speed", "Aether Currents", "Field Records", "Survey Records", "Occult Records");
 
-        SectionHeader("Seasonal & Others");
+        SectionHeader(plugin, "Seasonal & Others");
         FillerItems(plugin, state, "Yo-kai Watch", "The Rising");
     }
 }

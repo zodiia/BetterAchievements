@@ -20,9 +20,9 @@ public class CollectionView(
     private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!";
 
     private void DrawHeader() {
-        UiComponents.SeparatorText(breadcrumb, paddingAboveEm: 0f);
-        OverviewComponents.OverviewStats(score, CollectionsService.Label(type).ToLower());
-        UiComponents.SeparatorText(CollectionsService.Label(type));
+        UiComponents.SeparatorText(breadcrumb, plugin.Configuration.UiDensity);
+        OverviewComponents.OverviewStats(plugin, score, CollectionsService.Label(type).ToLower());
+        UiComponents.SeparatorText(CollectionsService.Label(type), plugin.Configuration.UiDensity);
     }
 
     private bool DrawWarnings() {
@@ -53,6 +53,8 @@ public class CollectionView(
         if (!mainContent) return;
 
         if (DrawWarnings()) return;
+
+        ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
         DrawHeader();
         DrawMainContent(plugin.Configuration);

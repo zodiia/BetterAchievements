@@ -33,22 +33,22 @@ public static class ConfigPopup {
 
         using (UiFonts.FontSize110()) ImGui.Text("Quick settings");
 
-        ImGui.Dummy(new(0, UiSize.Em(0.25f)));
+        ImGui.Dummy(new(0, UiSize.Em(0.25f) * configuration.UiDensity));
         EnumCombo("Unlock status", configuration.UnlockStatusFilter.DisplayName(),
                   state, configuration.UnlockStatusFilter,
                   ConfigEnumsExtensions.DisplayName, (it, value) => it.UnlockStatusFilter = value,
                   ConfigurationEffect.Refilter);
-        ImGui.Dummy(new(0, UiSize.Em(0.25f)));
+        ImGui.Dummy(new(0, UiSize.Em(0.25f) * configuration.UiDensity));
         EnumCombo("Counts towards rankings", configuration.RankedFilter.DisplayName(),
                   state, configuration.RankedFilter,
                   ConfigEnumsExtensions.DisplayName, (it, value) => it.RankedFilter = value,
                   ConfigurationEffect.Refilter);
-        ImGui.Dummy(new(0, UiSize.Em(0.25f)));
+        ImGui.Dummy(new(0, UiSize.Em(0.25f) * configuration.UiDensity));
         EnumCombo("Sort by", configuration.SortBy.DisplayName(),
                   state, configuration.SortBy,
                   ConfigEnumsExtensions.DisplayName, (it, value) => it.SortBy = value,
                   ConfigurationEffect.RebuildView);
-        ImGui.Dummy(new(0, UiSize.Em(0.5f)));
+        ImGui.Dummy(new(0, UiSize.Em(0.5f) * configuration.UiDensity));
         if (ImGui.Button("All settings")) {
             ImGui.CloseCurrentPopup();
             state.Navigation.Navigate(new NavigationTarget.Settings());

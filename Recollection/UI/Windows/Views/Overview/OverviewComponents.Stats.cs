@@ -9,28 +9,25 @@ namespace Recollection.UI.Windows.Views.Overview;
 public static partial class OverviewComponents {
     private const string AchievementsNoun = "achievements";
 
-    public static void OverviewStats(UnlockablesState unlockables) {
-        OverviewStats(unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress(), AchievementsNoun);
+    public static void OverviewStats(Plugin plugin, UnlockablesState unlockables) {
+        OverviewStats(plugin, unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress(), AchievementsNoun);
     }
 
-    public static void OverviewStats(UnlockablesState unlockables, AchievementLayout layout) {
-        OverviewStats(unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout), AchievementsNoun);
+    public static void OverviewStats(Plugin plugin, UnlockablesState unlockables, AchievementLayout layout) {
+        OverviewStats(plugin, unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout), AchievementsNoun);
     }
 
-    public static void OverviewStats(PointsScore count, string noun) {
-        OverviewStats(count, null, noun);
+    public static void OverviewStats(Plugin plugin, PointsScore count, string noun) {
+        OverviewStats(plugin, count, null, noun);
     }
 
-    private static void OverviewStats(PointsScore count, PointsScore? points, string noun) {
+    private static void OverviewStats(Plugin plugin, PointsScore count, PointsScore? points, string noun) {
         var progress = ProgressRatio(count, points);
 
         DrawStatsLine(count, points, noun);
 
-        ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
+        ImGui.Dummy(new Vector2(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
         UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100:0.#}%");
-
-        // ImGui.Dummy(new Vector2(0, UiSize.Em(0.35f)));
-        // RanksRow(plugin);
     }
 
     private static float ProgressRatio(PointsScore count, PointsScore? points) {

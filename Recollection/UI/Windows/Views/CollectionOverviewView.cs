@@ -16,12 +16,12 @@ public class CollectionOverviewView(Plugin plugin, UnlockableType type, Unlockab
         using var mainContent = ImRaii.Child("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true);
         if (!mainContent) return;
 
-        ImGui.Dummy(new Vector2(0, UiSize.Em(1f)));
+        ImGui.Dummy(new Vector2(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
-        UiComponents.SeparatorText(CollectionsService.Label(type));
-        OverviewComponents.OverviewStats(unlockables.ComputeProgress(type).Score, CollectionsService.Label(type).ToLower());
+        UiComponents.SeparatorText(CollectionsService.Label(type), plugin.Configuration.UiDensity);
+        OverviewComponents.OverviewStats(plugin, unlockables.ComputeProgress(type).Score, CollectionsService.Label(type).ToLower());
 
-        UiComponents.SeparatorText("Categories");
-        OverviewComponents.CollectionCategoriesGrid(unlockables, navigation, type);
+        UiComponents.SeparatorText("Categories", plugin.Configuration.UiDensity);
+        OverviewComponents.CollectionCategoriesGrid(plugin, unlockables, navigation, type);
     }
 }

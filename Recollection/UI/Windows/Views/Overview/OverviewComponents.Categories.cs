@@ -14,12 +14,13 @@ public static partial class OverviewComponents {
     private const int CategoryColumns = 3;
 
     public static void CategoriesGrid(
-        UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns) {
+        Plugin plugin, UnlockablesState unlockables, NavigationState navigation, IEnumerable<AchievementLayout>? layouts = null, int columns = CategoryColumns
+    ) {
         if (!ImGui.BeginTable("CategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame)) return;
 
         foreach (var layout in layouts ?? unlockables.FilteredLayout.Achievements) {
             ImGui.TableNextColumn();
-            CategoryCard(unlockables, navigation, layout);
+            CategoryCard(plugin, unlockables, navigation, layout);
         }
 
         ImGui.EndTable();
@@ -37,7 +38,7 @@ public static partial class OverviewComponents {
     }
 
     public static void CollectionCategoriesGrid(
-        UnlockablesState unlockables, NavigationState navigation, UnlockableType type, int columns = CategoryColumns) {
+        Plugin plugin, UnlockablesState unlockables, NavigationState navigation, UnlockableType type, int columns = CategoryColumns) {
         using var table = ImRaii.Table("CollectionCategoriesGrid", columns, ImGuiTableFlags.SizingStretchSame);
         if (!table) return;
 
@@ -46,64 +47,76 @@ public static partial class OverviewComponents {
             if (visible == 0) continue;
 
             ImGui.TableNextColumn();
-            CategoryCard($"##CollectionCategory-{type}-{category.Id}", category.Name, score, null,
+            CategoryCard(plugin, $"##CollectionCategory-{type}-{category.Id}", category.Name, score, null,
                          () => navigation.Navigate(new NavigationTarget.CollectionCategory(type, category.Id)));
         }
     }
 
-    private static void CategoryCard(UnlockablesState unlockables, NavigationState navigation, AchievementLayout layout) {
-        CategoryCard($"##Category-{layout.Name}", layout.Name,
+    private static void CategoryCard(Plugin plugin, UnlockablesState unlockables, NavigationState navigation, AchievementLayout layout) {
+        CategoryCard(plugin, $"##Category-{layout.Name}", layout.Name,
                      unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout),
                      () => NavigateToCategory(navigation, layout));
     }
 
-    private static void CategoryCard(string id, string name, PointsScore count, PointsScore? points, Action onClick) {
-        var (obtainedCount, totalCount) = count;
+    private static void CategoryCard(Plugin plugin, string id, string name, PointsScore count, PointsScore? points, Action onClick) {
+        var padding = UiSize.Em(0.5f) * plugin.Configuration.UiDensity;
         var progress = ProgressRatio(count, points);
-
-        var style = ImGui.GetStyle();
-        var barHeight = UiSize.Em(0.5f);
-        var lineHeight = ImGui.GetTextLineHeight();
-        var contentHeight = (lineHeight * 2) + barHeight + (style.ItemSpacing.Y * 2);
-        var padding = new Vector2(UiSize.Em(0.5f), UiSize.Em(0.5f));
         var width = ImGui.GetContentRegionAvail().X;
-        var rowHeight = contentHeight + (padding.Y * 2);
-
         var rowStart = ImGui.GetCursorScreenPos();
-        ImGui.InvisibleButton(id, new Vector2(width, rowHeight));
-        var hovered = ImGui.IsItemHovered();
-        var clicked = ImGui.IsItemClicked(ImGuiMouseButton.Left);
-        if (hovered) ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+        var leftPadding = ImGui.TableGetColumnIndex() % ImGui.TableGetColumnCount() == 0 ? 0 : padding;
+        var rightPadding = ImGui.TableGetColumnIndex() % ImGui.TableGetColumnCount() == ImGui.TableGetColumnCount() - 1 ? 0 : padding;
+        var contentStart = new Vector2(rowStart.X + leftPadding, rowStart.Y + padding);
+        var contentWidth = width - leftPadding - rightPadding;
+        var thirdLineStart = contentStart with { Y = contentStart.Y + ImGui.GetTextLineHeight() + UiSize.Em(0.5f) + (ImGui.GetStyle().ItemSpacing.Y * 2) };
 
-        if (hovered) {
-            var bgMax = new Vector2(rowStart.X + width, rowStart.Y + rowHeight);
-            ImGui.GetWindowDrawList().AddRectFilled(rowStart, bgMax, ImGui.GetColorU32(UiColors.Text() with { W = 0.06f }), style.FrameRounding);
+        var clicked = CardBackground(id, rowStart, width, padding);
+        CardTitle(contentStart, name);
+        CardPercentage(contentStart, contentWidth, progress);
+        CardProgressBar(contentStart, contentWidth, progress);
+        CardCount(thirdLineStart, count);
+        CardPoints(thirdLineStart, contentWidth, points);
+
+        if (clicked) onClick();
+    }
+
+    private static bool CardBackground(string id, Vector2 start, float width, float padding) {
+        var height = (ImGui.GetTextLineHeight() * 2) + UiSize.Em(0.5f) + (ImGui.GetStyle().ItemSpacing.Y * 2) + (padding * 2);
+        var size = new Vector2(width, height);
+
+        ImGui.InvisibleButton(id, size);
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+            ImGui.GetWindowDrawList().AddRectFilled(start, start + size, ImGui.GetColorU32(UiColors.Text() with { W = 0.06f }), ImGui.GetStyle().FrameRounding);
         }
 
-        var contentStart = new Vector2(rowStart.X + padding.X, rowStart.Y + padding.Y);
-        var contentWidth = width - (padding.X * 2);
+        return ImGui.IsItemClicked(ImGuiMouseButton.Left);
+    }
 
+    private static void CardTitle(Vector2 contentStart, string name) {
         ImGui.SetCursorScreenPos(contentStart);
         ImGui.TextColored(UiColors.Text(), name);
+    }
+
+    private static void CardPercentage(Vector2 contentStart, float contentWidth, float progress) {
         RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(progress * 100)}%");
+    }
 
-        var barPos = contentStart with { Y = contentStart.Y + lineHeight + style.ItemSpacing.Y };
-        ImGui.SetCursorScreenPos(barPos);
-        UiComponents.ProgressBar(progress, UiColors.Progress(), height: barHeight, width: contentWidth);
+    private static void CardProgressBar(Vector2 contentStart, float contentWidth, float progress) {
+        ImGui.SetCursorScreenPos(contentStart with { Y = contentStart.Y + ImGui.GetTextLineHeight() + ImGui.GetStyle().ItemSpacing.Y });
+        UiComponents.ProgressBar(progress, UiColors.Progress(), height: UiSize.Em(0.5f), width: contentWidth); // todo: progress bar height currently not decided by settings
+    }
 
-        var line3Pos = contentStart with { Y = barPos.Y + barHeight + style.ItemSpacing.Y };
-        ImGui.SetCursorScreenPos(line3Pos);
+    private static void CardCount(Vector2 lineStart, PointsScore count) {
+        var (obtainedCount, totalCount) = count;
+        ImGui.SetCursorScreenPos(lineStart);
         ImGui.TextColored(UiColors.Blue(), $"{obtainedCount:N0}");
         ImGui.SameLine(0, 0);
         ImGui.TextColored(UiColors.Text(), $"/{totalCount:N0}");
+    }
 
-        if (points != null) {
-            RightAlignedSplitText(line3Pos, contentWidth, UiColors.Progress(), $"{points.Obtained:N0}", UiColors.Text(), $"/{points.Total:N0}");
-        }
-
-        if (clicked) {
-            onClick();
-        }
+    private static void CardPoints(Vector2 lineStart, float contentWidth, PointsScore? points) {
+        if (points == null) return;
+        RightAlignedSplitText(lineStart, contentWidth, UiColors.Progress(), $"{points.Obtained:N0}", UiColors.Text(), $"/{points.Total:N0}");
     }
 
     private static void RightAlignedSplitText(Vector2 lineStart, float width, Vector4 firstColor, string first, Vector4 restColor, string rest) {

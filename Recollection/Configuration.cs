@@ -9,11 +9,12 @@ namespace Recollection;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 5;
+    public int Version { get; set; } = 7;
 
     // UI settings
     public float ProgressBarHeight = 1.5f;
     public float SidebarProgressBarHeight = 0.2f;
+    public float UiDensity = 1.0f;
     public bool NeverHideProgressBars { get; set; } = false;
 
     // Filters and sorting options

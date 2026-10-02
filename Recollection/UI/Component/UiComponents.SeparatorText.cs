@@ -6,8 +6,8 @@ using Dalamud.Interface.ManagedFontAtlas;
 namespace Recollection.UI.Component;
 
 public static partial class UiComponents {
-    public static void SeparatorText(string text, Func<IFontHandle>? fontSize = null, Vector4? color = null, float paddingAboveEm = 1f, float paddingBelowEm = 0.5f) {
-        ImGui.Dummy(new Vector2(0, UiSize.Em(paddingAboveEm)));
+    public static void SeparatorText(string text, float uiDensity, Func<IFontHandle>? fontSize = null, Vector4? color = null, float paddingAboveEm = 1f, float paddingBelowEm = 0.5f) {
+        ImGui.Dummy(new Vector2(0, UiSize.Em(paddingAboveEm * uiDensity)));
         fontSize ??= UiFonts.FontSize125;
 
         using (fontSize().Push()) {
@@ -25,6 +25,6 @@ public static partial class UiComponents {
                 ImGui.GetColorU32(ImGuiCol.Separator));
         }
 
-        ImGui.Dummy(new Vector2(0, UiSize.Em(paddingBelowEm)));
+        ImGui.Dummy(new Vector2(0, UiSize.Em(paddingBelowEm * uiDensity)));
     }
 }

@@ -36,7 +36,7 @@ public static partial class SidebarComponents {
         ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm)));
     }
 
-    private static void CollectionCategories(MainWindowState state, UnlockableType type) {
+    private static void CollectionCategories(Plugin plugin, MainWindowState state, UnlockableType type) {
         ImGui.Indent(UiSize.Em(FirstLevelIndentEm));
 
         foreach (var category in state.Unlockables.CollectionCategories(type)) {
@@ -46,7 +46,7 @@ public static partial class SidebarComponents {
             var target = new NavigationTarget.CollectionCategory(type, category.Id);
             var progress = score.Total == 0 ? 0f : (float)score.Obtained / score.Total;
 
-            if (SubCategoryRow($"##CollectionCategory-{type}-{category.Id}", category.Name, progress, state.Navigation.IsSelected(target))) {
+            if (SubCategoryRow(plugin, $"##CollectionCategory-{type}-{category.Id}", category.Name, progress, state.Navigation.IsSelected(target))) {
                 state.Navigation.Navigate(target);
             }
         }
@@ -69,7 +69,7 @@ public static partial class SidebarComponents {
         }
 
         if (isOpen && type != UnlockableType.Title) {
-            CollectionCategories(state, type);
+            CollectionCategories(plugin, state, type);
         }
     }
 }

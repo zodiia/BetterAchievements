@@ -70,7 +70,7 @@ public static partial class OverviewComponents {
         ImGui.TableNextColumn();
 
         ImGui.TableNextColumn();
-        ActivityColumn("Nearing Completion", NearingCompletionAchievements(plugin, unlockables));
+        ActivityColumn(plugin, "Nearing Completion", NearingCompletionAchievements(plugin, unlockables));
 
         ImGui.EndTable();
     }
@@ -82,11 +82,11 @@ public static partial class OverviewComponents {
             return new ActivityEntry(achievement, breadcrumb, FormatTimeAgo(update.Timestamp));
         }).ToList();
 
-        ActivityColumn("Recently Obtained", entries);
+        ActivityColumn(plugin, "Recently Obtained", entries);
     }
 
-    private static void ActivityColumn(string title, IReadOnlyList<ActivityEntry> entries) {
-        UiComponents.SeparatorText(title, UiFonts.FontSize110, paddingAboveEm: 0f);
+    private static void ActivityColumn(Plugin plugin, string title, IReadOnlyList<ActivityEntry> entries) {
+        UiComponents.SeparatorText(title, plugin.Configuration.UiDensity, UiFonts.FontSize110, paddingAboveEm: 0f);
 
         if (entries.Count == 0) {
             ImGui.TextColored(UiColors.Grey(), NoDataText);

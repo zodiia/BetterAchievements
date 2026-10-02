@@ -64,13 +64,13 @@ public static partial class SidebarComponents {
                 }
 
                 if (isOpen) {
-                    ImGui.Indent(UiSize.Em(FirstLevelIndentEm));
+                    ImGui.Indent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
                     foreach (var item in group.Items) {
-                        SubTree(state, item);
+                        SubTree(plugin, state, item);
                     }
 
-                    ImGui.Unindent(UiSize.Em(FirstLevelIndentEm));
-                    ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm)));
+                    ImGui.Unindent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
+                    ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm * plugin.Configuration.UiDensity)));
                 }
 
                 break;
