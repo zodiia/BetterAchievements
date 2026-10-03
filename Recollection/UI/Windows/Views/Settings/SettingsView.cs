@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Recollection.Data;
@@ -37,9 +35,19 @@ public class SettingsView : IView {
                 Getter = it => it.UiDensity,
                 Setter = (it, value) => it.UiDensity = value,
             },
+            new EnumSetting<TieredAchievementDisplay> {
+                Name = "Tiered achievements display preference",
+                ValueName = ConfigEnumsExtensions.DisplayName,
+                ValueDescription = ConfigEnumsExtensions.DisplayDescription,
+                Getter = it => it.TieredAchievementDisplay,
+                Setter = (it, value) => it.TieredAchievementDisplay = value,
+            },
             new BooleanSetting {
                 Name = "Never hide progress bars",
-                Description = "By default, progress bars are hidden under certain conditions, like when the progress is 100%. Turn this on to disable that behavior.",
+                Description = """
+                              By default, progress bars are hidden under certain conditions, like when the progress is 100%. Turn this on to disable that behavior.
+                              Note: this does not affect the "Tiered achievements display preference" option.
+                              """,
                 Getter = it => it.NeverHideProgressBars,
                 Setter = (it, value) => it.NeverHideProgressBars = value,
             },

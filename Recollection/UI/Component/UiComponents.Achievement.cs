@@ -7,6 +7,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using Recollection.Data;
 using Recollection.Data.Unlockable;
 
 namespace Recollection.UI.Component;
@@ -179,41 +180,57 @@ public static partial class UiComponents {
         }
     }
 
-    private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, Configuration configuration) {
+    private static void AchievementDescriptionTieredCurrentLevel(
+        UnlockableAchievement? currentLevel, UnlockableAchievement maxLevel, bool progressLoaded, Configuration config
+    ) {
+        if (currentLevel == null || currentLevel == maxLevel) return;
+        if (config.TieredAchievementDisplay == TieredAchievementDisplay.MaxOnly) return;
+
+        WrappedColoredText((currentLevel.Description(), null), ("(current level)", UiColors.Grey()));
+
+        // if the max is 0 or 1 we don't display any progress bars, except the second one if never hide progress bars is true
+        if (maxLevel.Maximum() <= 1) return;
+
+        ProgressBar(
+            (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
+            progressLoaded ? UiColors.Progress() : UiColors.Red(),
+            height: UiSize.Em(config.ProgressBarHeight),
+            insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
+            tooltip: "Click to refresh",
+            enabled: progressLoaded,
+            onClick: () => OpenAchievementWindow(maxLevel.Id()));
+    }
+
+    private static void AchievementDescriptionTieredMaxLevel(
+        UnlockableAchievement? currentLevel, UnlockableAchievement maxLevel, bool progressLoaded, Configuration config
+    ) {
+        if (currentLevel != maxLevel && config.TieredAchievementDisplay == TieredAchievementDisplay.CurrentOnly) return;
+
+        WrappedColoredText((maxLevel.Description(), null), ("(max level)", UiColors.Grey()));
+
+        if (maxLevel.Unlocked() && !config.NeverHideProgressBars) return;
+        if (maxLevel.Maximum() <= 1 && !config.NeverHideProgressBars) return;
+
+        ProgressBar(
+            (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
+            progressLoaded ? UiColors.Progress() : UiColors.Red(),
+            height: UiSize.Em(config.ProgressBarHeight),
+            insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
+            tooltip: "Click to refresh",
+            enabled: progressLoaded,
+            onClick: () => OpenAchievementWindow(maxLevel.Id()));
+    }
+
+    private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, Configuration config) {
         var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
         var maxLevel = achievements.ProvidesAchievements().Last();
         var progressLoaded = maxLevel.Current() != null;
 
-        // Current level
-        if (currentLevel != null && currentLevel != maxLevel) {
-            WrappedColoredText((currentLevel.Description(), null), ("(current level)", UiColors.Grey()));
-            if (maxLevel.Maximum() > 1) {
-                ProgressBar(
-                    (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
-                    progressLoaded ? UiColors.Progress() : UiColors.Red(),
-                    height: UiSize.Em(configuration.ProgressBarHeight),
-                    insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
-                    tooltip: "Click to refresh",
-                    enabled: progressLoaded,
-                    onClick: () => OpenAchievementWindow(maxLevel.Id()));
-            }
-        }
+        AchievementDescriptionTieredCurrentLevel(currentLevel, maxLevel, progressLoaded, config);
 
-        // Max level
-        if (!achievements.Spoilers() || currentLevel == null) {
-            WrappedColoredText((maxLevel.Description(), null), ("(max level)", UiColors.Grey()));
+        if (achievements.Spoilers() && currentLevel != null) return;
 
-            if ((!maxLevel.Unlocked() && maxLevel.Maximum() > 1) || (configuration.NeverHideProgressBars)) {
-                ProgressBar(
-                    (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
-                    progressLoaded ? UiColors.Progress() : UiColors.Red(),
-                    height: UiSize.Em(configuration.ProgressBarHeight),
-                    insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
-                    tooltip: "Click to refresh",
-                    enabled: progressLoaded,
-                    onClick: () => OpenAchievementWindow(maxLevel.Id()));
-            }
-        }
+        AchievementDescriptionTieredMaxLevel(currentLevel, maxLevel, progressLoaded, config);
     }
 
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements) {
@@ -261,8 +278,8 @@ public static partial class UiComponents {
             configuration.PinnedAchievements.Contains(achievement.Id()),
             [achievement.Id()],
             configuration);
-        AchievementHeaderLine1(
-            () => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(), achievement.Unlocked() ? "Unlocked" : "Locked"));
+        AchievementHeaderLine1(() => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(),
+                                                              achievement.Unlocked() ? "Unlocked" : "Locked"));
         AchievementHeaderLine2($"{achievement.Points()} points");
         ImGui.EndGroup();
 

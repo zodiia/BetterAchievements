@@ -32,6 +32,12 @@ public enum SortBy {
     Rarest
 }
 
+public enum TieredAchievementDisplay {
+    All,
+    CurrentOnly,
+    MaxOnly,
+}
+
 public static class ConfigEnumsExtensions {
     extension(UnlockStatusFilter filter) {
         public string DisplayName() => filter switch {
@@ -92,6 +98,22 @@ public static class ConfigEnumsExtensions {
             SortBy.MostCommon => "Puts the most commonly obtained items first (note: currently only works with achievements)",
             SortBy.Rarest => "Puts the rarest items first (note: currently only works with achievements)",
             _ => throw new ArgumentOutOfRangeException($"{filter} not implemented.")
+        };
+    }
+
+    extension(TieredAchievementDisplay bars) {
+        public string DisplayName() => bars switch {
+            TieredAchievementDisplay.All => "All",
+            TieredAchievementDisplay.CurrentOnly => "Current only",
+            TieredAchievementDisplay.MaxOnly => "Max only",
+            _ => throw new ArgumentOutOfRangeException($"{bars} not implemented.")
+        };
+
+        public string DisplayDescription() => bars switch {
+            TieredAchievementDisplay.All => "Displays both current and max level (unless you are at the last level or completed it)",
+            TieredAchievementDisplay.CurrentOnly => "Only displays the current level",
+            TieredAchievementDisplay.MaxOnly => "Only displays the max level",
+            _ => throw new ArgumentOutOfRangeException($"{bars} not implemented.")
         };
     }
 }
