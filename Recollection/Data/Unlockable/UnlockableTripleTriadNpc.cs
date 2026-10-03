@@ -1,3 +1,5 @@
+using System.Numerics;
+using Dalamud.Utility;
 using Lumina.Excel.Sheets;
 
 namespace Recollection.Data.Unlockable;
@@ -44,5 +46,8 @@ public sealed class UnlockableTripleTriadNpc : IUnlockable {
     public bool Unlocked() => unlocked;
     public bool IsValid() => true; // TODO
 
-    private string GetHowTo() => $"{level.Map.Value.PlaceName.Value.Name.ToString()} (X {level.X:.1}, Y {level.Y:.1}, Z {level.Z:.1})";
+    private string GetHowTo() {
+        var location = MapUtil.WorldToMap(new Vector2(level.X, level.Y), level.Map.Value);
+        return $"{level.Map.Value.PlaceName.Value.Name.ToString()} (X {location.X:.0}, Y {location.Y:.0})";
+    }
 }
