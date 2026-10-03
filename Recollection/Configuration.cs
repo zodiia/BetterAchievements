@@ -9,7 +9,7 @@ namespace Recollection;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 8;
+    public int Version { get; set; } = 9;
 
     // UI settings
     public float ProgressBarHeight = 1.5f;
@@ -17,6 +17,7 @@ public class Configuration : IPluginConfiguration {
     public float UiDensity = 1.0f;
     public TieredAchievementDisplay TieredAchievementDisplay = TieredAchievementDisplay.All;
     public bool NeverHideProgressBars = false;
+    public bool DisableRomanNumerals = false;
 
     // Filters and sorting options
     public UnlockStatusFilter UnlockStatusFilter = UnlockStatusFilter.All;

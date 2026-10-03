@@ -115,11 +115,11 @@ public static partial class UiComponents {
         ImGui.SetCursorPos(restore);
     }
 
-    private static void AchievementRightHeaderTiered(UnlockableTieredAchievement achievements) {
+    private static void AchievementRightHeaderTiered(UnlockableTieredAchievement achievements, Configuration config) {
         if (achievements.Maximum() >= 14) {
-            TieredAchievementSimpleTiers(achievements);
+            TieredAchievementSimpleTiers(achievements, config);
         } else {
-            TieredAchievementTiers(achievements);
+            TieredAchievementTiers(achievements, config);
         }
     }
 
@@ -233,29 +233,33 @@ public static partial class UiComponents {
         AchievementDescriptionTieredMaxLevel(currentLevel, maxLevel, progressLoaded, config);
     }
 
-    private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements) {
-        var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(ToRoman(achievements.Maximum())).X;
+    private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements, Configuration config) {
+        var currentString = config.DisableRomanNumerals ? (achievements.Current() ?? 1).ToString() : ToRoman(achievements.Current() ?? 1);
+        var maximumString = config.DisableRomanNumerals ? achievements.Maximum().ToString() : ToRoman(achievements.Maximum());
+        var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(maximumString).X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
-        ImGui.TextColored(achievements.ProvidesAchievements().Last().Unlocked() ? UiColors.Green() : UiColors.Red(), ToRoman(achievements.Maximum()));
+        ImGui.TextColored(achievements.ProvidesAchievements().Last().Unlocked() ? UiColors.Green() : UiColors.Red(), maximumString);
         position -= UiSize.Em(1) + ImGui.CalcTextSize("/").X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
         ImGui.TextDisabled("/");
-        position -= UiSize.Em(1) + ImGui.CalcTextSize(ToRoman(achievements.Current() ?? 1)).X;
+        position -= UiSize.Em(1) + ImGui.CalcTextSize(currentString).X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
-        ImGui.TextColored(UiColors.Green(), ToRoman(achievements.Current() ?? 1));
+        ImGui.TextColored(UiColors.Green(), currentString);
     }
 
-    private static void TieredAchievementTiers(UnlockableTieredAchievement achievements) {
+    private static void TieredAchievementTiers(UnlockableTieredAchievement achievements, Configuration config) {
         var widthCalculationText = "";
-        for (var i = 1; i <= achievements.Maximum(); i++) widthCalculationText += ToRoman(i);
+        for (var i = 1; i <= achievements.Maximum(); i++) {
+            widthCalculationText += (config.DisableRomanNumerals ? i.ToString() : $"{ToRoman(i)}");
+        }
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X -
                        UiSize.Em(achievements.Maximum() - 1);
 
         for (var i = 1; i <= achievements.Maximum(); i++) {
-            var text = $"{ToRoman(i)}";
+            var text = config.DisableRomanNumerals ? i.ToString() : $"{ToRoman(i)}";
 
             ImGui.SameLine();
             ImGui.SetCursorPosX(position);
@@ -266,7 +270,7 @@ public static partial class UiComponents {
         }
     }
 
-    public static void Achievement(UnlockableAchievement achievement, Configuration configuration) {
+    public static void Achievement(UnlockableAchievement achievement, Configuration config) {
         ImGui.BeginGroup();
 
         AchievementIcon(achievement.Icon(), AchievementIconSize());
@@ -274,21 +278,21 @@ public static partial class UiComponents {
         ImGui.BeginGroup();
         AchievementHeaderTitle(
             achievement.Name(),
-            configuration.DisplayIds ? achievement.Id() : null,
-            configuration.PinnedAchievements.Contains(achievement.Id()),
+            config.DisplayIds ? achievement.Id() : null,
+            config.PinnedAchievements.Contains(achievement.Id()),
             [achievement.Id()],
-            configuration);
+            config);
         AchievementHeaderLine1(() => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(),
                                                               achievement.Unlocked() ? "Unlocked" : "Locked"));
         AchievementHeaderLine2($"{achievement.Points()} points");
         ImGui.EndGroup();
 
-        AchievementDescriptionSimple(achievement, configuration);
+        AchievementDescriptionSimple(achievement, config);
 
         ImGui.EndGroup();
     }
 
-    public static void Achievement(UnlockableTieredAchievement achievements, Configuration configuration) {
+    public static void Achievement(UnlockableTieredAchievement achievements, Configuration config) {
         ImGui.BeginGroup();
 
         var maxLevel = achievements.ProvidesAchievements().Last();
@@ -297,15 +301,15 @@ public static partial class UiComponents {
         ImGui.BeginGroup();
         AchievementHeaderTitle(
             achievements.Name(),
-            configuration.DisplayIds ? maxLevel.Id() : null,
-            configuration.PinnedAchievements.Contains(achievements.Id()),
+            config.DisplayIds ? maxLevel.Id() : null,
+            config.PinnedAchievements.Contains(achievements.Id()),
             achievements.Ids(),
-            configuration);
-        AchievementHeaderLine1(() => AchievementRightHeaderTiered(achievements));
+            config);
+        AchievementHeaderLine1(() => AchievementRightHeaderTiered(achievements, config));
         AchievementHeaderLine2($"{achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
         ImGui.EndGroup();
 
-        AchievementDescriptionTiered(achievements, configuration);
+        AchievementDescriptionTiered(achievements, config);
 
         ImGui.EndGroup();
     }

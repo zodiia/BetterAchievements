@@ -13,7 +13,7 @@ public class SettingsView : IView {
     private readonly UnlockablesState unlockables;
     private readonly Configuration draft;
     private readonly SettingsSection[] sections = [
-        new("UI settings", [
+        new("Display settings", [
             new FloatSetting<float> {
                 Name = "Progress bars size in collections",
                 Description = "Must be between 1.0 and 5.0.",
@@ -34,7 +34,9 @@ public class SettingsView : IView {
                 Validator = it => it is >= 0.2f and <= 2.0f,
                 Getter = it => it.UiDensity,
                 Setter = (it, value) => it.UiDensity = value,
-            },
+            }
+        ]),
+        new("UI preferences", [
             new EnumSetting<TieredAchievementDisplay> {
                 Name = "Tiered achievements display preference",
                 ValueName = ConfigEnumsExtensions.DisplayName,
@@ -51,6 +53,15 @@ public class SettingsView : IView {
                 Getter = it => it.NeverHideProgressBars,
                 Setter = (it, value) => it.NeverHideProgressBars = value,
             },
+            new BooleanSetting {
+                Name = "Disable roman numerals",
+                Description = """
+                              Replaces the roman numerals (I, IV, XIV, ...) for achievement levels.
+                              Note: this does not currently replace them in achievement names directly.
+                              """,
+                Getter = it => it.DisableRomanNumerals,
+                Setter = (it, value) => it.DisableRomanNumerals = value,
+            }
         ]),
         new("Filters and sorting options", [
             new EnumSetting<UnlockStatusFilter> {
