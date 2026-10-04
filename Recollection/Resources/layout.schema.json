@@ -1,131 +1,75 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "MainLayout",
+    "title": "JsonLayout",
     "type": "object",
     "required": [
-        "achievements"
+        "achievementCategories"
     ],
     "properties": {
-        "achievements": {
+        "achievementCategories": {
             "type": "array",
-            "items": {
-                "$ref": "#/definitions/AchievementLayout"
-            }
+            "items": { "$ref": "#/definitions/AchievementCategory" }
         }
     },
     "definitions": {
-        "AchievementLayout": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/AchievementLayoutGroup"
-                },
-                {
-                    "$ref": "#/definitions/AchievementLayoutCategory"
-                }
-            ]
-        },
-        "AchievementLayoutGroup": {
+        "AchievementCategory": {
             "type": "object",
-            "required": [
-                "type",
-                "name",
-                "items"
-            ],
+            "required": ["name"],
             "properties": {
-                "type": {
-                    "const": "group"
-                },
                 "name": {
-                    "type": "string"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/AchievementLayout"
-                    }
-                },
-                "color": {
                     "type": "string"
                 },
                 "icon": {
                     "type": "string"
-                }
-            }
-        },
-        "AchievementLayoutCategory": {
-            "type": "object",
-            "required": [
-                "type",
-                "id",
-                "name",
-                "items"
-            ],
-            "properties": {
-                "type": {
-                    "const": "category"
                 },
-                "id": {
-                    "type": "integer"
+                "seasonal": {
+                    "type": "boolean"
                 },
-                "name": {
-                    "type": "string"
+                "categories": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/AchievementCategory" }
                 },
                 "items": {
                     "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/AchievementLayoutItem"
-                    }
-                },
-                "additionalViews": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "items": { "$ref": "#/definitions/AchievementItem" }
                 }
-            }
-        },
-        "AchievementLayoutItem": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/AchievementLayoutItemSimple"
-                },
-                {
-                    "$ref": "#/definitions/AchievementLayoutItemTiered"
-                }
+            },
+            "oneOf": [
+                { "required": ["categories"] },
+                { "required": ["items"] }
             ]
         },
-        "AchievementLayoutItemSimple": {
+        "AchievementItem": {
             "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
             "properties": {
-                "type": {
-                    "const": "simple"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "AchievementLayoutItemTiered": {
-            "type": "object",
-            "required": [
-                "type",
-                "ids"
-            ],
-            "properties": {
-                "type": {
-                    "const": "tiered"
-                },
-                "ids": {
+                "unique": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
-                    }
+                        "type": "integer",
+                    },
+                    "minItems": 1
+                },
+                "tiered": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                    },
+                    "minItems": 1
+                },
+                "spoilers": {
+                    "type": "boolean"
+                },
+                "area": {
+                    "type": "integer",
+                },
+                "huntingLog": {
+                    "type": "integer",
                 }
-            }
+            },
+            "oneOf": [
+                { "required": ["unique"] },
+                { "required": ["tiered"] }
+            ]
         }
     }
 }

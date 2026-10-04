@@ -327,7 +327,7 @@ public class UnlockablesState(Plugin plugin) {
         var items = category.Items.Where(FilterAchievementLayoutItem).ToList();
         if (items.Count == 0) return null;
 
-        var filtered = category with { Items = items };
+        var filtered = new AchievementLayoutCategory { Name = category.Name, Id = category.Id, Seasonal = category.Seasonal, Items = items };
         progressAchievementIds[filtered] = progressIds;
         return filtered;
     }
@@ -340,7 +340,7 @@ public class UnlockablesState(Plugin plugin) {
 
         if (filteredChildren.Count == 0) return null;
 
-        var filtered = group with { Items = filteredChildren };
+        var filtered = new AchievementLayoutGroup { Name = group.Name, Icon = group.Icon, Items = filteredChildren };
         progressAchievementIds[filtered] = progressIds;
         return filtered;
     }

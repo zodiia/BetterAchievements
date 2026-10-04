@@ -31,7 +31,7 @@ public static partial class SidebarComponents {
         var (obtained, total) = state.Unlockables.ComputeProgress(plugin.Configuration.PinnedAchievements);
         var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow(plugin, "##Pinned", FontAwesomeIcon.Thumbtack, "Pinned", progress, null, UiColors.Progress(), isPinned, isPinned)) {
+        if (CategoryRow(plugin, "##Pinned", FontAwesomeIcon.Thumbtack, UiColors.Progress(), "Pinned", progress, isPinned, isPinned)) {
             state.Navigation.Navigate(target);
         }
     }
@@ -42,7 +42,7 @@ public static partial class SidebarComponents {
         var (obtained, total) = state.Unlockables.ComputeOverallProgress();
         var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow(plugin, "##Overview", FontAwesomeIcon.Home, "Overview", progress, null, UiColors.Progress(), isOverview, isOverview)) {
+        if (CategoryRow(plugin, "##Overview", FontAwesomeIcon.Home, UiColors.Progress(), "Overview", progress, isOverview, isOverview)) {
             state.Navigation.Navigate(target);
         }
     }
@@ -57,9 +57,8 @@ public static partial class SidebarComponents {
                 var isOpen = state.Navigation.IsGroupOpen(group.Name);
                 var selected = state.Navigation.IsSelected(target);
                 var icon = ParseIcon(group.Icon);
-                var color = UiColors.Parse(group.Color);
 
-                if (CategoryRow(plugin, $"##MainCategory-{group.Name}", icon, group.Name, progress, color, UiColors.Progress(), isOpen, selected)) {
+                if (CategoryRow(plugin, $"##MainCategory-{group.Name}", icon, UiColors.Progress(), group.Name, progress, isOpen, selected)) {
                     state.Navigation.Navigate(target);
                 }
 
@@ -80,7 +79,7 @@ public static partial class SidebarComponents {
                 var target = new NavigationTarget.Category(category.Id);
                 var selected = state.Navigation.IsSelected(target);
 
-                if (CategoryRow(plugin, $"##MainCategory-{category.Id}", FontAwesomeIcon.Star, category.Name, progress, null, UiColors.Progress(), selected, selected)) {
+                if (CategoryRow(plugin, $"##MainCategory-{category.Id}", FontAwesomeIcon.Star, UiColors.Progress(), category.Name, progress, selected, selected)) {
                     state.Navigation.Navigate(target);
                 }
 

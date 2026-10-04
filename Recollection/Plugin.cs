@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using Recollection.Data;
+using Recollection.Data.Layout;
 using Recollection.Hooks;
 using Recollection.External.Lalachievements;
 using Recollection.Helpers;
@@ -193,7 +194,7 @@ public sealed class Plugin : IDalamudPlugin {
 
     private static MainLayout LoadMainWindowLayout() {
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, ReadCommentHandling = JsonCommentHandling.Skip };
-        return JsonSerializer.Deserialize<MainLayout>(GetResourceFile("layout.jsonc"), options)!;
+        return MainLayout.FromJson(JsonSerializer.Deserialize<JsonLayout>(GetResourceFile("layout.jsonc"), options)!);
     }
 
     public static string GetResourceFile(string fileName) {

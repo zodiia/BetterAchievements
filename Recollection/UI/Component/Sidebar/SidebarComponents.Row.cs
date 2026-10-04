@@ -55,7 +55,7 @@ public static partial class SidebarComponents {
         UiComponents.ProgressBar(progress, color, height: height);
     }
 
-    private static bool CategoryRow(Plugin plugin, string id, FontAwesomeIcon icon, string name, float progress, Vector4? color, Vector4 defaultColor, bool active, bool selected) {
+    private static bool CategoryRow(Plugin plugin, string id, FontAwesomeIcon icon, Vector4 color, string name, float progress, bool active, bool selected) {
         var style = ImGui.GetStyle();
         var barHeight = UiSize.Em(plugin.Configuration.SidebarProgressBarHeight);
         var lineHeight = ImGui.GetTextLineHeight();
@@ -71,7 +71,7 @@ public static partial class SidebarComponents {
             var iconSize = ImGui.CalcTextSize(iconText);
             var iconX = contentStart.X + ((iconColumnWidth - iconSize.X) / 2f);
             ImGui.SetCursorScreenPos(new Vector2(iconX, contentStart.Y + UiSize.Em(CategoryIconVerticalOffsetEm * plugin.Configuration.UiDensity)));
-            if (active) ImGui.TextColored(color ?? defaultColor, iconText);
+            if (active) ImGui.TextColored(color, iconText);
             else ImGui.TextUnformatted(iconText);
             ImGui.SetWindowFontScale(1f);
         }
@@ -82,7 +82,7 @@ public static partial class SidebarComponents {
         RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress, 0f, 1f) * 100)}%");
 
         ImGui.SetCursorScreenPos(contentStart with { Y = contentStart.Y + lineHeight + style.ItemSpacing.Y });
-        PaddedProgressBar($"{id}_bar", contentWidth, barHeight, Math.Clamp(progress, 0f, 1f), color ?? defaultColor);
+        PaddedProgressBar($"{id}_bar", contentWidth, barHeight, Math.Clamp(progress, 0f, 1f), color);
 
         return clicked;
     }

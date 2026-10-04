@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
+using Recollection.Data.Layout;
 using Recollection.Helpers;
 using Dalamud.Plugin.Services;
 using Lumina.Excel;
@@ -9,10 +9,59 @@ using Lumina.Excel.Sheets;
 
 namespace Recollection.Data;
 
-public record MainLayout {
+public class MainLayout {
     public static readonly IPluginLog Log = Plugin.GetLogger<MainLayout>();
 
     public required List<AchievementLayout> Achievements { get; init; }
+
+    public static MainLayout FromJson(JsonLayout json) {
+        var nextCategoryId = 0;
+        return new MainLayout { Achievements = json.AchievementCategories.Select(it => BuildLayout(it, ref nextCategoryId)).ToList() };
+    }
+
+    private static AchievementLayout BuildLayout(JsonAchievementCategory json, ref int nextCategoryId) {
+        if (json is { Categories: not null, Items: not null }) {
+            throw new InvalidOperationException($"Category \"{json.Name}\" cannot contain both categories and items");
+        }
+
+        if (json.Categories != null) {
+            var children = new List<AchievementLayout>();
+            foreach (var child in json.Categories) {
+                children.Add(BuildLayout(child, ref nextCategoryId));
+            }
+
+            return new AchievementLayoutGroup { Name = json.Name, Icon = json.Icon, Items = children };
+        }
+
+        if (json.Items != null) {
+            return new AchievementLayoutCategory {
+                Name = json.Name,
+                Id = nextCategoryId++,
+                Seasonal = json.Seasonal ?? false,
+                Items = json.Items.SelectMany(it => BuildItems(json.Name, it)).ToList(),
+            };
+        }
+
+        throw new InvalidOperationException($"Category \"{json.Name}\" must contain either categories or items");
+    }
+
+    private static IEnumerable<AchievementLayoutItem> BuildItems(string categoryName, JsonAchievementItem json) {
+        var spoilers = json.Spoilers ?? false;
+
+        if (json is { Tiered: not null, Unique: not null }) {
+            throw new InvalidOperationException($"An item in category \"{categoryName}\" cannot be both tiered and unique");
+        }
+
+        if (json.Tiered is { Count: > 0 }) {
+            return [new AchievementLayoutItemTiered { Ids = json.Tiered, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog }];
+        }
+
+        if (json.Unique is { Count: > 0 }) {
+            return json.Unique.Select(id => new AchievementLayoutItemSimple { Id = id, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog });
+        }
+
+        throw new InvalidOperationException($"An item in category \"{categoryName}\" must have a non-empty tiered or unique list");
+    }
 
     public void CheckMissingAchievements(ExcelSheet<Achievement> excel) {
         var achievements = Achievements.SelectMany(it => it.GetAllAchievementIds()).ToList();
@@ -54,10 +103,7 @@ public record MainLayout {
     }
 }
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(AchievementLayoutGroup), "group")]
-[JsonDerivedType(typeof(AchievementLayoutCategory), "category")]
-public abstract record AchievementLayout {
+public abstract class AchievementLayout {
     public required string Name { get; init; }
 
     public abstract List<uint> GetAllAchievementIds();
@@ -99,20 +145,19 @@ public abstract record AchievementLayout {
     }
 }
 
-public record AchievementLayoutGroup : AchievementLayout {
+public class AchievementLayoutGroup : AchievementLayout {
     public required List<AchievementLayout> Items { get; init; }
 
-    public string? Color { get; init; }
     public string? Icon { get; init; }
 
     public override List<uint> GetAllAchievementIds() => Items.SelectMany(it => it.GetAllAchievementIds()).ToList();
     public override AchievementLayoutCategory? FindFirstCategory() => Items.Select(it => it.FindFirstCategory()).FirstOrDefault(it => it != null);
 }
 
-public record AchievementLayoutCategory : AchievementLayout {
+public class AchievementLayoutCategory : AchievementLayout {
     public required List<AchievementLayoutItem> Items { get; init; }
     public required int Id { get; init; }
-    public List<string> AdditionalViews { get; init; } = new();
+    public bool Seasonal { get; init; } = false;
 
     public override List<uint> GetAllAchievementIds() {
         return Items.SelectMany(it => it switch {
@@ -125,16 +170,16 @@ public record AchievementLayoutCategory : AchievementLayout {
     public override AchievementLayoutCategory FindFirstCategory() => this;
 }
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(AchievementLayoutItemSimple), "simple")]
-[JsonDerivedType(typeof(AchievementLayoutItemTiered), "tiered")]
-public abstract record AchievementLayoutItem { }
+public abstract class AchievementLayoutItem {
+    public bool Spoilers { get; init; } = false;
+    public uint? Area { get; init; }
+    public uint? HuntingLog { get; init; }
+}
 
-public record AchievementLayoutItemSimple : AchievementLayoutItem {
+public class AchievementLayoutItemSimple : AchievementLayoutItem {
     public required uint Id { get; init; }
 }
 
-public record AchievementLayoutItemTiered : AchievementLayoutItem {
+public class AchievementLayoutItemTiered : AchievementLayoutItem {
     public required List<uint> Ids { get; init; }
-    public bool Spoilers { get; init; } = false;
 }

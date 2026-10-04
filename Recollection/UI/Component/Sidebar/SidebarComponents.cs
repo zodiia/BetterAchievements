@@ -23,7 +23,7 @@ public static partial class SidebarComponents {
         foreach (var name in names) {
             var target = new NavigationTarget.Todo(name);
             var selected = state.Navigation.IsSelected(target);
-            if (CategoryRow(plugin, $"##Filler-{name}", FontAwesomeIcon.Lock, name, 1.0f, null, UiColors.Red(), selected, selected)) {
+            if (CategoryRow(plugin, $"##Filler-{name}", FontAwesomeIcon.Lock, UiColors.Red(), name, 1.0f, selected, selected)) {
                 state.Navigation.Navigate(target);
             }
         }
