@@ -13,7 +13,7 @@ using Recollection.Helpers;
 
 namespace Recollection.Services;
 
-public class UnlockablesService {
+public class UnlockablesService : IDisposable {
     private readonly IPluginLog log = Plugin.GetLogger<UnlockablesService>();
     private readonly Plugin plugin;
     private readonly LalachievementsService lalachievementsService;
@@ -32,6 +32,16 @@ public class UnlockablesService {
         lalachievementsService = plugin.LalachievementsService;
         HighestAchievementIdMap = plugin.MainLayout.GetHighestIdMap();
         Plugin.UnlockState.Unlock += OnUnlock;
+        Plugin.ClientState.Logout += OnLogout;
+    }
+
+    private void OnLogout(int type, int code) {
+        achievementsWereLoaded = false;
+    }
+
+    public void Dispose() {
+        Plugin.UnlockState.Unlock -= OnUnlock;
+        Plugin.ClientState.Logout -= OnLogout;
     }
 
     private void OnUnlock(RowRef _) {

@@ -162,11 +162,12 @@ public sealed class HistoryService : IDisposable {
                            """);
     }
 
-    public IEnumerable<AchievementStatus> GetAllAchievementStatus() {
+    public IEnumerable<AchievementStatus> GetAllAchievementStatus(ulong characterId) {
         return connection.QueryMultiple("""
                                         SELECT AchievementId, Status, Progress
                                         FROM AchievementStatus
-                                        """).Read<AchievementStatus>();
+                                        WHERE CharacterId = @CharacterId
+                                        """, new { CharacterId = characterId }).Read<AchievementStatus>();
     }
 
     [Time]

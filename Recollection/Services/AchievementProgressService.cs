@@ -1,10 +1,11 @@
 using MethodTimer;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Recollection.Services;
 
-public class AchievementProgressService {
+public class AchievementProgressService : IDisposable {
     private readonly Plugin plugin;
     private readonly UnlockablesService unlockables;
     private readonly HistoryService history;
@@ -22,15 +23,34 @@ public class AchievementProgressService {
 
     private unsafe void SetupEvent() {
         plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, _) => SetProgress(id, current);
+        Plugin.ClientState.Login += OnLogin;
+        Plugin.ClientState.Logout += OnLogout;
+    }
+
+    public void Dispose() {
+        Plugin.ClientState.Login -= OnLogin;
+        Plugin.ClientState.Logout -= OnLogout;
+    }
+
+    private void OnLogin() {
+        LoadProgress();
+    }
+
+    private void OnLogout(int type, int code) {
+        progressCache.Clear();
+        updated = true;
     }
 
     private void LoadProgress() {
-        var all = history.GetAllAchievementStatus();
+        progressCache.Clear();
+        var all = history.GetAllAchievementStatus(Plugin.PlayerState.ContentId);
         foreach (var status in all) {
             if (status.Progress != null) {
                 progressCache[status.AchievementId] = (uint)status.Progress;
             }
         }
+
+        updated = true;
     }
 
     public uint? GetProgress(uint achievementId) {

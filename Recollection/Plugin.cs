@@ -181,6 +181,10 @@ public sealed class Plugin : IDalamudPlugin {
 
         UiFonts.Dispose();
 
+        AchievementProgressService.Dispose();
+        UnlockablesService.Dispose();
+        HistoryService.Dispose();
+
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(SettingsCommandName);
     }
