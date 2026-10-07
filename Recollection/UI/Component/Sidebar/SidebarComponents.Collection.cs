@@ -40,7 +40,7 @@ public static partial class SidebarComponents {
         ImGui.Indent(UiSize.Em(FirstLevelIndentEm));
 
         foreach (var category in state.Unlockables.CollectionCategories(type)) {
-            var (score, visible) = state.Unlockables.ComputeProgress(type, category);
+            var (score, visible) = state.Unlockables.GetProgress(type, category);
             if (visible == 0) continue;
 
             var target = new NavigationTarget.CollectionCategory(type, category.Id);
@@ -56,7 +56,7 @@ public static partial class SidebarComponents {
     }
 
     private static void CollectionItem(Plugin plugin, MainWindowState state, UnlockableType type, Vector4 color) {
-        var progress = state.Unlockables.ComputeProgress(type);
+        var progress = state.Unlockables.GetProgress(type);
         if (progress.VisibleCount == 0) return;
 
         var target = new NavigationTarget.Collection(type);

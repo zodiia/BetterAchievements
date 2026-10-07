@@ -15,7 +15,7 @@ public class CollectionView(
     UnlockableType type,
     string breadcrumb,
     List<IUnlockable> entries,
-    PointsScore score,
+    Score score,
     VariableHeightClipper clipper) : IView {
     private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!";
 

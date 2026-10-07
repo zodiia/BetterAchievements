@@ -7,7 +7,7 @@ using Recollection.UI.Component;
 
 namespace Recollection.UI.Windows.Views;
 
-public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, PointsScore points, PointsScore achievementCount, VariableHeightClipper clipper) : IView {
+public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, AchievementProgress progress, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -32,9 +32,9 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
     }
 
     private void DrawHeader() {
-        var (obtainedPoints, totalPoints) = points;
-        var (obtainedCount, totalCount) = achievementCount;
-        var progress = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
+        var (obtainedCount, totalCount) = progress.Count;
+        var (obtainedPoints, totalPoints) = progress.Progress;
+        var progressRatio = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
         ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
@@ -43,7 +43,7 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
         DrawHeaderStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
-        UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100 :0.#}%");
+        UiComponents.ProgressBar(progressRatio, UiColors.Progress(), insideText: $"{progressRatio * 100 :0.#}%");
 
         UiComponents.SeparatorText("Achievements", plugin.Configuration.UiDensity);
     }

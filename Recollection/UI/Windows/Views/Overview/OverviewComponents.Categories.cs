@@ -43,7 +43,7 @@ public static partial class OverviewComponents {
         if (!table) return;
 
         foreach (var category in unlockables.CollectionCategories(type)) {
-            var (score, visible) = unlockables.ComputeProgress(type, category);
+            var (score, visible) = unlockables.GetProgress(type, category);
             if (visible == 0) continue;
 
             ImGui.TableNextColumn();
@@ -53,12 +53,12 @@ public static partial class OverviewComponents {
     }
 
     private static void CategoryCard(Plugin plugin, UnlockablesState unlockables, NavigationState navigation, AchievementLayout layout) {
-        CategoryCard(plugin, $"##Category-{layout.Name}", layout.Name,
-                     unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout),
+        var (count, points) = unlockables.GetProgress(layout);
+        CategoryCard(plugin, $"##Category-{layout.Name}", layout.Name, count, points,
                      () => NavigateToCategory(navigation, layout));
     }
 
-    private static void CategoryCard(Plugin plugin, string id, string name, PointsScore count, PointsScore? points, Action onClick) {
+    private static void CategoryCard(Plugin plugin, string id, string name, Score count, Score? points, Action onClick) {
         var padding = UiSize.Em(0.5f) * plugin.Configuration.UiDensity;
         var progress = ProgressRatio(count, points);
         var width = ImGui.GetContentRegionAvail().X;
@@ -106,7 +106,7 @@ public static partial class OverviewComponents {
         UiComponents.ProgressBar(progress, UiColors.Progress(), height: UiSize.Em(0.5f), width: contentWidth); // todo: progress bar height currently not decided by settings
     }
 
-    private static void CardCount(Vector2 lineStart, PointsScore count) {
+    private static void CardCount(Vector2 lineStart, Score count) {
         var (obtainedCount, totalCount) = count;
         ImGui.SetCursorScreenPos(lineStart);
         ImGui.TextColored(UiColors.Blue(), $"{obtainedCount:N0}");
@@ -114,7 +114,7 @@ public static partial class OverviewComponents {
         ImGui.TextColored(UiColors.Text(), $"/{totalCount:N0}");
     }
 
-    private static void CardPoints(Vector2 lineStart, float contentWidth, PointsScore? points) {
+    private static void CardPoints(Vector2 lineStart, float contentWidth, Score? points) {
         if (points == null) return;
         RightAlignedSplitText(lineStart, contentWidth, UiColors.Progress(), $"{points.Obtained:N0}", UiColors.Text(), $"/{points.Total:N0}");
     }

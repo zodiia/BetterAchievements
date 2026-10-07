@@ -28,7 +28,7 @@ public static partial class SidebarComponents {
     private static void PinnedAchievementsItem(Plugin plugin, MainWindowState state) {
         var target = new NavigationTarget.Pinned();
         var isPinned = state.Navigation.IsSelected(target);
-        var (obtained, total) = state.Unlockables.ComputeProgress(plugin.Configuration.PinnedAchievements);
+        var (_, (obtained, total)) = state.Unlockables.GetPinnedProgress();
         var progress = total == 0 ? 0f : (float)obtained / total;
 
         if (CategoryRow(plugin, "##Pinned", FontAwesomeIcon.Thumbtack, UiColors.Progress(), "Pinned", progress, isPinned, isPinned)) {
@@ -39,7 +39,7 @@ public static partial class SidebarComponents {
     private static void OverviewItem(Plugin plugin, MainWindowState state) {
         var target = new NavigationTarget.Overview();
         var isOverview = state.Navigation.IsSelected(target);
-        var (obtained, total) = state.Unlockables.ComputeOverallProgress();
+        var (_, (obtained, total)) = state.Unlockables.GetOverallProgress();
         var progress = total == 0 ? 0f : (float)obtained / total;
 
         if (CategoryRow(plugin, "##Overview", FontAwesomeIcon.Home, UiColors.Progress(), "Overview", progress, isOverview, isOverview)) {
@@ -48,7 +48,7 @@ public static partial class SidebarComponents {
     }
 
     private static void MainCategoryItem(Plugin plugin, MainWindowState state, AchievementLayout layout) {
-        var (obtained, total) = state.Unlockables.ComputeProgress(layout);
+        var (_, (obtained, total)) = state.Unlockables.GetProgress(layout);
         var progress = total == 0 ? 0f : (float)obtained / total;
 
         switch (layout) {

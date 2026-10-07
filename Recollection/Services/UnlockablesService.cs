@@ -194,35 +194,27 @@ public class UnlockablesService : IDisposable {
     }
 
     [Time]
-    public PointsScore CalculateAchievementPoints(IEnumerable<uint> achievementIds) {
-        uint obtained = 0;
-        uint total = 0;
+    public AchievementProgress CalculateAchievementProgress(IEnumerable<uint> achievementIds) {
+        uint obtainedCount = 0;
+        uint totalCount = 0;
+        uint obtainedPoints = 0;
+        uint totalPoints = 0;
 
         foreach (var id in achievementIds) {
             var achievement = GetUnlockableAchievement(id);
-            total += achievement.Points();
-            if (achievement.Unlocked()) obtained += achievement.Points();
+            totalCount++;
+            totalPoints += achievement.Points();
+            if (!achievement.Unlocked()) continue;
+
+            obtainedCount++;
+            obtainedPoints += achievement.Points();
         }
 
-        return new PointsScore(obtained, total);
+        return new AchievementProgress(new Score(obtainedCount, totalCount), new Score(obtainedPoints, totalPoints));
     }
 
     [Time]
-    public PointsScore CalculateAchievementCount(IEnumerable<uint> achievementIds) {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var id in achievementIds) {
-            var achievement = GetUnlockableAchievement(id);
-            total++;
-            if (achievement.Unlocked()) obtained++;
-        }
-
-        return new PointsScore(obtained, total);
-    }
-
-    [Time]
-    public static PointsScore CalculateAchievementPoints() {
+    public static Score CalculateAchievementPoints() {
         uint obtained = 0;
         uint total = 0;
 
@@ -233,7 +225,7 @@ public class UnlockablesService : IDisposable {
             }
         }
 
-        return new PointsScore(obtained, total);
+        return new Score(obtained, total);
     }
 
     public bool GetAchievementListUpdatedForUi() {

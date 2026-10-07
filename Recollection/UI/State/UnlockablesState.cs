@@ -11,18 +11,21 @@ namespace Recollection.UI.State;
 
 public class UnlockablesState(Plugin plugin) {
     private readonly IPluginLog log = Plugin.GetLogger<UnlockablesState>();
-    private readonly Dictionary<AchievementLayout, PointsScore> achievementCountCache = new(ReferenceEqualityComparer.Instance);
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
     private readonly Dictionary<AchievementLayout, List<uint>> progressAchievementIds = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<AchievementLayout, PointsScore> progressCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<AchievementLayout, AchievementProgress> progressCache = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<CollectionCategory, CollectionProgress> collectionCategoryCache = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<UnlockableType, CollectionProgress> collectionCache = new();
+
+    private List<uint> pinnedSnapshot = [];
+    private AchievementProgress? pinnedProgressCache;
+    private AchievementProgress? overallProgressCache;
 
     private string search = "";
 
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
-    public PointsScore AchievementPoints { get; private set; } = new(0, 0);
+    public Score Achievement { get; private set; } = new(0, 0);
     public List<AchievementUpdate> RecentlyUnlockedAchievements { get; private set; } = [];
 
     public void SetSearch(string value) {
@@ -36,16 +39,17 @@ public class UnlockablesState(Plugin plugin) {
 
         FilteredLayout = new MainLayout { Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList() };
         progressCache.Clear();
-        achievementCountCache.Clear();
         collectionCategoryCache.Clear();
         collectionCache.Clear();
+        pinnedProgressCache = null;
+        overallProgressCache = null;
     }
 
     [Time]
     public void Refresh() {
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
-        AchievementPoints = UnlockablesService.CalculateAchievementPoints();
+        Achievement = UnlockablesService.CalculateAchievementPoints();
         RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
     }
 
@@ -62,21 +66,29 @@ public class UnlockablesState(Plugin plugin) {
         return false;
     }
 
-    public PointsScore ComputeProgress(IEnumerable<uint> achievementIds) {
-        return plugin.UnlockablesService.CalculateAchievementPoints(achievementIds);
-    }
-
-    public PointsScore ComputeProgress(AchievementLayout layout) {
+    public AchievementProgress GetProgress(AchievementLayout layout) {
         if (progressCache.TryGetValue(layout, out var cached)) return cached;
 
         var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
-        var result = ComputeProgress(ids);
+        var result = plugin.UnlockablesService.CalculateAchievementProgress(ids);
         progressCache[layout] = result;
         return result;
     }
 
+    public AchievementProgress GetOverallProgress() {
+        return overallProgressCache ??= SumProgress(mainLayout.Achievements.Select(layout => GetProgress(layout)));
+    }
+
+    public AchievementProgress GetPinnedProgress() {
+        var pinned = configuration.PinnedAchievements;
+        if (pinnedProgressCache is { } cached && pinned.SequenceEqual(pinnedSnapshot)) return cached;
+
+        pinnedSnapshot = pinned.ToList();
+        return pinnedProgressCache = plugin.UnlockablesService.CalculateAchievementProgress(pinnedSnapshot);
+    }
+
     [Time]
-    public CollectionProgress ComputeProgress(UnlockableType type, CollectionCategory category) {
+    public CollectionProgress GetProgress(UnlockableType type, CollectionCategory category) {
         if (collectionCategoryCache.TryGetValue(category, out var cached)) return cached;
 
         uint obtained = 0;
@@ -92,12 +104,12 @@ public class UnlockablesState(Plugin plugin) {
             if (MatchUnlockFilter(unlockable.Unlocked())) visible++;
         }
 
-        var result = new CollectionProgress(new PointsScore(obtained, total), visible);
+        var result = new CollectionProgress(new Score(obtained, total), visible);
         collectionCategoryCache[category] = result;
         return result;
     }
 
-    public CollectionProgress ComputeProgress(UnlockableType type) {
+    public CollectionProgress GetProgress(UnlockableType type) {
         if (collectionCache.TryGetValue(type, out var cached)) return cached;
 
         uint obtained = 0;
@@ -105,54 +117,28 @@ public class UnlockablesState(Plugin plugin) {
         uint visible = 0;
 
         foreach (var category in CollectionCategories(type)) {
-            var (score, categoryVisible) = ComputeProgress(type, category);
+            var (score, categoryVisible) = GetProgress(type, category);
             obtained += score.Obtained;
             total += score.Total;
             visible += categoryVisible;
         }
 
-        var result = new CollectionProgress(new PointsScore(obtained, total), visible);
+        var result = new CollectionProgress(new Score(obtained, total), visible);
         collectionCache[type] = result;
         return result;
     }
 
-    public PointsScore ComputeOverallProgress() {
-        uint obtained = 0;
-        uint total = 0;
+    private static AchievementProgress SumProgress(IEnumerable<AchievementProgress> items) {
+        uint obtainedCount = 0, totalCount = 0, obtainedPoints = 0, totalPoints = 0;
 
-        foreach (var layout in mainLayout.Achievements) {
-            var (layoutObtained, layoutTotal) = ComputeProgress(layout);
-            obtained += layoutObtained;
-            total += layoutTotal;
+        foreach (var (count, points) in items) {
+            obtainedCount += count.Obtained;
+            totalCount += count.Total;
+            obtainedPoints += points.Obtained;
+            totalPoints += points.Total;
         }
 
-        return new PointsScore(obtained, total);
-    }
-
-    public PointsScore ComputeAchievementCount(IEnumerable<uint> achievementIds) {
-        return plugin.UnlockablesService.CalculateAchievementCount(achievementIds);
-    }
-
-    public PointsScore ComputeAchievementCount(AchievementLayout layout) {
-        if (achievementCountCache.TryGetValue(layout, out var cached)) return cached;
-
-        var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
-        var result = ComputeAchievementCount(ids);
-        achievementCountCache[layout] = result;
-        return result;
-    }
-
-    public PointsScore ComputeOverallAchievementCount() {
-        uint obtained = 0;
-        uint total = 0;
-
-        foreach (var layout in mainLayout.Achievements) {
-            var (layoutObtained, layoutTotal) = ComputeAchievementCount(layout);
-            obtained += layoutObtained;
-            total += layoutTotal;
-        }
-
-        return new PointsScore(obtained, total);
+        return new AchievementProgress(new Score(obtainedCount, totalCount), new Score(obtainedPoints, totalPoints));
     }
 
     public CategoryWithBreadcrumbs? FindCategory(int id) {

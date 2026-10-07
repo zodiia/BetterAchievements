@@ -238,6 +238,7 @@ public sealed class HistoryService : IDisposable {
         }
     }
 
+    [Time]
     private void OnLogin() {
         var characterId = Plugin.PlayerState.ContentId;
         var tx = connection.BeginTransaction();

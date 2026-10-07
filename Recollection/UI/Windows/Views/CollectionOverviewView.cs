@@ -18,7 +18,7 @@ public class CollectionOverviewView(Plugin plugin, UnlockableType type, Unlockab
         ImGui.Dummy(new Vector2(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
         UiComponents.SeparatorText(CollectionsService.Label(type), plugin.Configuration.UiDensity);
-        OverviewComponents.OverviewStats(plugin, unlockables.ComputeProgress(type).Score, CollectionsService.Label(type).ToLower());
+        OverviewComponents.OverviewStats(plugin, unlockables.GetProgress(type).Score, CollectionsService.Label(type).ToLower());
 
         UiComponents.SeparatorText("Categories", plugin.Configuration.UiDensity);
         OverviewComponents.CollectionCategoriesGrid(plugin, unlockables, navigation, type);

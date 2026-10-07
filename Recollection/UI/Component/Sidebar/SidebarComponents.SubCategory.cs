@@ -8,7 +8,7 @@ public static partial class SidebarComponents {
     private const float NestedLevelIndentEm = 1f;
 
     private static void SubTree(Plugin plugin, MainWindowState state, AchievementLayout layout) {
-        var (obtained, total) = state.Unlockables.ComputeProgress(layout);
+        var (_, (obtained, total)) = state.Unlockables.GetProgress(layout);
         var progress = total == 0 ? 0f : (float)obtained / total;
 
         switch (layout) {

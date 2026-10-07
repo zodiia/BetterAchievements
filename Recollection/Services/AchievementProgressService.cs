@@ -41,6 +41,7 @@ public class AchievementProgressService : IDisposable {
         updated = true;
     }
 
+    [Time]
     private void LoadProgress() {
         progressCache.Clear();
         var all = history.GetAllAchievementStatus(Plugin.PlayerState.ContentId);

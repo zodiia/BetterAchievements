@@ -10,18 +10,20 @@ public static partial class OverviewComponents {
     private const string AchievementsNoun = "achievements";
 
     public static void OverviewStats(Plugin plugin, UnlockablesState unlockables) {
-        OverviewStats(plugin, unlockables.ComputeOverallAchievementCount(), unlockables.ComputeOverallProgress(), AchievementsNoun);
+        var (count, points) = unlockables.GetOverallProgress();
+        OverviewStats(plugin, count, points, AchievementsNoun);
     }
 
     public static void OverviewStats(Plugin plugin, UnlockablesState unlockables, AchievementLayout layout) {
-        OverviewStats(plugin, unlockables.ComputeAchievementCount(layout), unlockables.ComputeProgress(layout), AchievementsNoun);
+        var (count, points) = unlockables.GetProgress(layout);
+        OverviewStats(plugin, count, points, AchievementsNoun);
     }
 
-    public static void OverviewStats(Plugin plugin, PointsScore count, string noun) {
+    public static void OverviewStats(Plugin plugin, Score count, string noun) {
         OverviewStats(plugin, count, null, noun);
     }
 
-    private static void OverviewStats(Plugin plugin, PointsScore count, PointsScore? points, string noun) {
+    private static void OverviewStats(Plugin plugin, Score count, Score? points, string noun) {
         var progress = ProgressRatio(count, points);
 
         DrawStatsLine(count, points, noun);
@@ -30,12 +32,12 @@ public static partial class OverviewComponents {
         UiComponents.ProgressBar(progress, UiColors.Progress(), insideText: $"{progress * 100:0.#}%");
     }
 
-    private static float ProgressRatio(PointsScore count, PointsScore? points) {
+    private static float ProgressRatio(Score count, Score? points) {
         var score = points ?? count;
         return score.Total == 0 ? 0f : (float)score.Obtained / score.Total;
     }
 
-    private static void DrawStatsLine(PointsScore count, PointsScore? points, string noun) {
+    private static void DrawStatsLine(Score count, Score? points, string noun) {
         var lineStartX = ImGui.GetCursorPosX();
         var lineStartY = ImGui.GetCursorPosY();
         var avail = ImGui.GetContentRegionAvail().X;
