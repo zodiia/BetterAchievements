@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
+using MethodTimer;
 using Recollection.Data;
 using Recollection.UI.Component;
 using Recollection.UI.State;
@@ -24,6 +25,7 @@ public static class ConfigPopup {
         }
     }
 
+    [Time]
     public static void FiltersPopup(Plugin plugin, MainWindowState state) {
         using var popupBackground = ImRaii.PushColor(ImGuiCol.PopupBg, UiColors.PopupBackground() with { W = 1f });
         using var popup = ImRaii.Popup(FiltersPopupId, ImGuiWindowFlags.AlwaysAutoResize);

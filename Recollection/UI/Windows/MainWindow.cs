@@ -2,6 +2,7 @@
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using MethodTimer;
 using Recollection.UI.Component;
 using Recollection.UI.Component.Sidebar;
 using Recollection.UI.State;
@@ -32,6 +33,7 @@ public class MainWindow : Window, IDisposable {
         state.Navigation.Navigate(new NavigationTarget.Settings());
     }
 
+    [Time]
     public override void Draw() {
         state.CheckForUiRefresh();
 
