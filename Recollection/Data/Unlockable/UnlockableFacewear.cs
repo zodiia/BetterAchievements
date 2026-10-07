@@ -1,3 +1,4 @@
+using MethodTimer;
 using Recollection.Helpers;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
@@ -15,6 +16,7 @@ public sealed class UnlockableFacewear : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableFacewear(GlassesStyle facewear, ITableRow tableRow) {
         this.facewear = facewear;
         name = facewear.Name.ToString();

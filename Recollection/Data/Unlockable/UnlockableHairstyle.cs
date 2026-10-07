@@ -1,3 +1,4 @@
+using MethodTimer;
 using Recollection.Helpers;
 using Lumina.Excel.Sheets;
 using Recollection.External.Lalachievements;
@@ -14,6 +15,7 @@ public sealed class UnlockableHairstyle : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableHairstyle(CharaMakeCustomize hairstyle, ITableRow tableRow) {
         this.hairstyle = hairstyle;
         name = hairstyle.HintItem.ValueNullable?.Name.ToString() ?? "";

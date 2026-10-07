@@ -156,9 +156,17 @@ public sealed class Plugin : IDalamudPlugin {
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
 
         HandleWarnings();
+
+#if DEBUG
+        Debug.TimingsWindow.Initialize();
+#endif
     }
 
     public void Dispose() {
+#if DEBUG
+        Debug.TimingsWindow.Shutdown();
+#endif
+
         // Unregister all actions to not leak anything during disposal of plugin
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;

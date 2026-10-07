@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Numerics;
 using Dalamud.Utility;
 using Lumina.Excel.Sheets;
@@ -22,6 +23,7 @@ public sealed class UnlockableTripleTriadNpc : IUnlockable {
     private readonly string howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableTripleTriadNpc(TripleTriad tt, TripleTriadResident ttResident, ENpcResident eNpcResident, Level level) {
         this.tt = tt;
         this.level = level;

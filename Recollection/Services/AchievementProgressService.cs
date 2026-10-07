@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -10,6 +11,7 @@ public class AchievementProgressService {
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
     private bool updated = false;
 
+    [Time]
     public AchievementProgressService(Plugin plugin) {
         this.plugin = plugin;
         unlockables = plugin.UnlockablesService;

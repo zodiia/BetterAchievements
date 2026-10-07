@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Collections.Generic;
 using System.Linq;
 using Recollection.UI.Component;
@@ -65,6 +66,7 @@ public class NavigationState {
 
     public bool IsGroupOpen(string name) => OpenGroupName == name;
 
+    [Time]
     public void Navigate(NavigationTarget target) {
         switch (target) {
             case NavigationTarget.Category category:
@@ -139,7 +141,7 @@ public class NavigationState {
                 break;
 
             case NavigationTarget.Todo:
-                SetNavigation(target, null, new TodoView(plugin));
+                SetNavigation(target, null, new TodoView());
                 break;
 
             default:

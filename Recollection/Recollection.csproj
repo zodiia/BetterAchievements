@@ -17,6 +17,8 @@
         <PackageProjectUrl>https://github.com/zodiia/Recollection</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
         <IsPackable>false</IsPackable>
+        <FodyGenerateXsd>false</FodyGenerateXsd>
+        <WeaverConfiguration><Weavers><MethodTimer /></Weavers></WeaverConfiguration>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,7 +33,8 @@
 
     <ItemGroup>
         <PackageReference Update="DalamudPackager" Version="15.0.0" />
-        <PackageReference Include="Dapper" Version="2.1.86" />
+        <PackageReference Include="Dapper" Version="2.1.89" />
+        <PackageReference Include="MethodTimer.Fody" Version="3.2.3" PrivateAssets="all" Condition="'$(Configuration)' == 'Debug'" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
         <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.5" />
     </ItemGroup>

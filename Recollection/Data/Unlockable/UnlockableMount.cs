@@ -1,3 +1,4 @@
+using MethodTimer;
 using Lumina.Excel.Sheets;
 using Recollection.External.Lalachievements;
 using Recollection.Helpers;
@@ -15,6 +16,7 @@ public sealed class UnlockableMount : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableMount(Mount mount, ITableRow tableRow) {
         this.mount = mount;
         name = mount.Singular.ToString();

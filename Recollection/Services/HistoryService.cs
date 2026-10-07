@@ -1,9 +1,8 @@
+using MethodTimer;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Recollection.Data.Unlockable;
 using Recollection.Helpers;
 using Dalamud.Plugin.Services;
@@ -36,6 +35,7 @@ public sealed class HistoryService : IDisposable {
     private readonly Plugin plugin;
     private readonly SqliteConnection connection;
 
+    [Time]
     public HistoryService(Plugin plugin) {
         var path = Path.Combine(Plugin.PluginInterface.ConfigDirectory.FullName, "history.db");
 
@@ -106,6 +106,7 @@ public sealed class HistoryService : IDisposable {
         }
     }
 
+    [Time]
     public void UpdateAchievementStatus(AchievementStatus status) {
         var changed = connection.ExecuteScalar<uint?>(""" 
                                                       INSERT INTO AchievementStatus (CharacterId, AchievementId, Status, Progress)
@@ -134,6 +135,7 @@ public sealed class HistoryService : IDisposable {
         });
     }
 
+    [Time]
     public void ImportAchievementStatuses(List<AchievementStatus> statuses) {
         var values = string.Join("), (", statuses.Select(s => $"{s.CharacterId}, {s.AchievementId}, {s.Status}, {s.Progress}"));
         var changedIds = connection.Query<uint>($"""
@@ -167,6 +169,7 @@ public sealed class HistoryService : IDisposable {
                                         """).Read<AchievementStatus>();
     }
 
+    [Time]
     public AchievementStatus? GetAchievementStatus(uint achievementId, ulong characterId) {
         return connection.QuerySingleOrDefault<AchievementStatus>("""
                                                                   SELECT CharacterId, AchievementId, Status, Progress
@@ -175,6 +178,7 @@ public sealed class HistoryService : IDisposable {
                                                                   """, new { AchievementId = achievementId, CharacterId = characterId });
     }
 
+    [Time]
     public List<AchievementUpdate> GetAchievementUpdates(uint achievementId, ulong characterId) {
         return connection.Query<AchievementUpdate>("""
                                                    SELECT CharacterId, Id, AchievementId, Timestamp, Status, Progress, Imported
@@ -183,6 +187,7 @@ public sealed class HistoryService : IDisposable {
                                                    """, new { AchievementId = achievementId, CharacterId = characterId }).AsList();
     }
 
+    [Time]
     public List<AchievementUpdate> GetLastUnlockedAchievements(ulong characterId) {
         return connection.Query<AchievementUpdate>("""
                                                    SELECT CharacterId, Id, AchievementId, Timestamp, Status, Progress, Imported
@@ -209,6 +214,7 @@ public sealed class HistoryService : IDisposable {
         UpdateAchievementStatus(new AchievementStatus { CharacterId = Plugin.PlayerState.ContentId, AchievementId = id, Progress = current, Status = current == max });
     }
 
+    [Time]
     private void OnFrameworkUpdate(IFramework framework) {
         if (importedAchievementList || !Plugin.UnlockState.IsAchievementListLoaded) {
             return;
@@ -217,8 +223,6 @@ public sealed class HistoryService : IDisposable {
         importedAchievementList = true;
         Plugin.Framework.Update -= OnFrameworkUpdate;
 
-        Stopwatch stopwatch = new();
-        stopwatch.Start();
         var statuses = ExcelSheets.Achievement.Value
                                   .Where(Plugin.UnlockState.IsAchievementComplete)
                                   .Select(achievement => new AchievementStatus
@@ -227,7 +231,7 @@ public sealed class HistoryService : IDisposable {
 
         try {
             ImportAchievementStatuses(statuses);
-            log.Information($"Imported achievement progress from history database in {stopwatch.Elapsed.Microseconds / 1000.0}ms");
+            log.Information("Imported achievement progress from history database");
         } catch (Exception ex) {
             log.Warning(ex, "Failed to import achievement progress from history database");
         }

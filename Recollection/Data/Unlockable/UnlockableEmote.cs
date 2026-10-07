@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Linq;
 using Recollection.Helpers;
 using Lumina.Excel;
@@ -17,6 +18,7 @@ public sealed class UnlockableEmote : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableEmote(Emote emote, ITableRow tableRow) {
         this.emote = emote;
         name = emote.Name.ToString();

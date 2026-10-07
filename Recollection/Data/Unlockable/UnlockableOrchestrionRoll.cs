@@ -1,3 +1,4 @@
+using MethodTimer;
 using Lumina.Excel.Sheets;
 using Recollection.Helpers;
 
@@ -12,6 +13,7 @@ public sealed class UnlockableOrchestrionRoll : IUnlockable {
     private readonly string howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableOrchestrionRoll(Orchestrion orchestrion) {
         this.orchestrion = orchestrion;
         name = orchestrion.Name.ToString();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Recollection.UI.Component;
 using Recollection.UI.Component.Sidebar;
@@ -33,27 +32,15 @@ public class MainWindow : Window, IDisposable {
         state.Navigation.Navigate(new NavigationTarget.Settings());
     }
 
-    private void DrawStatusBar() {
-        if (!plugin.Configuration.DebugMode) return;
-
-        using var statusBar = ImRaii.Child("StatusBar", ImGui.GetContentRegionAvail() with { Y = UiSize.StatusBarHeight }, true);
-        if (!statusBar) return;
-
-        ImGui.Text($"frame time {state.FrameTimes.AverageMs:F3}ms/f (highest {state.FrameTimes.WorstMs:F3}ms/f) | view: {state.Navigation.CurrentView.ToString()}");
-    }
-
     public override void Draw() {
-        state.FrameTimes.StartDebug();
         state.CheckForUiRefresh();
 
         var maxSidebarWidth = MinSidebarWidth + Math.Max(0, ImGui.GetWindowWidth() - (SizeConstraints!.Value.MinimumSize.X * 1.5f)); // todo: find out where the scale is stored
         sidebarWidth = Math.Clamp(sidebarWidth, MinSidebarWidth, maxSidebarWidth);
-        var sidebarHeight = UiSize.MainContentHeight(plugin.Configuration);
+        var sidebarHeight = ImGui.GetContentRegionAvail().Y;
 
         SidebarComponents.Sidebar(plugin, state, sidebarWidth);
         UiComponents.VerticalSplitter("##SidebarSplitter", ref sidebarWidth, MinSidebarWidth, maxSidebarWidth, sidebarHeight, 16F);
         state.Navigation.CurrentView.Draw();
-        DrawStatusBar();
-        state.FrameTimes.EndDebug();
     }
 }

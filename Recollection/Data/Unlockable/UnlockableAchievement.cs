@@ -1,3 +1,4 @@
+using MethodTimer;
 using System;
 using System.Collections.Generic;
 using Recollection.Helpers;
@@ -15,6 +16,7 @@ public sealed class UnlockableAchievement : IUnlockable {
     private readonly bool unlocked;
     private readonly bool pinned;
 
+    [Time]
     public UnlockableAchievement(Achievement achievement, Plugin plugin) {
         this.achievement = achievement;
         name = achievement.Name.ToString();

@@ -13,7 +13,6 @@ public class MainWindowState {
 
     public readonly UnlockablesState Unlockables;
     public readonly NavigationState Navigation;
-    public readonly DebugState FrameTimes;
 
     public string SearchBuffer = "";
 
@@ -21,7 +20,6 @@ public class MainWindowState {
         configuration = plugin.Configuration;
         Unlockables = new UnlockablesState(plugin);
         Navigation = new NavigationState(plugin, Unlockables);
-        FrameTimes = new DebugState(configuration);
     }
 
     public void SetSearch(string search) {

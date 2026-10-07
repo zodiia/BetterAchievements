@@ -64,7 +64,7 @@ public static partial class SidebarComponents {
         var selected = state.Navigation.IsSelected(target);
         var progressPercentage = progress.Score.Total == 0 ? 0f : (float)progress.Score.Obtained / progress.Score.Total;
 
-        if (CategoryRow(plugin, $"##Collection-{type}", CollectionIcon(type), CollectionsService.Label(type), progressPercentage, null, color, isOpen, selected)) {
+        if (CategoryRow(plugin, $"##Collection-{type}", CollectionIcon(type), color, CollectionsService.Label(type), progressPercentage, isOpen, selected)) {
             state.Navigation.Navigate(target);
         }
 

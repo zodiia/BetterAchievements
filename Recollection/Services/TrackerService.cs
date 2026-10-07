@@ -1,3 +1,4 @@
+using MethodTimer;
 using System;
 using System.Linq;
 using Dalamud.Game.DutyState;
@@ -35,6 +36,7 @@ public class TrackerService {
         Log.Information("Content finder condition: {C}", args.ContentFinderCondition.Value.Name.ToString());
     }
 
+    [Time]
     private unsafe void OnCharacterSetMode(Character* chara, CharacterModes mode, byte modeParam) {
         if (chara == null) return;
         switch (chara->ObjectKind, chara->BattleNpcSubKind, mode, chara->CombatTagType) {

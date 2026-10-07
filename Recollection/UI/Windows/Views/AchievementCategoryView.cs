@@ -43,7 +43,7 @@ public class AchievementCategoryView(Plugin plugin, AchievementLayoutGroup group
     }
 
     public void Draw() {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }

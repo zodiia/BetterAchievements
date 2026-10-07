@@ -4,11 +4,11 @@ using Dalamud.Bindings.ImGui;
 
 namespace Recollection.UI.Windows.Views;
 
-public class TodoView(Plugin plugin) : IView {
+public class TodoView : IView {
     private const string Text = "Feature coming soon!";
 
     public void Draw() {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         if (!ImGui.BeginChild("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true)) {
             return;
         }

@@ -59,7 +59,7 @@ public static partial class SidebarComponents {
     }
 
     public static void Sidebar(Plugin plugin, MainWindowState state, float sidebarWidth) {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         using var backgroundColor = ImRaii.PushColor(ImGuiCol.ChildBg, BackgroundColor());
         using var sidebar = ImRaii.Child("Sidebar", new Vector2 { X = sidebarWidth, Y = ySize }, true, ImGuiWindowFlags.AlwaysUseWindowPadding);
         if (!sidebar) return;

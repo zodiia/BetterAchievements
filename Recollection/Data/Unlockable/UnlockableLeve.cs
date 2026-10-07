@@ -1,3 +1,4 @@
+using MethodTimer;
 using Dalamud.Utility;
 using Recollection.Helpers;
 using Leve = Lumina.Excel.Sheets.Leve;
@@ -13,6 +14,7 @@ public class UnlockableLeve : IUnlockable {
     private readonly uint icon;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableLeve(Leve leve) {
         this.leve = leve;
         name = leve.Name.ToString();

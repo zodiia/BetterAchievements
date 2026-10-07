@@ -110,13 +110,7 @@ public class SettingsView : IView {
                 Description = "Only useful for development!",
                 Getter = it => it.DisplayIds,
                 Setter = (it, value) => it.DisplayIds = value,
-            },
-            new BooleanSetting {
-                Name = "Enable debug mode",
-                Description = "Only useful for development!",
-                Getter = it => it.DebugMode,
-                Setter = (it, value) => it.DebugMode = value,
-            },
+            }
         ]),
     ];
 
@@ -155,7 +149,7 @@ public class SettingsView : IView {
     }
 
     public void Draw() {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         using var mainContent = ImRaii.Child("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true, ImGuiWindowFlags.AlwaysUseWindowPadding);
         if (!mainContent) return;
 

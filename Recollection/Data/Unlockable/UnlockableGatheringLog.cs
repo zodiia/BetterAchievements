@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Numerics;
 using Recollection.Helpers;
 using Dalamud.Utility;
@@ -19,6 +20,7 @@ public sealed class UnlockableGatheringLog : IUnlockable {
     private readonly uint icon;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableGatheringLog(GatheringItem item, GatheringPoint point, ExportedGatheringPoint exported) {
         this.item = item;
         this.point = point;

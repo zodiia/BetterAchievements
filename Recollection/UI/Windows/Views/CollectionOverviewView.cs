@@ -1,6 +1,5 @@
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-
 using Dalamud.Interface.Utility.Raii;
 using Recollection.Data.Unlockable;
 using Recollection.Services;
@@ -12,7 +11,7 @@ namespace Recollection.UI.Windows.Views;
 
 public class CollectionOverviewView(Plugin plugin, UnlockableType type, UnlockablesState unlockables, NavigationState navigation) : IView {
     public void Draw() {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         using var mainContent = ImRaii.Child("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true);
         if (!mainContent) return;
 

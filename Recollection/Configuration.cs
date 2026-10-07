@@ -1,7 +1,6 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using Newtonsoft.Json;
 using Recollection.Data;
 
@@ -9,7 +8,7 @@ namespace Recollection;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 9;
+    public int Version { get; set; } = 10;
 
     // UI settings
     public float ProgressBarHeight = 1.5f;
@@ -28,7 +27,6 @@ public class Configuration : IPluginConfiguration {
 
     // Other settings
     public bool DisplayIds = false;
-    public bool DebugMode = false;
 
     // Not shown in the config UI
     public List<uint> PinnedAchievements { get; set; } = new();

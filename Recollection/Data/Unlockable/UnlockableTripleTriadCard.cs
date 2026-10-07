@@ -1,3 +1,4 @@
+using MethodTimer;
 using Recollection.Helpers;
 using Recollection.External.Lalachievements;
 using TripleTriadCard = Lumina.Excel.Sheets.TripleTriadCard;
@@ -15,6 +16,7 @@ public sealed class UnlockableTripleTriadCard : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableTripleTriadCard(TripleTriadCard card, ITableRow tableRow) {
         this.card = card;
         name = card.Name.ToString();

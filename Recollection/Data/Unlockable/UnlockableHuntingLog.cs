@@ -1,3 +1,4 @@
+using MethodTimer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,7 @@ public sealed class UnlockableHuntingLog : IUnlockable {
     private readonly string description;
     private readonly string descriptionLowercase;
 
+    [Time]
     public UnlockableHuntingLog(HuntingLogType type, MonsterNote note, MonsterNoteTarget target, byte max) {
         this.note = note;
         this.max = max;

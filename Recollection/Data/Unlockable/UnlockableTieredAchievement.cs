@@ -1,3 +1,4 @@
+using MethodTimer;
 using System.Collections.Generic;
 using System.Linq;
 using Lumina.Excel.Sheets;
@@ -19,6 +20,7 @@ public sealed class UnlockableTieredAchievement : IUnlockable {
     private readonly List<UnlockableAchievement> providesAchievements;
     public readonly List<Achievement> ExcelAchievements;
 
+    [Time]
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin) {
         ExcelAchievements = excelAchievements;
         this.spoilers = spoilers;

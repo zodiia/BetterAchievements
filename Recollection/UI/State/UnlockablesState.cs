@@ -1,6 +1,6 @@
+using MethodTimer;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Dalamud.Plugin.Services;
 using Recollection.Data;
@@ -30,6 +30,7 @@ public class UnlockablesState(Plugin plugin) {
         ApplyFilters();
     }
 
+    [Time]
     public void ApplyFilters() {
         progressAchievementIds.Clear();
 
@@ -40,14 +41,12 @@ public class UnlockablesState(Plugin plugin) {
         collectionCache.Clear();
     }
 
+    [Time]
     public void Refresh() {
-        var start = new Stopwatch();
-        start.Start();
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
         AchievementPoints = UnlockablesService.CalculateAchievementPoints();
         RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
-        log.Information("Refreshed state in {E}ms", start.Elapsed.Microseconds / 1000);
     }
 
     public bool CollectionsLoaded => plugin.CollectionsService.Loaded;
@@ -76,6 +75,7 @@ public class UnlockablesState(Plugin plugin) {
         return result;
     }
 
+    [Time]
     public CollectionProgress ComputeProgress(UnlockableType type, CollectionCategory category) {
         if (collectionCategoryCache.TryGetValue(category, out var cached)) return cached;
 
@@ -202,6 +202,7 @@ public class UnlockablesState(Plugin plugin) {
         return unlockables;
     }
 
+    [Time]
     public List<IUnlockable> SortedCollectionUnlockables(UnlockableType type, CollectionCategory category) {
         var unlockables = category.Items
                                   .Select(it => plugin.UnlockablesService.GetUnlockable(type, it))

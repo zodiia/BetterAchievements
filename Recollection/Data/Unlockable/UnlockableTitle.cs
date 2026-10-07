@@ -1,3 +1,4 @@
+using MethodTimer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ public sealed class UnlockableTitle : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableTitle(Title title) {
         this.title = title;
         name = GetName(title);

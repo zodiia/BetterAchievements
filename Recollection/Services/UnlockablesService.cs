@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Dalamud.Plugin.Services;
 using Lumina.Excel;
+using MethodTimer;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
@@ -20,8 +21,8 @@ public class UnlockablesService {
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
     public readonly Dictionary<uint, uint> HighestAchievementIdMap;
-    private readonly Lazy<Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>> ttLinkCache = new(BuildTripleTriadLinkCache);
-    private readonly Lazy<Dictionary<uint, uint>> gatheringNodeCache = new(BuildGatheringNodeCache);
+    private readonly Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> ttLinkCache = BuildTripleTriadLinkCache();
+    private readonly Dictionary<uint, uint> gatheringNodeCache = BuildGatheringNodeCache();
 
     private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
@@ -37,6 +38,7 @@ public class UnlockablesService {
         unlocksUpdatedForUi = true;
     }
 
+    [Time]
     private static Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> BuildTripleTriadLinkCache() {
         var eNpcBaseToLevel = new Dictionary<uint, uint>();
         var map = new Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)>();
@@ -58,6 +60,7 @@ public class UnlockablesService {
         return map;
     }
 
+    [Time]
     private static Dictionary<uint, uint> BuildGatheringNodeCache() =>
         ExcelSheets.GatheringPoint.Value
                    .Where(it => it.IsValidEntry())
@@ -72,6 +75,7 @@ public class UnlockablesService {
         return lalachievementsService.GetTable<T>().First(it => it.Id == id);
     }
 
+    [Time]
     public UnlockableAchievement GetUnlockableAchievement(uint achievementId) {
         if (achievements.TryGetValue(achievementId, out var it)) {
             return it;
@@ -82,6 +86,7 @@ public class UnlockablesService {
         return unlockable;
     }
 
+    [Time]
     public UnlockableTieredAchievement GetUnlockableTieredAchievement(List<uint> achievementIds, bool spoilers) {
         if (tieredAchievements.TryGetValue(achievementIds.Last(), out var it)) {
             return it;
@@ -93,11 +98,12 @@ public class UnlockablesService {
         return unlockable;
     }
 
+    [Time]
     private UnlockableTripleTriadNpc CreateUnlockableTripleTriadNpc(UnlockableKey key) {
         var offset = ExcelSheets.TripleTriad.Value.First().RowId;
         var tt = ExcelSheets.TripleTriad.Value.GetRow(offset + key.Id);
         var ttResident = ExcelSheets.TripleTriadResident.Value.GetRow(tt.RowId);
-        if (!ttLinkCache.Value.TryGetValue(tt.RowId, out var match)) {
+        if (!ttLinkCache.TryGetValue(tt.RowId, out var match)) {
             throw new InvalidDataException($"Could not match any ENpcBase entry to the TripleTriadResident {ttResident.RowId}");
         }
 
@@ -111,14 +117,16 @@ public class UnlockablesService {
         return new UnlockableTripleTriadNpc(tt, ttResident, eNpcResident, level);
     }
 
+    [Time]
     private UnlockableGatheringLog CreateUnlockableGatheringLog(UnlockableKey key) {
-        var point = ExcelSheets.GatheringPoint.Value.GetRow(gatheringNodeCache.Value[key.Id]);
+        var point = ExcelSheets.GatheringPoint.Value.GetRow(gatheringNodeCache[key.Id]);
         var item = ExcelSheets.GatheringItem.Value.GetRow(key.Id);
         var exported = ExcelSheets.ExportedGatheringPoint.Value.GetRow(point.GatheringPointBase.RowId);
 
         return new(item, point, exported);
     }
 
+    [Time]
     private UnlockableHuntingLog CreateUnlockableHuntingLog(UnlockableKey key) {
         // see how hunting log categories are built for why divided by 10 and modulo 10
         var note = ExcelSheets.MonsterNote.Value.GetRow(key.Id / 10);
@@ -128,6 +136,7 @@ public class UnlockablesService {
         return new(type, note, target, note.Count[(int)key.Id % 10]);
     }
 
+    [Time]
     private IUnlockable CreateUnlockable(UnlockableKey key) => key.Type switch {
         UnlockableType.Mount =>
             new UnlockableMount(ExcelSheets.Mount.Value.GetRow(key.Id), GetTableRow<Mount>(key.Id)),
@@ -174,6 +183,7 @@ public class UnlockablesService {
                      .ToList();
     }
 
+    [Time]
     public PointsScore CalculateAchievementPoints(IEnumerable<uint> achievementIds) {
         uint obtained = 0;
         uint total = 0;
@@ -187,6 +197,7 @@ public class UnlockablesService {
         return new PointsScore(obtained, total);
     }
 
+    [Time]
     public PointsScore CalculateAchievementCount(IEnumerable<uint> achievementIds) {
         uint obtained = 0;
         uint total = 0;
@@ -200,6 +211,7 @@ public class UnlockablesService {
         return new PointsScore(obtained, total);
     }
 
+    [Time]
     public static PointsScore CalculateAchievementPoints() {
         uint obtained = 0;
         uint total = 0;

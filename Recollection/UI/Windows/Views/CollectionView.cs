@@ -48,7 +48,7 @@ public class CollectionView(
     }
 
     public void Draw() {
-        var ySize = UiSize.MainContentHeight(plugin.Configuration);
+        var ySize = ImGui.GetContentRegionAvail().Y;
         using var mainContent = ImRaii.Child("MainContent", ImGui.GetContentRegionAvail() with { Y = ySize }, true);
         if (!mainContent) return;
 

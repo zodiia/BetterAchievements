@@ -1,3 +1,4 @@
+using MethodTimer;
 using Recollection.Helpers;
 using Lumina.Excel.Sheets;
 using Recollection.External.Lalachievements;
@@ -12,6 +13,7 @@ public sealed class UnlockableBarding : IUnlockable {
     private readonly string? howToLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableBarding(BuddyEquip barding, ITableRow tableRow) {
         this.barding = barding;
         name = barding.Name.ToString();

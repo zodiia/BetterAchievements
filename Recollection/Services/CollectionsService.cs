@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
+using MethodTimer;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
@@ -94,6 +95,7 @@ public class CollectionsService(Plugin plugin) {
         }
     }
 
+    [Time]
     private static List<CollectionCategory> BuildCategories(UnlockableType type, GameAllResponse response) => type switch {
         UnlockableType.Mount =>
             BuildCategoriesWithSourceTypes(response, response.GetTable<Mount>(), it => it.SourceTypeId),
@@ -111,12 +113,12 @@ public class CollectionsService(Plugin plugin) {
             BuildCategoriesWithSourceTypes(response, response.GetTable<Spectacle>(), it => it.SourceTypeId),
         UnlockableType.Emote =>
             BuildCategoriesWithSourceTypes(response, response.GetTable<Emote>(), it => it.SourceTypeId),
-        UnlockableType.Leve =>
-            BuildLeveCategories(response.GetTable<Leve>()),
         UnlockableType.Title =>
             BuildSingleCategoryWithGameAll(response.GetTable<Title>(), UnlockableType.Title),
         UnlockableType.TripleTriadNpc =>
             BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
+        UnlockableType.Leve =>
+            BuildLeveCategories(response.GetTable<Leve>()),
         UnlockableType.CraftingLog =>
             BuildCraftingCategories(),
         UnlockableType.GatheringLog =>

@@ -1,3 +1,4 @@
+using MethodTimer;
 using Recollection.Helpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
@@ -12,6 +13,7 @@ public sealed class UnlockableCraftingLog : IUnlockable {
     private readonly string descriptionLowercase;
     private readonly bool unlocked;
 
+    [Time]
     public UnlockableCraftingLog(Recipe recipe) {
         this.recipe = recipe;
         name = recipe.ItemResult.Value.Name.ToString();
