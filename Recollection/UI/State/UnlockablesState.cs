@@ -63,7 +63,31 @@ public class UnlockablesState(Plugin plugin) {
             return true;
         }
 
+        plugin.UnlockablesService.CheckPolledUnlocks();
+
+        if (plugin.UnlockablesService.HasChanges) {
+            ApplyChanges(plugin.UnlockablesService.GetUpdates());
+        }
+
         return false;
+    }
+
+    [Time]
+    private void ApplyChanges(List<UnlockableKey> changes) {
+        var unlockedAchievementIds = changes.Where(it => it.Type == UnlockableType.Achievement).Select(it => it.Id).ToHashSet();
+        var unlockedCollectionTypes = changes.Where(it => it.Type != UnlockableType.Achievement).Select(it => it.Type).ToHashSet();
+
+        if (unlockedAchievementIds.Count > 0) {
+            var staleLayouts = progressCache.Keys.Where(layout => progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds()).Any(unlockedAchievementIds.Contains)).ToList();
+            staleLayouts.ForEach(layout => progressCache.Remove(layout));
+            overallProgressCache = null;
+            if (pinnedSnapshot.Any(unlockedAchievementIds.Contains)) pinnedProgressCache = null;
+        }
+
+        foreach (var type in unlockedCollectionTypes) {
+            collectionCache.Remove(type);
+            CollectionCategories(type).ForEach(category => collectionCategoryCache.Remove(category));
+        }
     }
 
     public AchievementProgress GetProgress(AchievementLayout layout) {

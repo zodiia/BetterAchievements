@@ -24,6 +24,11 @@ public class UnlockablesService : IDisposable {
     public readonly Dictionary<uint, uint> HighestAchievementIdMap;
     private readonly Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> ttLinkCache = BuildTripleTriadLinkCache();
     private readonly Dictionary<uint, uint> gatheringNodeCache = BuildGatheringNodeCache();
+    private readonly ConcurrentQueue<UnlockableKey> unlockedChanges = new();
+    private ulong beatenTripleTriadNpcsHash;
+    private ulong gatheredGatheringItemsHash;
+    private ulong completedLevesHash;
+    private ulong huntingLogRankDataHash;
 
     private bool achievementsWereLoaded = false;
 
@@ -68,7 +73,10 @@ public class UnlockablesService : IDisposable {
             _ => null
         };
 
-        unlockable?.Unlocked = true;
+        if (unlockable != null) {
+            unlockable.Unlocked = true;
+            unlockedChanges.Enqueue(new UnlockableKey(unlockable.Type, unlockable.Id));
+        }
     }
 
     private void OnAchievementUnlock(Sheets.Achievement achievement) {
@@ -78,12 +86,74 @@ public class UnlockablesService : IDisposable {
             tiered.UpdateCurrent();
             tiered.Unlocked = tiered.Current == tiered.Maximum;
         }
+
+        unlockedChanges.Enqueue(new UnlockableKey(UnlockableType.Achievement, achievement.RowId));
     }
 
     public void SetAchievementProgress(uint achievementId, uint progress) {
         if (achievements.TryGetValue(achievementId, out var achievement)) {
             achievement.Current = progress;
         }
+    }
+
+    public unsafe void CheckPolledUnlocks() {
+        if (Plugin.UiState.Valid && HashChanged(ref beatenTripleTriadNpcsHash, Plugin.UiState.Value.BeatenTripleTriadResidentsBitArray.ComputeHash())) {
+            UpdatePolledUnlockables(UnlockableType.TripleTriadNpc, (_, unlockable) => {
+                unlockable.Unlocked = Plugin.UiState.Value.IsTripleTriadNpcBeaten(unlockable.Id);
+            });
+        }
+
+        if (Plugin.QuestManager.Valid && HashChanged(ref gatheredGatheringItemsHash, Plugin.QuestManager.Value.GatheredGatheringItemsBitArray.ComputeHash())) {
+            UpdatePolledUnlockables(UnlockableType.GatheringLog, (key, unlockable) => {
+                unlockable.Unlocked = FFXIVClientStructs.FFXIV.Client.Game.QuestManager.IsGatheringItemGathered((ushort)key.Id);
+            });
+        }
+
+        if (Plugin.QuestManager.Valid && HashChanged(ref completedLevesHash, Plugin.QuestManager.Value.CompletedLeveQuestsBitArray.ComputeHash())) {
+            UpdatePolledUnlockables(UnlockableType.Leve, (key, unlockable) => {
+                unlockable.Unlocked = Plugin.UnlockState.IsLeveCompleted(ExcelSheets.Leve.Value.GetRow(key.Id));
+            });
+        }
+
+        if (Plugin.MonsterNoteManager.Valid) {
+            var rankData = Plugin.MonsterNoteManager.Value.RankData;
+            fixed (void* ptr = rankData) {
+                var bitArray = new InteropGenerator.Runtime.BitArray((byte*)ptr, rankData.Length * sizeof(FFXIVClientStructs.FFXIV.Client.Game.MonsterNoteRankInfo) * 8);
+                if (HashChanged(ref huntingLogRankDataHash, bitArray.ComputeHash())) {
+                    UpdatePolledUnlockables(UnlockableType.HuntingLog, (key, unlockable) => {
+                        var note = ExcelSheets.MonsterNote.Value.GetRow(key.Id / 10);
+                        var target = note.MonsterNoteTarget[(int)key.Id % 10].Value;
+                        var type = HuntingLogType.GetByMonsterNoteRowId(note.RowId);
+                        unlockable.Current = (uint)UnlockableHuntingLog.GetCurrent(type, note, target, note.Count[(int)key.Id % 10]);
+                        unlockable.Unlocked = unlockable.Current == unlockable.Maximum;
+                    });
+                }
+            }
+        }
+    }
+
+    private static bool HashChanged(ref ulong previousHash, ulong hash) {
+        if (previousHash == hash) return false;
+        previousHash = hash;
+        return true;
+    }
+
+    private void UpdatePolledUnlockables(UnlockableType type, Action<UnlockableKey, IUnlockable> update) {
+        foreach (var (key, unlockable) in collectionItems) {
+            if (key.Type != type) continue;
+
+            var wasUnlocked = unlockable.Unlocked;
+            update(key, unlockable);
+            if (unlockable.Unlocked != wasUnlocked) unlockedChanges.Enqueue(key);
+        }
+    }
+
+    public bool HasChanges => !unlockedChanges.IsEmpty;
+
+    public List<UnlockableKey> GetUpdates() {
+        var changes = new List<UnlockableKey>();
+        while (unlockedChanges.TryDequeue(out var key)) changes.Add(key);
+        return changes;
     }
 
     [Time]
@@ -281,5 +351,6 @@ public class UnlockablesService : IDisposable {
         achievements.Clear();
         tieredAchievements.Clear();
         collectionItems.Clear();
+        unlockedChanges.Clear();
     }
 }

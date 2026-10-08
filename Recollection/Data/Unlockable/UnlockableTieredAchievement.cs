@@ -21,6 +21,8 @@ public sealed class UnlockableTieredAchievement : IUnlockable {
         MaximumPoints = (uint)ExcelAchievements.Select(it => (int)it.Points).Sum();
         Ids = ExcelAchievements.Select(it => it.RowId).ToList();
         Pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
+        Name = "";
+        NameLowercase = "";
         UpdateCurrent();
     }
 

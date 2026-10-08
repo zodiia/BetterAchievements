@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -7,7 +8,7 @@ using Recollection.UI.Component;
 
 namespace Recollection.UI.Windows.Views;
 
-public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, AchievementProgress progress, VariableHeightClipper clipper) : IView {
+public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, Func<AchievementProgress> progress, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -32,8 +33,9 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
     }
 
     private void DrawHeader() {
-        var (obtainedCount, totalCount) = progress.Count;
-        var (obtainedPoints, totalPoints) = progress.Progress;
+        var (count, points) = progress();
+        var (obtainedCount, totalCount) = count;
+        var (obtainedPoints, totalPoints) = points;
         var progressRatio = totalPoints == 0 ? 0f : (float)obtainedPoints / totalPoints;
 
         ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));

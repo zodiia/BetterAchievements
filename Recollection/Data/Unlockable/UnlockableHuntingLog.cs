@@ -58,7 +58,7 @@ public sealed class UnlockableHuntingLog : IUnlockable {
 
     public bool IsValid() => note.IsValidEntry();
 
-    private static int GetCurrent(HuntingLogType type, MonsterNote note, MonsterNoteTarget target, byte max) {
+    public static int GetCurrent(HuntingLogType type, MonsterNote note, MonsterNoteTarget target, byte max) {
         var level = (note.RowId - 1) % 50 / 10;
         var currentLevel = Plugin.MonsterNoteManager.Valid ? Plugin.MonsterNoteManager.Value.RankData[type.Id].Rank : 0;
 

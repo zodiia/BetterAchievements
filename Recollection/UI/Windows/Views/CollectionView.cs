@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -15,13 +16,13 @@ public class CollectionView(
     UnlockableType type,
     string breadcrumb,
     List<IUnlockable> entries,
-    Score score,
+    Func<Score> score,
     VariableHeightClipper clipper) : IView {
     private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!";
 
     private void DrawHeader() {
         UiComponents.SeparatorText(breadcrumb, plugin.Configuration.UiDensity);
-        OverviewComponents.OverviewStats(plugin, score, CollectionsService.Label(type).ToLower());
+        OverviewComponents.OverviewStats(plugin, score(), CollectionsService.Label(type).ToLower());
         UiComponents.SeparatorText(CollectionsService.Label(type), plugin.Configuration.UiDensity);
     }
 

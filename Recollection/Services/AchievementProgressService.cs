@@ -75,7 +75,7 @@ public class AchievementProgressService : IDisposable {
         if (progressCache.TryGetValue(lastId, out var current)) {
             current += (uint) amount;
             progressCache[lastId] = current;
-            updated = true;
+            unlockables.SetAchievementProgress(lastId, current);
             return current;
         }
 

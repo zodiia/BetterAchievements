@@ -58,7 +58,7 @@ public class NavigationState {
             type,
             breadcrumb,
             unlockables.SortedCollectionUnlockables(type, category),
-            unlockables.GetProgress(type, category).Score,
+            () => unlockables.GetProgress(type, category).Score,
             ClipperFor(target));
     }
 
@@ -81,7 +81,7 @@ public class NavigationState {
                     plugin,
                     found.Breadcrumb,
                     unlockables.SortedUnlockables(found.Category),
-                    unlockables.GetProgress(found.Category),
+                    () => unlockables.GetProgress(found.Category),
                     ClipperFor(target));
                 SetNavigation(target, found.Breadcrumb.Split(" / ")[0], view);
                 break;
@@ -130,7 +130,7 @@ public class NavigationState {
                     plugin,
                     "Pinned",
                     unlockables.PinnedUnlockables(),
-                    unlockables.GetPinnedProgress(),
+                    unlockables.GetPinnedProgress,
                     ClipperFor(target)));
                 break;
 
