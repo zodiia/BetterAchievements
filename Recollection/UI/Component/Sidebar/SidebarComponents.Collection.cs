@@ -25,6 +25,7 @@ public static partial class SidebarComponents {
             UnlockableType.HuntingLog => FontAwesomeIcon.Paw,
             UnlockableType.OrchestrionRoll => FontAwesomeIcon.Music,
             UnlockableType.Leve => FontAwesomeIcon.Leaf,
+            UnlockableType.FramersKit => FontAwesomeIcon.Portrait,
             _ => FontAwesomeIcon.Question,
         };
     }

@@ -32,6 +32,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Hairstyle,
         UnlockableType.Facewear,
         UnlockableType.Emote,
+        UnlockableType.FramersKit,
         UnlockableType.CraftingLog,
         UnlockableType.GatheringLog,
         UnlockableType.OrchestrionRoll,
@@ -119,6 +120,8 @@ public class CollectionsService(Plugin plugin) {
             BuildSingleCategoryWithGameAll(response.GetTable<TripleTriadNpc>(), UnlockableType.TripleTriadNpc),
         UnlockableType.Leve =>
             BuildLeveCategories(response.GetTable<Leve>()),
+        UnlockableType.FramersKit =>
+            BuildFramersKitCategories(),
         UnlockableType.CraftingLog =>
             BuildCraftingCategories(),
         UnlockableType.GatheringLog =>
@@ -159,6 +162,14 @@ public class CollectionsService(Plugin plugin) {
             .Where(it => it.Items.Count > 0)
             .OrderBy(it => it.Id)
             .ToList();
+
+    private static List<CollectionCategory> BuildFramersKitCategories() => [
+        new() {
+            Id = 0,
+            Name = Label(UnlockableType.FramersKit),
+            Items = ExcelSheets.Item.Value.Where(it => it.IsValidEntry()).OrderBy(it => it.AdditionalData.RowId).Select(it => it.RowId).ToList()
+        }
+    ];
 
     private static List<CollectionCategory> BuildCraftingCategories() =>
         ExcelSheets.Recipe.Value.Where(it => it.IsValidEntry())

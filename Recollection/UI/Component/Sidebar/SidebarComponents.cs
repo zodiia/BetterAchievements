@@ -87,7 +87,7 @@ public static partial class SidebarComponents {
         CollectionItem(plugin, state, UnlockableType.Hairstyle, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Facewear, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Emote, UiColors.Blue());
-        FillerItems(plugin, state, "Framer's Kits");
+        CollectionItem(plugin, state, UnlockableType.FramersKit, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Leve, UiColors.Blue());
 
         SectionHeader(plugin, "Records");
