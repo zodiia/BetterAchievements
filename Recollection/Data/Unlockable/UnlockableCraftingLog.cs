@@ -1,4 +1,5 @@
 using MethodTimer;
+using System;
 using Recollection.Helpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
@@ -7,33 +8,34 @@ namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableCraftingLog : IUnlockable {
     private readonly Recipe recipe;
-    private readonly string name;
-    private readonly string nameLowercase;
-    private readonly string description;
-    private readonly string descriptionLowercase;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableCraftingLog(Recipe recipe) {
         this.recipe = recipe;
-        name = recipe.ItemResult.Value.Name.ToString();
-        description = recipe.ItemResult.Value.Description.ToString();
-        nameLowercase = name.ToLower();
-        descriptionLowercase = description.ToLower();
-        unlocked = Plugin.QuestManager.Valid && QuestManager.IsRecipeComplete(recipe.RowId);
+        Name = recipe.ItemResult.Value.Name.ToString();
+        Description = recipe.ItemResult.Value.Description.ToString();
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = Description.ToLower();
+        Unlocked = Plugin.QuestManager.Valid && QuestManager.IsRecipeComplete(recipe.RowId);
     }
 
-    public uint Id() => recipe.RowId;
-    public UnlockableType Type() => UnlockableType.CraftingLog;
-    public uint Icon() => recipe.ItemResult.Value.Icon;
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string? HowTo() => null;
-    public string? HowToLowercase() => null;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => recipe.RowId;
+    public UnlockableType Type => UnlockableType.CraftingLog;
+    public uint Icon => recipe.ItemResult.Value.Icon;
+
+    public string Name { get; }
+    public string? Description { get; }
+    public string? HowTo => null;
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase { get; }
+    public string? HowToLowercase => null;
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => recipe.IsValidEntry();
 }

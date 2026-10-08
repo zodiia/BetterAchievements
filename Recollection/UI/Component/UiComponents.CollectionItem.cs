@@ -79,23 +79,23 @@ public static partial class UiComponents {
         var availableWidth = ImGui.GetContentRegionAvail().X;
         var iconSize = AchievementIconSize();
         var lineHeight = iconSize / 2f;
-        var hasIcon = unlockable.Icon() != 0;
+        var hasIcon = unlockable.Icon != 0;
         var textX = hasIcon ? start.X + iconSize + ImGui.GetStyle().ItemSpacing.X : start.X;
-        var howTo = unlockable.HowTo();
+        var howTo = unlockable.HowTo;
         var howToY = start.Y + lineHeight + 4;
         var howToHeight = ImGui.GetTextLineHeight();
 
         if (hasIcon) {
-            AchievementIcon(unlockable.Icon(), iconSize);
+            AchievementIcon(unlockable.Icon, iconSize);
         }
 
-        CollectionItemTitle(unlockable.Name(), textX, start.Y, howTo?.Length is > 0 ? lineHeight : howToY - start.Y + howToHeight);
+        CollectionItemTitle(unlockable.Name, textX, start.Y, howTo?.Length is > 0 ? lineHeight : howToY - start.Y + howToHeight);
         if (config.DisplayIds) {
             ImGui.SameLine();
-            ImGui.TextDisabled($"#{unlockable.Id()}");
+            ImGui.TextDisabled($"#{unlockable.Id}");
         }
 
-        CollectionItemStatus(unlockable.Unlocked(), start.X + availableWidth, start.Y, lineHeight);
+        CollectionItemStatus(unlockable.Unlocked, start.X + availableWidth, start.Y, lineHeight);
         if (howTo?.Length is > 0) {
             IndentedWrappedText(howTo, start.X, howToY, textX, availableWidth - (textX - start.X), availableWidth);
         } else {
@@ -103,18 +103,18 @@ public static partial class UiComponents {
             ImGui.Dummy(new Vector2(0f, howToHeight));
         }
 
-        if (unlockable.Description().Length > 0) {
-            ImGui.TextColoredWrapped(UiColors.Grey(), unlockable.Description());
+        if (unlockable.Description?.Length is > 0) {
+            ImGui.TextColoredWrapped(UiColors.Grey(), unlockable.Description);
         }
 
-        if (unlockable.Maximum() > 1 && (!unlockable.Unlocked() || config.NeverHideProgressBars)) {
-            var progress = unlockable.Current();
+        if (unlockable.Maximum > 1 && (!unlockable.Unlocked || config.NeverHideProgressBars)) {
+            var progress = unlockable.Current;
 
             ProgressBar(
-                (progress ?? 1.0f) / unlockable.Maximum(),
+                (progress ?? 1.0f) / unlockable.Maximum,
                 progress != null ? UiColors.Progress() : UiColors.Red(),
                 height: UiSize.Em(config.ProgressBarHeight),
-                insideText: progress != null ? $"{progress}/{unlockable.Maximum()}" : "Not loaded",
+                insideText: progress != null ? $"{progress}/{unlockable.Maximum}" : "Not loaded",
                 enabled: progress != null);
         }
 

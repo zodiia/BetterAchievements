@@ -27,17 +27,17 @@ public enum UnlockableType {
 }
 
 public interface IUnlockable {
-    uint Id();
-    UnlockableType Type();
-    uint Icon();
-    string Name();
-    string Description();
-    string? HowTo();
-    string NameLowercase();
-    string DescriptionLowercase();
-    string? HowToLowercase();
-    uint? Current();
-    uint Maximum();
-    bool Unlocked();
+    uint Id { get; }
+    UnlockableType Type { get; }
+    uint Icon { get; }
+    string Name { get; }
+    string? Description { get; }
+    string? HowTo { get; }
+    string NameLowercase { get; }
+    string? DescriptionLowercase { get; }
+    string? HowToLowercase { get; }
+    uint? Current { get; set; }
+    uint Maximum { get; }
+    bool Unlocked { get; set; }
     bool IsValid();
 }

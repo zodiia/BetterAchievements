@@ -8,48 +8,45 @@ namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableAchievement : IUnlockable {
     private readonly Achievement achievement;
-    private readonly string name;
-    private readonly string description;
-    private readonly string nameLowercase;
-    private readonly string descriptionLowercase;
-    private readonly uint? current;
-    private readonly bool unlocked;
-    private readonly bool pinned;
 
     [Time]
     public UnlockableAchievement(Achievement achievement, Plugin plugin) {
         this.achievement = achievement;
-        name = achievement.Name.ToString();
-        description = achievement.Description.ToString();
-        nameLowercase = name.ToLower();
-        descriptionLowercase = description.ToLower();
-        current = plugin.AchievementProgressService.GetProgress(achievement.RowId);
-        unlocked = Plugin.UnlockState.IsAchievementComplete(achievement);
-        pinned = plugin.Configuration.PinnedAchievements.Contains(achievement.RowId);
+        Name = achievement.Name.ToString();
+        Description = achievement.Description.ToString();
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = Description.ToLower();
+        Current = plugin.AchievementProgressService.GetProgress(achievement.RowId);
+        Unlocked = Plugin.UnlockState.IsAchievementComplete(achievement);
+        Pinned = plugin.Configuration.PinnedAchievements.Contains(achievement.RowId);
     }
 
-    public uint Id() => achievement.RowId;
-    public UnlockableType Type() => UnlockableType.Achievement;
-    public AchievementCategory SubCategory() => achievement.AchievementCategory.Value;
-    public AchievementKind Category() => achievement.AchievementCategory.Value.AchievementKind.Value;
-    public uint Icon() => achievement.Icon;
-    public byte Points() => achievement.Points;
-    public byte AchievementType() => achievement.Type;
-    public uint Maximum() => achievement.Maximum();
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string? HowTo() => null;
-    public string? HowToLowercase() => null;
-    public uint? Current() => current;
-    public bool Unlocked() => unlocked;
-    public bool Pinned() => pinned;
-    public Title? Title() => achievement.Title.ValueNullable;
+    public uint Id => achievement.RowId;
+    public UnlockableType Type => UnlockableType.Achievement;
+    public uint Icon => achievement.Icon;
+
+    public string Name { get; }
+    public string Description { get; }
+    public string NameLowercase { get; }
+    public string DescriptionLowercase { get; }
+    public string? HowTo => null;
+    public string? HowToLowercase => null;
+
+    public uint? Current { get; set; }
+    public uint Maximum => achievement.Maximum();
+    public bool Unlocked { get; set; }
+
+    public bool Pinned { get; }
+    public Title? Title => achievement.Title.ValueNullable;
+    public byte Points => achievement.Points;
+    public byte AchievementType => achievement.Type;
+    public AchievementKind Category => achievement.AchievementCategory.Value.AchievementKind.Value;
+    public AchievementCategory SubCategory => achievement.AchievementCategory.Value;
+
     public bool IsValid() => achievement.IsValidEntry();
 
     public AchievementCompletionRatio AchievementCompletionRatio() {
-        return new AchievementCompletionRatio(this, Math.Clamp((current ?? 0.0) / Maximum(), 0.0, 1.0));
+        return new AchievementCompletionRatio(this, Math.Clamp((Current ?? 0.0) / Maximum, 0.0, 1.0));
     }
 }
 

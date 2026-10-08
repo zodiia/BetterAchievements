@@ -37,7 +37,7 @@ public static partial class OverviewComponents {
             _ => throw new InvalidDataException("Unmapped achievement layout item type")
         };
 
-        var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id());
+        var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id);
         return new RankedEntry(candidate.Ratio, new ActivityEntry(candidate.Achievement, breadcrumb, FormatPercentage(candidate.Ratio)));
     }
 
@@ -78,7 +78,7 @@ public static partial class OverviewComponents {
     private static void RecentlyObtainedColumn(Plugin plugin, UnlockablesState unlockables) {
         var entries = unlockables.RecentlyUnlockedAchievements.Select(update => {
             var achievement = plugin.UnlockablesService.GetUnlockableAchievement(update.AchievementId);
-            var breadcrumb = unlockables.FindBreadcrumb(achievement.Id());
+            var breadcrumb = unlockables.FindBreadcrumb(achievement.Id);
             return new ActivityEntry(achievement, breadcrumb, FormatTimeAgo(update.Timestamp));
         }).ToList();
 
@@ -124,13 +124,13 @@ public static partial class OverviewComponents {
 
         ImGui.BeginGroup();
 
-        var wrap = Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(achievement.Icon())).GetWrapOrEmpty();
+        var wrap = Plugin.TextureProvider.GetFromGameIcon(new GameIconLookup(achievement.Icon)).GetWrapOrEmpty();
         ImGui.Image(wrap.Handle, new Vector2(iconSize, iconSize));
 
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.Text(), achievement.Name());
+        ImGui.TextColored(UiColors.Text(), achievement.Name);
 
-        var pointsText = $"+{achievement.Points()}";
+        var pointsText = $"+{achievement.Points}";
         if (entry.Detail != null) {
             RightAlignedTwoPart(entry.Detail, UiColors.Grey(), pointsText, UiColors.Progress());
         } else {
@@ -142,7 +142,7 @@ public static partial class OverviewComponents {
         if (ImGui.IsItemHovered()) ImGui.SetTooltip(BuildTooltip(entry));
     }
 
-    private static string BuildTooltip(ActivityEntry entry) => $"In {entry.Breadcrumb ?? "(unknown)"}\n{entry.Achievement.Description()}";
+    private static string BuildTooltip(ActivityEntry entry) => $"In {entry.Breadcrumb ?? "(unknown)"}\n{entry.Achievement.Description}";
 
     private static void RightAlignedTwoPart(string leftText, Vector4 leftColor, string rightText, Vector4 rightColor) {
         var spacing = ImGui.CalcTextSize(" ").X;

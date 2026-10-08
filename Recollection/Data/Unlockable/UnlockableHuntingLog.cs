@@ -27,38 +27,35 @@ public sealed record HuntingLogType(int Id, uint Offset) {
 
 public sealed class UnlockableHuntingLog : IUnlockable {
     private readonly MonsterNote note;
-    private readonly uint icon;
-    private readonly uint current;
-    private readonly byte max;
-    private readonly string name;
-    private readonly string nameLowercase;
-    private readonly string description;
-    private readonly string descriptionLowercase;
 
     [Time]
     public UnlockableHuntingLog(HuntingLogType type, MonsterNote note, MonsterNoteTarget target, byte max) {
         this.note = note;
-        this.max = max;
-        icon = (uint)note.MonsterNoteTarget.First().Value.Icon;
-        name = GetName(note, target, max);
-        description = GetDescription(target);
-        nameLowercase = name.ToLower();
-        descriptionLowercase = description.ToLower();
-        current = (uint)GetCurrent(type, note, target, max);
+        Icon = (uint)note.MonsterNoteTarget.First().Value.Icon;
+        Name = GetName(note, target, max);
+        Description = GetDescription(target);
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = Description.ToLower();
+        Current = (uint)GetCurrent(type, note, target, max);
+        Maximum = max;
+        Unlocked = Current == Maximum;
     }
 
-    public uint Id() => note.RowId;
-    public UnlockableType Type() => UnlockableType.HuntingLog;
-    public uint Icon() => icon;
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string? HowTo() => null;
-    public string? HowToLowercase() => null;
-    public uint? Current() => current;
-    public uint Maximum() => max;
-    public bool Unlocked() => current == max;
+    public uint Id => note.RowId;
+    public UnlockableType Type => UnlockableType.HuntingLog;
+    public uint Icon { get; }
+
+    public string Name { get; }
+    public string? Description { get; }
+    public string? HowTo => null;
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase { get; }
+    public string? HowToLowercase => null;
+
+    public uint? Current { get; set; }
+    public uint Maximum { get; }
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => note.IsValidEntry();
 
     private static int GetCurrent(HuntingLogType type, MonsterNote note, MonsterNoteTarget target, byte max) {

@@ -1,4 +1,5 @@
 using MethodTimer;
+using System;
 using System.Numerics;
 using Recollection.Helpers;
 using Dalamud.Utility;
@@ -11,42 +12,40 @@ public sealed class UnlockableGatheringLog : IUnlockable {
     private readonly GatheringItem item;
     private readonly GatheringPoint point;
     private readonly ExportedGatheringPoint exported;
-    private readonly string name;
-    private readonly string nameLowercase;
-    private readonly string description;
-    private readonly string descriptionLowercase;
-    private readonly string howTo;
-    private readonly string howToLowercase;
-    private readonly uint icon;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableGatheringLog(GatheringItem item, GatheringPoint point, ExportedGatheringPoint exported) {
         this.item = item;
         this.point = point;
         this.exported = exported;
-        name = item.Item.GetValueOrDefault<Item>()?.Name.ToString() ?? "Unknown";
-        description = item.Item.GetValueOrDefault<Item>()?.Description.ToString() ?? "Unknown";
-        howTo = GetHowTo();
-        nameLowercase = name.ToLower();
-        descriptionLowercase = description.ToLower();
-        howToLowercase = howTo.ToLower();
-        icon = item.Item.GetValueOrDefault<Item>()?.Icon ?? 0;
-        unlocked = Plugin.QuestManager.Valid && QuestManager.IsGatheringItemGathered((ushort)item.RowId);
+        Icon = item.Item.GetValueOrDefault<Item>()?.Icon ?? 0;
+        Name = item.Item.GetValueOrDefault<Item>()?.Name.ToString() ?? "Unknown";
+        Description = item.Item.GetValueOrDefault<Item>()?.Description.ToString() ?? "Unknown";
+        HowTo = GetHowTo();
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = Description.ToLower();
+        HowToLowercase = HowTo.ToLower();
+        Unlocked = Plugin.QuestManager.Valid && QuestManager.IsGatheringItemGathered((ushort)item.RowId);
     }
 
-    public uint Id() => item.RowId;
-    public UnlockableType Type() => UnlockableType.GatheringLog;
-    public uint Icon() => icon;
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string? HowTo() => howTo;
-    public string? HowToLowercase() => howToLowercase;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => item.RowId;
+    public UnlockableType Type => UnlockableType.GatheringLog;
+    public uint Icon { get; }
+
+    public string Name { get; }
+    public string? Description { get; }
+    public string HowTo { get; }
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase { get; }
+    public string HowToLowercase { get; }
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => item.IsValidEntry();
 
     private string GetHowTo() {

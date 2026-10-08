@@ -23,7 +23,7 @@ public class TrackerService {
     }
 
     private uint GetLastAchievementInSeries(AchievementIdMap achievement) =>
-        plugin.UnlockablesService.GetExistingAchievement((uint)achievement)?.Id() ?? 0;
+        plugin.UnlockablesService.GetExistingAchievement((uint)achievement)?.Id ?? 0;
 
     public unsafe void SetupEvents() {
         Plugin.DutyState.DutyCompleted += OnDutyCompleted;

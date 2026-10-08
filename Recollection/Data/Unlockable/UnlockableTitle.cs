@@ -14,34 +14,35 @@ public sealed class UnlockableTitle : IUnlockable {
                              .ToDictionary(it => it.RowId, it => it.Name.ToString()));
 
     private readonly Title title;
-    private readonly string name;
-    private readonly string nameLowercase;
-    private readonly string? howTo;
-    private readonly string? howToLowercase;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableTitle(Title title) {
         this.title = title;
-        name = GetName(title);
-        howTo = GetHowTo();
-        nameLowercase = name.ToLower();
-        howToLowercase = howTo.ToLower();
-        unlocked = Plugin.UnlockState.IsTitleUnlocked(title);
+        Name = GetName(title);
+        HowTo = GetHowTo();
+        NameLowercase = Name.ToLower();
+        HowToLowercase = HowTo.ToLower();
+        Unlocked = Plugin.UnlockState.IsTitleUnlocked(title);
     }
 
-    public uint Id() => title.RowId;
-    public UnlockableType Type() => UnlockableType.Title;
-    public uint Icon() => 0;
-    public string Name() => name;
-    public string Description() => "";
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => "";
-    public string? HowTo() => howTo;
-    public string? HowToLowercase() => howToLowercase;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => title.RowId;
+    public UnlockableType Type => UnlockableType.Title;
+    public uint Icon => 0;
+
+    public string Name { get; }
+    public string? Description => null;
+    public string HowTo { get; }
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase => null;
+    public string HowToLowercase { get; }
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => title.IsValidEntry();
 
     private static string GetName(Title title) {
@@ -50,7 +51,7 @@ public sealed class UnlockableTitle : IUnlockable {
         return title.IsPrefix ? $"{text}..." : $"...{text}";
     }
 
-    private string GetHowTo() => TitleUnlockAchievementNames.Value.TryGetValue(Id(), out var achievementName)
+    private string GetHowTo() => TitleUnlockAchievementNames.Value.TryGetValue(Id, out var achievementName)
                                      ? $"Obtain the achievement \"{achievementName}\"."
                                      : "Could not find the required achievement.";
 }

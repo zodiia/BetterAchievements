@@ -203,11 +203,11 @@ public class UnlockablesService : IDisposable {
         foreach (var id in achievementIds) {
             var achievement = GetUnlockableAchievement(id);
             totalCount++;
-            totalPoints += achievement.Points();
-            if (!achievement.Unlocked()) continue;
+            totalPoints += achievement.Points;
+            if (!achievement.Unlocked) continue;
 
             obtainedCount++;
-            obtainedPoints += achievement.Points();
+            obtainedPoints += achievement.Points;
         }
 
         return new AchievementProgress(new Score(obtainedCount, totalCount), new Score(obtainedPoints, totalPoints));

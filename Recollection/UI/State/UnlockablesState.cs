@@ -100,8 +100,8 @@ public class UnlockablesState(Plugin plugin) {
             if (!MatchSearch(unlockable)) continue;
 
             total++;
-            if (unlockable.Unlocked()) obtained++;
-            if (MatchUnlockFilter(unlockable.Unlocked())) visible++;
+            if (unlockable.Unlocked) obtained++;
+            if (MatchUnlockFilter(unlockable.Unlocked)) visible++;
         }
 
         var result = new CollectionProgress(new Score(obtained, total), visible);
@@ -183,7 +183,7 @@ public class UnlockablesState(Plugin plugin) {
         }).ToList();
 
         if (configuration.SortBy == SortBy.Alphabetically)
-            unlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
+            unlockables.Sort((a, b) => string.Compare(a.NameLowercase, b.NameLowercase, StringComparison.OrdinalIgnoreCase));
 
         return unlockables;
     }
@@ -192,11 +192,11 @@ public class UnlockablesState(Plugin plugin) {
     public List<IUnlockable> SortedCollectionUnlockables(UnlockableType type, CollectionCategory category) {
         var unlockables = category.Items
                                   .Select(it => plugin.UnlockablesService.GetUnlockable(type, it))
-                                  .Where(it => MatchSearch(it) && MatchUnlockFilter(it.Unlocked()))
+                                  .Where(it => MatchSearch(it) && MatchUnlockFilter(it.Unlocked))
                                   .ToList();
 
         if (configuration.SortBy == SortBy.Alphabetically)
-            unlockables.Sort((a, b) => string.Compare(a.NameLowercase(), b.NameLowercase(), StringComparison.OrdinalIgnoreCase));
+            unlockables.Sort((a, b) => string.Compare(a.NameLowercase, b.NameLowercase, StringComparison.OrdinalIgnoreCase));
 
         return unlockables;
     }
@@ -207,7 +207,7 @@ public class UnlockablesState(Plugin plugin) {
 
     public List<IUnlockable> PinnedUnlockables(AchievementLayout layout) {
         var ids = layout.GetAllAchievementIds().ToHashSet();
-        return PinnedUnlockables().Where(it => ids.Contains(it.Id())).ToList();
+        return PinnedUnlockables().Where(it => ids.Contains(it.Id)).ToList();
     }
 
     private static CategoryWithBreadcrumbs? FindCategory(
@@ -235,9 +235,9 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     private bool MatchSearch(IUnlockable unlockable) {
-        return unlockable.NameLowercase().Contains(search)
-               || unlockable.DescriptionLowercase().Contains(search)
-               || unlockable.HowToLowercase()?.Contains(search) == true;
+        return unlockable.NameLowercase.Contains(search)
+               || unlockable.DescriptionLowercase?.Contains(search) == true
+               || unlockable.HowToLowercase?.Contains(search) == true;
     }
 
     private bool MatchUnlockFilter(bool unlocked) {
@@ -260,15 +260,15 @@ public class UnlockablesState(Plugin plugin) {
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item) {
         var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
-               && MatchUnlockFilter(achievement.Unlocked())
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
+               && MatchUnlockFilter(achievement.Unlocked)
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item) {
         var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
-               && MatchUnlockFilter(achievements.Unlocked())
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
+               && MatchUnlockFilter(achievements.Unlocked)
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItem item) {
@@ -282,13 +282,13 @@ public class UnlockablesState(Plugin plugin) {
     private bool MatchProgressFilter(AchievementLayoutItemSimple item) {
         var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id()));
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
     private bool MatchProgressFilter(AchievementLayoutItemTiered item) {
         var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements().Last().Id()));
+               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
     private bool MatchProgressFilter(AchievementLayoutItem item) {

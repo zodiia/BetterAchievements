@@ -1,4 +1,5 @@
 using MethodTimer;
+using System;
 using System.Numerics;
 using Dalamud.Utility;
 using Lumina.Excel.Sheets;
@@ -17,35 +18,36 @@ namespace Recollection.Data.Unlockable;
 public sealed class UnlockableTripleTriadNpc : IUnlockable {
     private readonly TripleTriad tt;
     private readonly Level level;
-    private readonly string name;
-    private readonly string howTo;
-    private readonly string nameLowercase;
-    private readonly string howToLowercase;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableTripleTriadNpc(TripleTriad tt, TripleTriadResident ttResident, ENpcResident eNpcResident, Level level) {
         this.tt = tt;
         this.level = level;
-        name = eNpcResident.Singular.ToString();
-        howTo = GetHowTo();
-        nameLowercase = name.ToLower();
-        howToLowercase = howTo.ToLower();
-        unlocked = Plugin.UiState.Valid && Plugin.UiState.Value.IsTripleTriadNpcBeaten(ttResident.RowId);
+        Name = eNpcResident.Singular.ToString();
+        HowTo = GetHowTo();
+        NameLowercase = Name.ToLower();
+        HowToLowercase = HowTo.ToLower();
+        Unlocked = Plugin.UiState.Valid && Plugin.UiState.Value.IsTripleTriadNpcBeaten(ttResident.RowId);
     }
 
-    public uint Id() => tt.RowId;
-    public UnlockableType Type() => UnlockableType.Emote;
-    public uint Icon() => 0; // TODO: pretty sure there's an icon somewhere
-    public string Name() => name;
-    public string Description() => "";
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => "";
-    public string HowTo() => howTo;
-    public string HowToLowercase() => howToLowercase;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => tt.RowId;
+    public UnlockableType Type => UnlockableType.TripleTriadNpc;
+    public uint Icon => 0;
+
+    public string Name { get; }
+    public string? Description => null;
+    public string HowTo { get; }
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase => null;
+    public string HowToLowercase { get; }
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => true; // TODO
 
     private string GetHowTo() {

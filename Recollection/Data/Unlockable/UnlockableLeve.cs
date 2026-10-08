@@ -1,4 +1,5 @@
 using MethodTimer;
+using System;
 using Dalamud.Utility;
 using Recollection.Helpers;
 using Leve = Lumina.Excel.Sheets.Leve;
@@ -7,36 +8,36 @@ namespace Recollection.Data.Unlockable;
 
 public class UnlockableLeve : IUnlockable {
     private readonly Leve leve;
-    private readonly string name;
-    private readonly string nameLowercase;
-    private readonly string? howTo;
-    private readonly string? howToLowercase;
-    private readonly uint icon;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableLeve(Leve leve) {
         this.leve = leve;
-        name = leve.Name.ToString();
-        howTo = GetHowTo();
-        nameLowercase = name.ToLower();
-        howToLowercase = howTo?.ToLower();
-        icon = (uint)leve.IconIssuer;
-        unlocked = Plugin.UnlockState.IsLeveCompleted(leve);
+        Icon = (uint)leve.IconIssuer;
+        Name = leve.Name.ToString();
+        HowTo = GetHowTo();
+        NameLowercase = Name.ToLower();
+        HowToLowercase = HowTo.ToLower();
+        Unlocked = Plugin.UnlockState.IsLeveCompleted(leve);
     }
 
-    public uint Id() => leve.RowId;
-    public UnlockableType Type() => UnlockableType.Minion;
-    public uint Icon() => icon;
-    public string Name() => name;
-    public string Description() => "";
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => "";
-    public string? HowTo() => howTo;
-    public string? HowToLowercase() => howToLowercase;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => leve.RowId;
+    public UnlockableType Type => UnlockableType.Leve;
+    public uint Icon { get; }
+
+    public string Name { get; }
+    public string? Description => null;
+    public string HowTo { get; }
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase => null;
+    public string HowToLowercase { get; }
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => leve.IsValidEntry();
 
     private string GetHowTo() {

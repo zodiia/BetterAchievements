@@ -116,7 +116,7 @@ public static partial class UiComponents {
     }
 
     private static void AchievementRightHeaderTiered(UnlockableTieredAchievement achievements, Configuration config) {
-        if (achievements.Maximum() >= 14) {
+        if (achievements.Maximum >= 14) {
             TieredAchievementSimpleTiers(achievements, config);
         } else {
             TieredAchievementTiers(achievements, config);
@@ -130,20 +130,20 @@ public static partial class UiComponents {
     }
 
     private static void AchievementDescriptionSimple(UnlockableAchievement achievement, Configuration configuration) {
-        ImGui.TextWrapped(achievement.Description());
+        ImGui.TextWrapped(achievement.Description);
 
-        if (achievement.Maximum() <= 1 || achievement.Unlocked()) return;
+        if (achievement.Maximum <= 1 || achievement.Unlocked) return;
 
-        var progress = achievement.Current();
+        var progress = achievement.Current;
 
         ProgressBar(
-            (progress ?? 1.0f) / achievement.Maximum(),
+            (progress ?? 1.0f) / achievement.Maximum,
             progress != null ? UiColors.Progress() : UiColors.Red(),
             height: UiSize.Em(configuration.ProgressBarHeight),
-            insideText: progress != null ? $"{achievement.Current()}/{achievement.Maximum()}" : "Not loaded (click to refresh)",
+            insideText: progress != null ? $"{achievement.Current}/{achievement.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progress != null,
-            onClick: () => OpenAchievementWindow(achievement.Id()));
+            onClick: () => OpenAchievementWindow(achievement.Id));
     }
 
     private static void WrappedColoredText(params (string Text, Vector4? Color)[] segments) {
@@ -186,19 +186,19 @@ public static partial class UiComponents {
         if (currentLevel == null || currentLevel == maxLevel) return;
         if (config.TieredAchievementDisplay == TieredAchievementDisplay.MaxOnly) return;
 
-        WrappedColoredText((currentLevel.Description(), null), ("(current level)", UiColors.Grey()));
+        WrappedColoredText((currentLevel.Description, null), ("(current level)", UiColors.Grey()));
 
         // if the max is 0 or 1 we don't display any progress bars, except the second one if never hide progress bars is true
-        if (maxLevel.Maximum() <= 1) return;
+        if (maxLevel.Maximum <= 1) return;
 
         ProgressBar(
-            (maxLevel.Current() ?? 1.0f) / currentLevel.Maximum(),
+            (maxLevel.Current ?? 1.0f) / currentLevel.Maximum,
             progressLoaded ? UiColors.Progress() : UiColors.Red(),
             height: UiSize.Em(config.ProgressBarHeight),
-            insideText: progressLoaded ? $"{maxLevel.Current()}/{currentLevel.Maximum()}" : "Not loaded (click to refresh)",
+            insideText: progressLoaded ? $"{maxLevel.Current}/{currentLevel.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progressLoaded,
-            onClick: () => OpenAchievementWindow(maxLevel.Id()));
+            onClick: () => OpenAchievementWindow(maxLevel.Id));
     }
 
     private static void AchievementDescriptionTieredMaxLevel(
@@ -206,40 +206,40 @@ public static partial class UiComponents {
     ) {
         if (currentLevel != maxLevel && config.TieredAchievementDisplay == TieredAchievementDisplay.CurrentOnly) return;
 
-        WrappedColoredText((maxLevel.Description(), null), ("(max level)", UiColors.Grey()));
+        WrappedColoredText((maxLevel.Description, null), ("(max level)", UiColors.Grey()));
 
-        if (maxLevel.Unlocked() && !config.NeverHideProgressBars) return;
-        if (maxLevel.Maximum() <= 1 && !config.NeverHideProgressBars) return;
+        if (maxLevel.Unlocked && !config.NeverHideProgressBars) return;
+        if (maxLevel.Maximum <= 1 && !config.NeverHideProgressBars) return;
 
         ProgressBar(
-            (maxLevel.Current() ?? 1.0f) / maxLevel.Maximum(),
+            (maxLevel.Current ?? 1.0f) / maxLevel.Maximum,
             progressLoaded ? UiColors.Progress() : UiColors.Red(),
             height: UiSize.Em(config.ProgressBarHeight),
-            insideText: progressLoaded ? $"{maxLevel.Current()}/{maxLevel.Maximum()}" : "Not loaded (click to refresh)",
+            insideText: progressLoaded ? $"{maxLevel.Current}/{maxLevel.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progressLoaded,
-            onClick: () => OpenAchievementWindow(maxLevel.Id()));
+            onClick: () => OpenAchievementWindow(maxLevel.Id));
     }
 
     private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, Configuration config) {
-        var currentLevel = achievements.ProvidesAchievements().Find(it => !it.Unlocked());
-        var maxLevel = achievements.ProvidesAchievements().Last();
-        var progressLoaded = maxLevel.Current() != null;
+        var currentLevel = achievements.ProvidesAchievements.Find(it => !it.Unlocked);
+        var maxLevel = achievements.ProvidesAchievements.Last();
+        var progressLoaded = maxLevel.Current != null;
 
         AchievementDescriptionTieredCurrentLevel(currentLevel, maxLevel, progressLoaded, config);
 
-        if (achievements.Spoilers() && currentLevel != null) return;
+        if (achievements.Spoilers && currentLevel != null) return;
 
         AchievementDescriptionTieredMaxLevel(currentLevel, maxLevel, progressLoaded, config);
     }
 
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements, Configuration config) {
-        var currentString = config.DisableRomanNumerals ? (achievements.Current() ?? 1).ToString() : ToRoman(achievements.Current() ?? 1);
-        var maximumString = config.DisableRomanNumerals ? achievements.Maximum().ToString() : ToRoman(achievements.Maximum());
+        var currentString = config.DisableRomanNumerals ? (achievements.Current ?? 1).ToString() : ToRoman(achievements.Current ?? 1);
+        var maximumString = config.DisableRomanNumerals ? achievements.Maximum.ToString() : ToRoman(achievements.Maximum);
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(maximumString).X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
-        ImGui.TextColored(achievements.ProvidesAchievements().Last().Unlocked() ? UiColors.Green() : UiColors.Red(), maximumString);
+        ImGui.TextColored(achievements.ProvidesAchievements.Last().Unlocked ? UiColors.Green() : UiColors.Red(), maximumString);
         position -= UiSize.Em(1) + ImGui.CalcTextSize("/").X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
@@ -252,19 +252,19 @@ public static partial class UiComponents {
 
     private static void TieredAchievementTiers(UnlockableTieredAchievement achievements, Configuration config) {
         var widthCalculationText = "";
-        for (var i = 1; i <= achievements.Maximum(); i++) {
+        for (var i = 1; i <= achievements.Maximum; i++) {
             widthCalculationText += (config.DisableRomanNumerals ? i.ToString() : $"{ToRoman(i)}");
         }
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X -
-                       UiSize.Em(achievements.Maximum() - 1);
+                       UiSize.Em(achievements.Maximum - 1);
 
-        for (var i = 1; i <= achievements.Maximum(); i++) {
+        for (var i = 1; i <= achievements.Maximum; i++) {
             var text = config.DisableRomanNumerals ? i.ToString() : $"{ToRoman(i)}";
 
             ImGui.SameLine();
             ImGui.SetCursorPosX(position);
-            ImGui.TextColored(achievements.ProvidesAchievements()[i - 1].Unlocked() ? UiColors.Green() : UiColors.Red(), text);
-            if (i != achievements.Maximum()) {
+            ImGui.TextColored(achievements.ProvidesAchievements[i - 1].Unlocked ? UiColors.Green() : UiColors.Red(), text);
+            if (i != achievements.Maximum) {
                 position += UiSize.Em(1) + ImGui.CalcTextSize(text).X;
             }
         }
@@ -273,18 +273,18 @@ public static partial class UiComponents {
     public static void Achievement(UnlockableAchievement achievement, Configuration config) {
         ImGui.BeginGroup();
 
-        AchievementIcon(achievement.Icon(), AchievementIconSize());
+        AchievementIcon(achievement.Icon, AchievementIconSize());
         ImGui.SameLine();
         ImGui.BeginGroup();
         AchievementHeaderTitle(
-            achievement.Name(),
-            config.DisplayIds ? achievement.Id() : null,
-            config.PinnedAchievements.Contains(achievement.Id()),
-            [achievement.Id()],
+            achievement.Name,
+            config.DisplayIds ? achievement.Id : null,
+            config.PinnedAchievements.Contains(achievement.Id),
+            [achievement.Id],
             config);
-        AchievementHeaderLine1(() => SameLineRightTextColored(achievement.Unlocked() ? UiColors.Green() : UiColors.Red(),
-                                                              achievement.Unlocked() ? "Unlocked" : "Locked"));
-        AchievementHeaderLine2($"{achievement.Points()} points");
+        AchievementHeaderLine1(() => SameLineRightTextColored(achievement.Unlocked ? UiColors.Green() : UiColors.Red(),
+                                                              achievement.Unlocked ? "Unlocked" : "Locked"));
+        AchievementHeaderLine2($"{achievement.Points} points");
         ImGui.EndGroup();
 
         AchievementDescriptionSimple(achievement, config);
@@ -295,18 +295,18 @@ public static partial class UiComponents {
     public static void Achievement(UnlockableTieredAchievement achievements, Configuration config) {
         ImGui.BeginGroup();
 
-        var maxLevel = achievements.ProvidesAchievements().Last();
-        AchievementIcon(maxLevel.Icon(), AchievementIconSize());
+        var maxLevel = achievements.ProvidesAchievements.Last();
+        AchievementIcon(maxLevel.Icon, AchievementIconSize());
         ImGui.SameLine();
         ImGui.BeginGroup();
         AchievementHeaderTitle(
-            achievements.Name(),
-            config.DisplayIds ? maxLevel.Id() : null,
-            config.PinnedAchievements.Contains(achievements.Id()),
-            achievements.Ids(),
+            achievements.Name,
+            config.DisplayIds ? maxLevel.Id : null,
+            config.PinnedAchievements.Contains(achievements.Id),
+            achievements.Ids,
             config);
         AchievementHeaderLine1(() => AchievementRightHeaderTiered(achievements, config));
-        AchievementHeaderLine2($"{achievements.CurrentPoints()}/{achievements.MaximumPoints()} points");
+        AchievementHeaderLine2($"{achievements.CurrentPoints}/{achievements.MaximumPoints} points");
         ImGui.EndGroup();
 
         AchievementDescriptionTiered(achievements, config);

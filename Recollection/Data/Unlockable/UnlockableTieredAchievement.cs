@@ -7,59 +7,53 @@ using Recollection.Helpers;
 namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableTieredAchievement : IUnlockable {
-    private readonly bool spoilers;
-    private readonly string name;
-    private readonly string description;
-    private readonly string nameLowercase;
-    private readonly string descriptionLowercase;
-    private readonly List<uint> ids;
-    private readonly uint current;
-    private readonly uint currentPoints;
-    private readonly uint maximumPoints;
-    private readonly bool pinned;
-    private readonly List<UnlockableAchievement> providesAchievements;
-    public readonly List<Achievement> ExcelAchievements;
-
     [Time]
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, bool spoilers, Plugin plugin) {
         ExcelAchievements = excelAchievements;
-        this.spoilers = spoilers;
-        providesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
-        name = spoilers switch {
-            false => CompiledRegexes.AchievementNameReplace().Replace(providesAchievements.Last().Name(), ""),
+        Spoilers = spoilers;
+        ProvidesAchievements = ExcelAchievements.Select(it => new UnlockableAchievement(it, plugin)).ToList();
+        Name = spoilers switch {
+            false => CompiledRegexes.AchievementNameReplace().Replace(ProvidesAchievements.Last().Name, ""),
             true => CompiledRegexes.AchievementNameReplace()
-                                   .Replace((providesAchievements.FindLast(it => it.Unlocked()) ?? providesAchievements.First()).Name(), "")
+                                   .Replace((ProvidesAchievements.FindLast(it => it.Unlocked) ?? ProvidesAchievements.First()).Name, "")
         };
-        description = excelAchievements.Last().Description.ToString();
-        nameLowercase = name.ToLower();
-        descriptionLowercase = string.Join(" ", providesAchievements.Select(it => it.Description().ToLower()).ToList());
-        maximumPoints = (uint)ExcelAchievements.Select(it => (int)it.Points).Sum();
-        currentPoints = (uint)ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
-        current = (uint)providesAchievements.Count(it => it.Unlocked());
-        pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
-        ids = ExcelAchievements.Select(it => it.RowId).ToList();
+        Description = excelAchievements.Last().Description.ToString();
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = string.Join(" ", ProvidesAchievements.Select(it => it.Description.ToLower()).ToList());
+        Current = (uint)ProvidesAchievements.Count(it => it.Unlocked);
+        Maximum = (uint)ProvidesAchievements.Count;
+        Unlocked = Current == Maximum;
+        Ids = ExcelAchievements.Select(it => it.RowId).ToList();
+        Pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
+        MaximumPoints = (uint)ExcelAchievements.Select(it => (int)it.Points).Sum();
+        CurrentPoints = (uint)ExcelAchievements.Select(it => Plugin.UnlockState.IsAchievementComplete(it) ? it.Points : 0).Sum();
     }
 
-    public uint Id() => ExcelAchievements.Last().RowId;
-    public List<uint> Ids() => ids;
-    public UnlockableType Type() => UnlockableType.Achievement;
-    public uint Icon() => providesAchievements.Last().Icon();
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string HowTo() => "";
-    public string HowToLowercase() => "";
-    public uint? Current() => current;
-    public uint Maximum() => (uint)providesAchievements.Count;
-    public bool Unlocked() => Current() == Maximum();
-    public bool Pinned() => pinned;
-    public bool Spoilers() => spoilers;
-    public uint CurrentPoints() => currentPoints;
-    public uint MaximumPoints() => maximumPoints;
-    public List<UnlockableAchievement> ProvidesAchievements() => providesAchievements;
-    public bool IsValid() => providesAchievements.All(it => it.IsValid());
+    public uint Id => ExcelAchievements.Last().RowId;
+    public UnlockableType Type => UnlockableType.Achievement;
+    public uint Icon => ProvidesAchievements.Last().Icon;
+
+    public string Name { get; }
+    public string Description { get; }
+    public string? HowTo => null;
+    public string NameLowercase { get; }
+    public string DescriptionLowercase { get; }
+    public string? HowToLowercase => null;
+
+    public uint? Current { get; set; }
+    public uint Maximum { get; }
+    public bool Unlocked { get; set; }
+
+    public List<Achievement> ExcelAchievements { get; }
+    public List<UnlockableAchievement> ProvidesAchievements { get; }
+    public List<uint> Ids { get; }
+    public bool Pinned { get; }
+    public bool Spoilers { get; }
+    public uint CurrentPoints { get; }
+    public uint MaximumPoints { get; }
+
+    public bool IsValid() => ProvidesAchievements.All(it => it.IsValid());
 
     public AchievementCompletionRatio AchievementCompletionRatio() =>
-        (providesAchievements.Find(it => !it.Unlocked()) ?? providesAchievements.Last()).AchievementCompletionRatio();
+        (ProvidesAchievements.Find(it => !it.Unlocked) ?? ProvidesAchievements.Last()).AchievementCompletionRatio();
 }

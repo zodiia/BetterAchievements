@@ -1,4 +1,5 @@
 using MethodTimer;
+using System;
 using System.Linq;
 using Recollection.Helpers;
 using Lumina.Excel;
@@ -10,48 +11,48 @@ namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableEmote : IUnlockable {
     private readonly Emote emote;
-    private readonly string name;
-    private readonly string description;
-    private readonly string nameLowercase;
-    private readonly string descriptionLowercase;
-    private readonly string? howTo;
-    private readonly string? howToLowercase;
-    private readonly bool unlocked;
 
     [Time]
     public UnlockableEmote(Emote emote, ITableRow tableRow) {
         this.emote = emote;
-        name = emote.Name.ToString();
-        description = GetDescription(emote.TextCommand);
-        howTo = tableRow.HowTo;
-        nameLowercase = name.ToLower();
-        descriptionLowercase = description.ToLower();
-        howToLowercase = howTo?.ToLower();
-        unlocked = Plugin.UnlockState.IsEmoteUnlocked(emote);
+        Name = emote.Name.ToString();
+        Description = GetDescription(emote.TextCommand);
+        HowTo = tableRow.HowTo;
+        NameLowercase = Name.ToLower();
+        DescriptionLowercase = Description?.ToLower();
+        HowToLowercase = HowTo?.ToLower();
+        Unlocked = Plugin.UnlockState.IsEmoteUnlocked(emote);
     }
 
-    public uint Id() => emote.RowId;
-    public UnlockableType Type() => UnlockableType.Emote;
-    public uint Icon() => emote.Icon;
-    public string Name() => name;
-    public string Description() => description;
-    public string NameLowercase() => nameLowercase;
-    public string DescriptionLowercase() => descriptionLowercase;
-    public string? HowTo() => howTo;
-    public string? HowToLowercase() => howToLowercase;
-    public uint? Current() => Unlocked() ? 1u : 0u;
-    public uint Maximum() => 1;
-    public bool Unlocked() => unlocked;
+    public uint Id => emote.RowId;
+    public UnlockableType Type => UnlockableType.Emote;
+    public uint Icon => emote.Icon;
+
+    public string Name { get; }
+    public string? Description { get; }
+    public string? HowTo { get; }
+    public string NameLowercase { get; }
+    public string? DescriptionLowercase { get; }
+    public string? HowToLowercase { get; }
+
+    public uint? Current {
+        get => Unlocked ? 1u : 0u;
+        set => throw new NotSupportedException("Current is derived from Unlocked.");
+    }
+    public uint Maximum => 1;
+    public bool Unlocked { get; set; }
+
     public bool IsValid() => emote.IsValidEntry();
 
-    private static string GetDescription(RowRef<TextCommand> textCommand) {
-        if (textCommand.ValueNullable is not { } command) return "";
+    private static string? GetDescription(RowRef<TextCommand> textCommand) {
+        if (textCommand.ValueNullable is not { } command) return null;
 
         var aliases = new[] { command.Command, command.ShortCommand, command.Alias, command.ShortAlias }
                       .Select(it => it.ToString())
                       .Where(it => it.Length > 0)
                       .Distinct();
 
-        return string.Join(", ", aliases);
+        var description = string.Join(", ", aliases);
+        return description.Length > 0 ? description : null;
     }
 }
