@@ -66,7 +66,7 @@ public class AchievementProgressService : IDisposable {
         var lastId = unlockables.HighestAchievementIdMap.GetValueOrDefault(achievementId, achievementId);
 
         progressCache[lastId] = progress;
-        updated = true;
+        unlockables.SetAchievementProgress(lastId, progress);
     }
 
     public uint? IncrementProgress(uint achievementId, int amount) {

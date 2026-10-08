@@ -10,6 +10,7 @@ using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
 using Recollection.Helpers;
+using Sheets = Lumina.Excel.Sheets;
 
 namespace Recollection.Services;
 
@@ -24,7 +25,6 @@ public class UnlockablesService : IDisposable {
     private readonly Dictionary<uint, (uint eNpcBaseRowId, uint levelRowId)> ttLinkCache = BuildTripleTriadLinkCache();
     private readonly Dictionary<uint, uint> gatheringNodeCache = BuildGatheringNodeCache();
 
-    private bool unlocksUpdatedForUi = false;
     private bool achievementsWereLoaded = false;
 
     public UnlockablesService(Plugin plugin) {
@@ -44,8 +44,46 @@ public class UnlockablesService : IDisposable {
         Plugin.ClientState.Logout -= OnLogout;
     }
 
-    private void OnUnlock(RowRef _) {
-        unlocksUpdatedForUi = true;
+    private void OnUnlock(RowRef rowRef) {
+        var id = rowRef.RowId;
+
+        if (rowRef.TryGetValue(out Sheets.Achievement achievement)) {
+            OnAchievementUnlock(achievement);
+            return;
+        }
+
+        IUnlockable? unlockable = rowRef switch {
+            _ when rowRef.Is<Sheets.Mount>() => collectionItems.GetValueOrDefault(new(UnlockableType.Mount, id)),
+            _ when rowRef.Is<Sheets.Companion>() => collectionItems.GetValueOrDefault(new(UnlockableType.Minion, id)),
+            _ when rowRef.Is<Sheets.Title>() => collectionItems.GetValueOrDefault(new(UnlockableType.Title, id)),
+            _ when rowRef.Is<Sheets.TripleTriadCard>() => collectionItems.GetValueOrDefault(new(UnlockableType.TripleTriadCard, id)),
+            _ when rowRef.Is<Sheets.BuddyEquip>() => collectionItems.GetValueOrDefault(new(UnlockableType.Barding, id)),
+            _ when rowRef.Is<Sheets.Ornament>() => collectionItems.GetValueOrDefault(new(UnlockableType.FashionAccessory, id)),
+            _ when rowRef.Is<Sheets.GlassesStyle>() => collectionItems.GetValueOrDefault(new(UnlockableType.Facewear, id)),
+            _ when rowRef.Is<Sheets.Emote>() => collectionItems.GetValueOrDefault(new(UnlockableType.Emote, id)),
+            _ when rowRef.Is<Sheets.Orchestrion>() => collectionItems.GetValueOrDefault(new(UnlockableType.OrchestrionRoll, id)),
+            _ when rowRef.Is<Sheets.Recipe>() => collectionItems.GetValueOrDefault(new(UnlockableType.CraftingLog, id)),
+            _ when rowRef.GetValueOrDefault<Sheets.CharaMakeCustomize>() is { } customize =>
+                collectionItems.GetValueOrDefault(new(UnlockableType.Hairstyle, customize.FeatureID)),
+            _ => null
+        };
+
+        unlockable?.Unlocked = true;
+    }
+
+    private void OnAchievementUnlock(Sheets.Achievement achievement) {
+        achievements.GetValueOrDefault(achievement.RowId)?.Unlocked = true;
+
+        if (tieredAchievements.TryGetValue(achievement.RowId, out var tiered)) {
+            tiered.UpdateCurrent();
+            tiered.Unlocked = tiered.Current == tiered.Maximum;
+        }
+    }
+
+    public void SetAchievementProgress(uint achievementId, uint progress) {
+        if (achievements.TryGetValue(achievementId, out var achievement)) {
+            achievement.Current = progress;
+        }
     }
 
     [Time]
@@ -103,7 +141,8 @@ public class UnlockablesService : IDisposable {
         }
 
         var achievementList = achievementIds.Select(id => ExcelSheets.Achievement.Value.GetRow(id)).ToList();
-        var unlockable = new UnlockableTieredAchievement(achievementList, spoilers, plugin);
+        var providesAchievements = achievementIds.Select(GetUnlockableAchievement).ToList();
+        var unlockable = new UnlockableTieredAchievement(achievementList, providesAchievements, spoilers, plugin);
         achievementIds.ForEach(id => tieredAchievements[id] = unlockable);
         return unlockable;
     }
@@ -231,11 +270,6 @@ public class UnlockablesService : IDisposable {
     public bool GetAchievementListUpdatedForUi() {
         if (!achievementsWereLoaded && Plugin.UnlockState.IsAchievementListLoaded) {
             achievementsWereLoaded = true;
-            return true;
-        }
-
-        if (unlocksUpdatedForUi) {
-            unlocksUpdatedForUi = false;
             return true;
         }
 
