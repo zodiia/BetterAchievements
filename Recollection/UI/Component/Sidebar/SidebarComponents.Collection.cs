@@ -69,7 +69,7 @@ public static partial class SidebarComponents {
             state.Navigation.Navigate(target);
         }
 
-        if (isOpen && type != UnlockableType.Title) {
+        if (isOpen && state.Unlockables.CollectionCategories(type).Count > 1) {
             CollectionCategories(plugin, state, type);
         }
     }

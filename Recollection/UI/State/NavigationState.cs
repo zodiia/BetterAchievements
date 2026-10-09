@@ -1,6 +1,5 @@
 using MethodTimer;
 using System.Collections.Generic;
-using System.Linq;
 using Recollection.UI.Component;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
@@ -98,15 +97,9 @@ public class NavigationState {
                 break;
 
             case NavigationTarget.Collection collection:
-                var singleCategory = unlockables.CollectionCategories(collection.Type).FirstOrDefault();
-                if (collection.Type == UnlockableType.Title && singleCategory == null) {
-                    // fall back to overview (shouldn't happen)
-                    Navigate(new NavigationTarget.Overview());
-                    return;
-                }
-
-                IView collectionView = collection.Type == UnlockableType.Title
-                    ? CollectionView(target, collection.Type, singleCategory!, CollectionsService.Label(collection.Type))
+                var collectionCategories = unlockables.CollectionCategories(collection.Type);
+                IView collectionView = collectionCategories.Count == 1
+                    ? CollectionView(target, collection.Type, collectionCategories[0], CollectionsService.Label(collection.Type))
                     : new CollectionOverviewView(plugin, collection.Type, unlockables, this);
 
                 SetNavigation(target, CollectionsService.Label(collection.Type), collectionView);
