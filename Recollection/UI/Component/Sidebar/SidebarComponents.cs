@@ -94,7 +94,8 @@ public static partial class SidebarComponents {
         CollectionItem(plugin, state, UnlockableType.HuntingLog, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Green());
-        FillerItems(plugin, state, "Mount Speed", "Aether Currents", "Field Records", "Survey Records");
+        FillerItems(plugin, state, "Mount Speed", "Aether Currents", "Field Records");
+        CollectionItem(plugin, state, UnlockableType.SurveyRecord, UiColors.Green());
         CollectionItem(plugin, state, UnlockableType.OccultRecord, UiColors.Green());
 
         SectionHeader(plugin, "Seasonal & Others");

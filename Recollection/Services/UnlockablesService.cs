@@ -29,6 +29,7 @@ public class UnlockablesService : IDisposable {
     private ulong gatheredGatheringItemsHash;
     private ulong completedLevesHash;
     private ulong huntingLogRankDataHash;
+    private ulong completedSurveyRecordsHash;
 
     private bool achievementsWereLoaded = false;
 
@@ -114,6 +115,12 @@ public class UnlockablesService : IDisposable {
         if (Plugin.QuestManager.Valid && HashChanged(ref completedLevesHash, Plugin.QuestManager.Value.CompletedLeveQuestsBitArray.ComputeHash())) {
             UpdatePolledUnlockables(UnlockableType.Leve, (key, unlockable) => {
                 unlockable.Unlocked = Plugin.UnlockState.IsLeveCompleted(ExcelSheets.Leve.Value.GetRow(key.Id));
+            });
+        }
+
+        if (Plugin.NativePlayerState.Valid && HashChanged(ref completedSurveyRecordsHash, Plugin.NativePlayerState.Value.CompletedVVDNotebookContentsBitArray.ComputeHash())) {
+            UpdatePolledUnlockables(UnlockableType.SurveyRecord, (key, unlockable) => {
+                unlockable.Unlocked = UnlockableSurveyRecord.IsCompleted(key.Id);
             });
         }
 
@@ -285,6 +292,8 @@ public class UnlockablesService : IDisposable {
             new UnlockableFramersKit(ExcelSheets.Item.Value.GetRow(key.Id)),
         UnlockableType.OccultRecord =>
             new UnlockableOccultRecord(ExcelSheets.MKDLore.Value.GetRow(key.Id)),
+        UnlockableType.SurveyRecord =>
+            new UnlockableSurveyRecord(ExcelSheets.VVDNotebookContents.Value.GetRow(key.Id)),
         UnlockableType.CraftingLog =>
             new UnlockableCraftingLog(ExcelSheets.Recipe.Value.GetRow(key.Id)),
         UnlockableType.GatheringLog =>

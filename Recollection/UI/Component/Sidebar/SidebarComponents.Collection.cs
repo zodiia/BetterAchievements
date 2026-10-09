@@ -27,6 +27,7 @@ public static partial class SidebarComponents {
             UnlockableType.Leve => FontAwesomeIcon.Leaf,
             UnlockableType.FramersKit => FontAwesomeIcon.Portrait,
             UnlockableType.OccultRecord => FontAwesomeIcon.BookOpen,
+            UnlockableType.SurveyRecord => FontAwesomeIcon.Scroll,
             _ => FontAwesomeIcon.Question,
         };
     }

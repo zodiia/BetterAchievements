@@ -30,6 +30,8 @@ public static class ExcelSheetsExtension {
     public static bool IsValidEntry(this Leve leve) => leve is { Name.IsEmpty: false, Description.IsEmpty: false, LeveRewardItem.IsValid: true };
     public static bool IsValidEntry(this MKDLore lore) => lore is { Name.IsEmpty: false };
     public static bool IsValidEntry(this Item item) => item is { Name.IsEmpty: false, ItemAction.ValueNullable.Action.RowId: FramersKitItemActionType };
+    public static bool IsValidEntry(this VVDNotebookContents contents) => contents is { Name.IsEmpty: false, RowId: > 0 };
+    public static bool IsValidEntry(this VVDNotebookSeries series) => series is { Name.IsEmpty: false, RowId: > 0 };
 
     public static bool IsValidEntry(this GatheringPoint point) => point is {
         GatheringPointBase: { IsValid: true, Value.GatheringType.RowId: < MaxGatheringTypeId }, PlaceName: { IsValid: true, Value.Name.IsEmpty: false }, TerritoryType.IsValid: true

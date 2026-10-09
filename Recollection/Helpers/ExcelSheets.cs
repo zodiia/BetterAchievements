@@ -33,5 +33,8 @@ public static class ExcelSheets {
     public static readonly Lazy<ExcelSheet<Title>> Title = new(() => Plugin.DataManager.GetExcelSheet<Title>());
     public static readonly Lazy<ExcelSheet<TripleTriad>> TripleTriad = new(() => Plugin.DataManager.GetExcelSheet<TripleTriad>());
     public static readonly Lazy<ExcelSheet<TripleTriadCard>> TripleTriadCard = new(() => Plugin.DataManager.GetExcelSheet<TripleTriadCard>());
+    public static readonly Lazy<ExcelSheet<VVDData>> VVDData = new(() => Plugin.DataManager.GetExcelSheet<VVDData>());
+    public static readonly Lazy<ExcelSheet<VVDNotebookContents>> VVDNotebookContents = new(() => Plugin.DataManager.GetExcelSheet<VVDNotebookContents>());
+    public static readonly Lazy<ExcelSheet<VVDNotebookSeries>> VVDNotebookSeries = new(() => Plugin.DataManager.GetExcelSheet<VVDNotebookSeries>());
     public static readonly Lazy<ExcelSheet<TripleTriadResident>> TripleTriadResident = new(() => Plugin.DataManager.GetExcelSheet<TripleTriadResident>());
 }

@@ -19,6 +19,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Recollection.Services;
 using NativeMonsterNoteManager = FFXIVClientStructs.FFXIV.Client.Game.MonsterNoteManager;
 using NativeQuestManager = FFXIVClientStructs.FFXIV.Client.Game.QuestManager;
+using NativePlayerStateStruct = FFXIVClientStructs.FFXIV.Client.Game.UI.PlayerState;
 
 namespace Recollection;
 
@@ -92,6 +93,12 @@ public sealed class Plugin : IDalamudPlugin {
     internal static readonly NativeRef<NativeMonsterNoteManager> MonsterNoteManager = new(() => {
         unsafe {
             return NativeMonsterNoteManager.Instance();
+        }
+    });
+
+    internal static readonly NativeRef<NativePlayerStateStruct> NativePlayerState = new(() => {
+        unsafe {
+            return NativePlayerStateStruct.Instance();
         }
     });
 

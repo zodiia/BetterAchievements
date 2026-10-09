@@ -38,6 +38,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.HuntingLog,
         UnlockableType.Leve,
         UnlockableType.OccultRecord,
+        UnlockableType.SurveyRecord,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -126,6 +127,8 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.OccultRecord =>
             BuildSingleCategory(UnlockableType.OccultRecord,
                                 ExcelSheets.MKDLore.Value.Where(it => it.IsValidEntry()).Select(it => it.RowId).ToList()),
+        UnlockableType.SurveyRecord =>
+            BuildSurveyRecordCategories(),
         UnlockableType.CraftingLog =>
             BuildCraftingCategories(),
         UnlockableType.GatheringLog =>
@@ -168,6 +171,17 @@ public class CollectionsService(Plugin plugin) {
             .ToList();
 
     private static List<CollectionCategory> BuildSingleCategory(UnlockableType type, List<uint> items) => [new() { Id = 0, Name = Label(type), Items = items }];
+
+    private static List<CollectionCategory> BuildSurveyRecordCategories() =>
+        ExcelSheets.VVDNotebookSeries.Value
+                   .Where(it => it.IsValidEntry())
+                   .Select(series => new CollectionCategory {
+                       Id = series.RowId,
+                       Name = series.Name.ToString(),
+                       Items = series.Contents.Where(it => it.RowId > 0 && it.Value.IsValidEntry()).Select(it => it.RowId).ToList(),
+                   })
+                   .OrderBy(it => it.Id)
+                   .ToList();
 
     private static List<CollectionCategory> BuildCraftingCategories() =>
         ExcelSheets.Recipe.Value.Where(it => it.IsValidEntry())
