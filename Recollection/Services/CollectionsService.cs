@@ -19,7 +19,6 @@ namespace Recollection.Services;
 public class CollectionsService(Plugin plugin) {
     private const string OtherCategoryName = "Other";
     private const string UnknownCategoryName = "Unknown";
-    private const uint MaxRecordableGatheringItemId = 10000;
 
     public static readonly List<UnlockableType> Collections = [
         UnlockableType.Mount,
@@ -38,6 +37,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.OrchestrionRoll,
         UnlockableType.HuntingLog,
         UnlockableType.Leve,
+        UnlockableType.OccultRecord,
     ];
 
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
@@ -121,7 +121,11 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.Leve =>
             BuildLeveCategories(response.GetTable<Leve>()),
         UnlockableType.FramersKit =>
-            BuildFramersKitCategories(),
+            BuildSingleCategory(UnlockableType.FramersKit,
+                                ExcelSheets.Item.Value.Where(it => it.IsValidEntry()).OrderBy(it => it.AdditionalData.RowId).Select(it => it.RowId).ToList()),
+        UnlockableType.OccultRecord =>
+            BuildSingleCategory(UnlockableType.OccultRecord,
+                                ExcelSheets.MKDLore.Value.Where(it => it.IsValidEntry()).Select(it => it.RowId).ToList()),
         UnlockableType.CraftingLog =>
             BuildCraftingCategories(),
         UnlockableType.GatheringLog =>
@@ -163,13 +167,7 @@ public class CollectionsService(Plugin plugin) {
             .OrderBy(it => it.Id)
             .ToList();
 
-    private static List<CollectionCategory> BuildFramersKitCategories() => [
-        new() {
-            Id = 0,
-            Name = Label(UnlockableType.FramersKit),
-            Items = ExcelSheets.Item.Value.Where(it => it.IsValidEntry()).OrderBy(it => it.AdditionalData.RowId).Select(it => it.RowId).ToList()
-        }
-    ];
+    private static List<CollectionCategory> BuildSingleCategory(UnlockableType type, List<uint> items) => [new() { Id = 0, Name = Label(type), Items = items }];
 
     private static List<CollectionCategory> BuildCraftingCategories() =>
         ExcelSheets.Recipe.Value.Where(it => it.IsValidEntry())

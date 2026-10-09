@@ -68,6 +68,7 @@ public class UnlockablesService : IDisposable {
             _ when rowRef.Is<Sheets.Emote>() => collectionItems.GetValueOrDefault(new(UnlockableType.Emote, id)),
             _ when rowRef.Is<Sheets.Orchestrion>() => collectionItems.GetValueOrDefault(new(UnlockableType.OrchestrionRoll, id)),
             _ when rowRef.Is<Sheets.Recipe>() => collectionItems.GetValueOrDefault(new(UnlockableType.CraftingLog, id)),
+            _ when rowRef.Is<Sheets.MKDLore>() => collectionItems.GetValueOrDefault(new(UnlockableType.OccultRecord, id)),
             _ when rowRef.Is<Sheets.Item>() => collectionItems.GetValueOrDefault(new(UnlockableType.FramersKit, id)),
             _ when rowRef.GetValueOrDefault<Sheets.CharaMakeCustomize>() is { } customize =>
                 collectionItems.GetValueOrDefault(new(UnlockableType.Hairstyle, customize.FeatureID)),
@@ -282,6 +283,8 @@ public class UnlockablesService : IDisposable {
             new UnlockableLeve(ExcelSheets.Leve.Value.GetRow(key.Id)),
         UnlockableType.FramersKit =>
             new UnlockableFramersKit(ExcelSheets.Item.Value.GetRow(key.Id)),
+        UnlockableType.OccultRecord =>
+            new UnlockableOccultRecord(ExcelSheets.MKDLore.Value.GetRow(key.Id)),
         UnlockableType.CraftingLog =>
             new UnlockableCraftingLog(ExcelSheets.Recipe.Value.GetRow(key.Id)),
         UnlockableType.GatheringLog =>

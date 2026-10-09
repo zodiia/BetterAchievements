@@ -26,6 +26,7 @@ public static partial class SidebarComponents {
             UnlockableType.OrchestrionRoll => FontAwesomeIcon.Music,
             UnlockableType.Leve => FontAwesomeIcon.Leaf,
             UnlockableType.FramersKit => FontAwesomeIcon.Portrait,
+            UnlockableType.OccultRecord => FontAwesomeIcon.BookOpen,
             _ => FontAwesomeIcon.Question,
         };
     }

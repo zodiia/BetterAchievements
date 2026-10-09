@@ -19,6 +19,7 @@ public static class ExcelSheets {
     public static readonly Lazy<ExcelSheet<GatheringPoint>> GatheringPoint = new(() => Plugin.DataManager.GetExcelSheet<GatheringPoint>());
     public static readonly Lazy<ExcelSheet<GlassesStyle>> GlassesStyle = new(() => Plugin.DataManager.GetExcelSheet<GlassesStyle>());
     public static readonly Lazy<ExcelSheet<Item>> Item = new(() => Plugin.DataManager.GetExcelSheet<Item>());
+    public static readonly Lazy<ExcelSheet<MKDLore>> MKDLore = new(() => Plugin.DataManager.GetExcelSheet<MKDLore>());
     public static readonly Lazy<ExcelSheet<MonsterNote>> MonsterNote = new(() => Plugin.DataManager.GetExcelSheet<MonsterNote>());
     public static readonly Lazy<ExcelSheet<Mount>> Mount = new(() => Plugin.DataManager.GetExcelSheet<Mount>());
     public static readonly Lazy<ExcelSheet<MountTransient>> MountTransient = new(() => Plugin.DataManager.GetExcelSheet<MountTransient>());
