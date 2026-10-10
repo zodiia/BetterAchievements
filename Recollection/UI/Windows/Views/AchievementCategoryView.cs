@@ -29,10 +29,10 @@ public class AchievementCategoryView(Plugin plugin, AchievementLayoutGroup group
         for (var i = 0; i < pinned.Count; i++) {
             switch (pinned[i]) {
                 case UnlockableAchievement achievement:
-                    UiComponents.Achievement(achievement, plugin.Configuration);
+                    UiComponents.Achievement(achievement, plugin);
                     break;
                 case UnlockableTieredAchievement tiered:
-                    UiComponents.Achievement(tiered, plugin.Configuration);
+                    UiComponents.Achievement(tiered, plugin);
                     break;
             }
 

@@ -8,17 +8,18 @@ namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableAchievement : IUnlockable {
     private readonly Achievement achievement;
+    private readonly Plugin plugin;
 
     [Time]
     public UnlockableAchievement(Achievement achievement, Plugin plugin) {
         this.achievement = achievement;
+        this.plugin = plugin;
         Name = achievement.Name.ToString();
         Description = achievement.Description.ToString();
         NameLowercase = Name.ToLower();
         DescriptionLowercase = Description.ToLower();
         Current = plugin.AchievementProgressService.GetProgress(achievement.RowId);
         Unlocked = Plugin.UnlockState.IsAchievementComplete(achievement);
-        Pinned = plugin.Configuration.PinnedAchievements.Contains(achievement.RowId);
     }
 
     public uint Id => achievement.RowId;
@@ -36,7 +37,7 @@ public sealed class UnlockableAchievement : IUnlockable {
     public uint Maximum => achievement.Maximum();
     public bool Unlocked { get; set; }
 
-    public bool Pinned { get; }
+    public bool Pinned => plugin.UnlockablesService.GetPinned(achievement.RowId);
     public Title? Title => achievement.Title.ValueNullable;
     public byte Points => achievement.Points;
     public byte AchievementType => achievement.Type;

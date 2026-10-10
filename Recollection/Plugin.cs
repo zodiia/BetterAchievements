@@ -110,7 +110,7 @@ public sealed class Plugin : IDalamudPlugin {
     public CollectionsService CollectionsService { get; private set; }
     public TrackerService TrackerService { get; private set; }
     public AddonLifecycleService AddonLifecycleService { get; private set; }
-    public HistoryService HistoryService { get; private set; }
+    public DatabaseService DatabaseService { get; private set; }
 
     public Configuration Configuration { get; private set; }
 
@@ -141,7 +141,7 @@ public sealed class Plugin : IDalamudPlugin {
         MainLayout = LoadMainWindowLayout();
 
         LalachievementsService = new LalachievementsService();
-        HistoryService = new HistoryService(this);
+        DatabaseService = new DatabaseService(this);
         AddonLifecycleService = new AddonLifecycleService();
         CollectionsService = new CollectionsService(this);
         UnlockablesService = new UnlockablesService(this);
@@ -190,7 +190,7 @@ public sealed class Plugin : IDalamudPlugin {
 
         AchievementProgressService.Dispose();
         UnlockablesService.Dispose();
-        HistoryService.Dispose();
+        DatabaseService.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(SettingsCommandName);

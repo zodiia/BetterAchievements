@@ -8,7 +8,7 @@ namespace Recollection.Services;
 public class AchievementProgressService : IDisposable {
     private readonly Plugin plugin;
     private readonly UnlockablesService unlockables;
-    private readonly HistoryService history;
+    private readonly DatabaseService database;
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
     private bool updated = false;
 
@@ -16,7 +16,7 @@ public class AchievementProgressService : IDisposable {
     public AchievementProgressService(Plugin plugin) {
         this.plugin = plugin;
         unlockables = plugin.UnlockablesService;
-        history = plugin.HistoryService;
+        database = plugin.DatabaseService;
         SetupEvent();
         LoadProgress();
     }
@@ -44,7 +44,7 @@ public class AchievementProgressService : IDisposable {
     [Time]
     private void LoadProgress() {
         progressCache.Clear();
-        var all = history.GetAllAchievementStatus(Plugin.PlayerState.ContentId);
+        var all = database.GetAllAchievementStatus(Plugin.PlayerState.ContentId);
         foreach (var status in all) {
             if (status.Progress != null) {
                 progressCache[status.AchievementId] = (uint)status.Progress;

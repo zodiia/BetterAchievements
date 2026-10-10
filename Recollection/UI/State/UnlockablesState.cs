@@ -50,7 +50,7 @@ public class UnlockablesState(Plugin plugin) {
         plugin.UnlockablesService.Refresh();
         ApplyFilters();
         Achievement = UnlockablesService.CalculateAchievementPoints();
-        RecentlyUnlockedAchievements = plugin.HistoryService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
+        RecentlyUnlockedAchievements = plugin.DatabaseService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
     }
 
     public bool CollectionsLoaded => plugin.CollectionsService.Loaded;
@@ -104,7 +104,7 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public AchievementProgress GetPinnedProgress() {
-        var pinned = configuration.PinnedAchievements;
+        var pinned = plugin.UnlockablesService.GetPinned();
         if (pinnedProgressCache is { } cached && pinned.SequenceEqual(pinnedSnapshot)) return cached;
 
         pinnedSnapshot = pinned.ToList();

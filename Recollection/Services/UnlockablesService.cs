@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Dalamud.Plugin.Services;
@@ -30,6 +31,7 @@ public class UnlockablesService : IDisposable {
     private ulong completedLevesHash;
     private ulong huntingLogRankDataHash;
     private ulong completedSurveyRecordsHash;
+    private List<uint> pinnedAchievementIds = [];
 
     private bool achievementsWereLoaded = false;
 
@@ -39,6 +41,7 @@ public class UnlockablesService : IDisposable {
         HighestAchievementIdMap = plugin.MainLayout.GetHighestIdMap();
         Plugin.UnlockState.Unlock += OnUnlock;
         Plugin.ClientState.Logout += OnLogout;
+        LoadPinnedAchievements();
     }
 
     private void OnLogout(int type, int code) {
@@ -101,33 +104,32 @@ public class UnlockablesService : IDisposable {
 
     public unsafe void CheckPolledUnlocks() {
         if (Plugin.UiState.Valid && HashChanged(ref beatenTripleTriadNpcsHash, Plugin.UiState.Value.BeatenTripleTriadResidentsBitArray.ComputeHash())) {
-            UpdatePolledUnlockables(UnlockableType.TripleTriadNpc, (_, unlockable) => {
-                unlockable.Unlocked = Plugin.UiState.Value.IsTripleTriadNpcBeaten(unlockable.Id);
-            });
+            UpdatePolledUnlockables(UnlockableType.TripleTriadNpc,
+                                    (_, unlockable) => { unlockable.Unlocked = Plugin.UiState.Value.IsTripleTriadNpcBeaten(unlockable.Id); });
         }
 
         if (Plugin.QuestManager.Valid && HashChanged(ref gatheredGatheringItemsHash, Plugin.QuestManager.Value.GatheredGatheringItemsBitArray.ComputeHash())) {
-            UpdatePolledUnlockables(UnlockableType.GatheringLog, (key, unlockable) => {
-                unlockable.Unlocked = FFXIVClientStructs.FFXIV.Client.Game.QuestManager.IsGatheringItemGathered((ushort)key.Id);
-            });
+            UpdatePolledUnlockables(UnlockableType.GatheringLog,
+                                    (key, unlockable) => {
+                                        unlockable.Unlocked = FFXIVClientStructs.FFXIV.Client.Game.QuestManager.IsGatheringItemGathered((ushort)key.Id);
+                                    });
         }
 
         if (Plugin.QuestManager.Valid && HashChanged(ref completedLevesHash, Plugin.QuestManager.Value.CompletedLeveQuestsBitArray.ComputeHash())) {
-            UpdatePolledUnlockables(UnlockableType.Leve, (key, unlockable) => {
-                unlockable.Unlocked = Plugin.UnlockState.IsLeveCompleted(ExcelSheets.Leve.Value.GetRow(key.Id));
-            });
+            UpdatePolledUnlockables(UnlockableType.Leve,
+                                    (key, unlockable) => { unlockable.Unlocked = Plugin.UnlockState.IsLeveCompleted(ExcelSheets.Leve.Value.GetRow(key.Id)); });
         }
 
-        if (Plugin.NativePlayerState.Valid && HashChanged(ref completedSurveyRecordsHash, Plugin.NativePlayerState.Value.CompletedVVDNotebookContentsBitArray.ComputeHash())) {
-            UpdatePolledUnlockables(UnlockableType.SurveyRecord, (key, unlockable) => {
-                unlockable.Unlocked = UnlockableSurveyRecord.IsCompleted(key.Id);
-            });
+        if (Plugin.NativePlayerState.Valid &&
+            HashChanged(ref completedSurveyRecordsHash, Plugin.NativePlayerState.Value.CompletedVVDNotebookContentsBitArray.ComputeHash())) {
+            UpdatePolledUnlockables(UnlockableType.SurveyRecord, (key, unlockable) => { unlockable.Unlocked = UnlockableSurveyRecord.IsCompleted(key.Id); });
         }
 
         if (Plugin.MonsterNoteManager.Valid) {
             var rankData = Plugin.MonsterNoteManager.Value.RankData;
             fixed (void* ptr = rankData) {
-                var bitArray = new InteropGenerator.Runtime.BitArray((byte*)ptr, rankData.Length * sizeof(FFXIVClientStructs.FFXIV.Client.Game.MonsterNoteRankInfo) * 8);
+                var bitArray = new InteropGenerator.Runtime.BitArray(
+                    (byte*)ptr, rankData.Length * sizeof(FFXIVClientStructs.FFXIV.Client.Game.MonsterNoteRankInfo) * 8);
                 if (HashChanged(ref huntingLogRankDataHash, bitArray.ComputeHash())) {
                     UpdatePolledUnlockables(UnlockableType.HuntingLog, (key, unlockable) => {
                         var note = ExcelSheets.MonsterNote.Value.GetRow(key.Id / 10);
@@ -311,10 +313,29 @@ public class UnlockablesService : IDisposable {
         return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
     }
 
+    private void LoadPinnedAchievements() {
+        pinnedAchievementIds = plugin.DatabaseService.GetPinnedAchievements(Plugin.PlayerState.ContentId);
+    }
+
+    public IReadOnlyList<uint> GetPinned() => pinnedAchievementIds;
+
+    public bool GetPinned(uint achievementId) => pinnedAchievementIds.Contains(achievementId);
+
+    public void SetPinned(IUnlockable achievement, bool pinned) {
+        var ids = achievement is UnlockableTieredAchievement tiered ? tiered.Ids : [achievement.Id];
+        var characterId = Plugin.PlayerState.ContentId;
+
+        if (pinned) {
+            plugin.DatabaseService.SetPinnedAchievement(characterId, ids.Last(), true);
+            if (!GetPinned(ids.Last())) pinnedAchievementIds.Add(ids.Last());
+        } else {
+            ids.ForEach(id => plugin.DatabaseService.SetPinnedAchievement(characterId, id, false));
+            pinnedAchievementIds.RemoveAll(ids.Contains);
+        }
+    }
+
     public List<IUnlockable> GetPinnedUnlockables() {
-        return plugin.Configuration.PinnedAchievements
-                     .Select(id => GetExistingAchievement(id) ?? GetUnlockableAchievement(id))
-                     .ToList();
+        return pinnedAchievementIds.Select(id => GetExistingAchievement(id) ?? GetUnlockableAchievement(id)).ToList();
     }
 
     [Time]
@@ -367,5 +388,6 @@ public class UnlockablesService : IDisposable {
         tieredAchievements.Clear();
         collectionItems.Clear();
         unlockedChanges.Clear();
+        LoadPinnedAchievements();
     }
 }

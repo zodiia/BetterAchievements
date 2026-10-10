@@ -30,13 +30,13 @@ public record AchievementStatus {
     public uint? Progress { get; init; }
 }
 
-public sealed class HistoryService : IDisposable {
-    private readonly IPluginLog log = Plugin.GetLogger<HistoryService>();
+public sealed class DatabaseService : IDisposable {
+    private readonly IPluginLog log = Plugin.GetLogger<DatabaseService>();
     private readonly Plugin plugin;
     private readonly SqliteConnection connection;
 
     [Time]
-    public HistoryService(Plugin plugin) {
+    public DatabaseService(Plugin plugin) {
         var path = Path.Combine(Plugin.PluginInterface.ConfigDirectory.FullName, "history.db");
 
         this.plugin = plugin;
@@ -104,6 +104,39 @@ public sealed class HistoryService : IDisposable {
             connection.Execute("ALTER TABLE AchievementUpdate ADD COLUMN CharacterId INTEGER NOT NULL DEFAULT 0;");
             connection.Execute("PRAGMA user_version = 3;");
         }
+
+        if (version < 4) {
+            connection.Execute("""
+                               CREATE TABLE PinnedAchievements (
+                                   CharacterId   INTEGER NOT NULL,
+                                   AchievementId INTEGER NOT NULL,
+                                   PRIMARY KEY (CharacterId, AchievementId)
+                               );
+                               """);
+            connection.Execute("PRAGMA user_version = 4;");
+        }
+    }
+
+    [Time]
+    public void SetPinnedAchievement(ulong characterId, uint achievementId, bool pinned) {
+        connection.Execute(pinned
+                               ? """
+                                 INSERT OR IGNORE INTO PinnedAchievements (CharacterId, AchievementId)
+                                 VALUES (@CharacterId, @AchievementId);
+                                 """
+                               : """
+                                 DELETE FROM PinnedAchievements
+                                 WHERE CharacterId = @CharacterId AND AchievementId = @AchievementId;
+                                 """, new { CharacterId = characterId, AchievementId = achievementId });
+    }
+
+    [Time]
+    public List<uint> GetPinnedAchievements(ulong characterId) {
+        return connection.Query<uint>("""
+                                      SELECT AchievementId
+                                      FROM PinnedAchievements
+                                      WHERE CharacterId = @CharacterId
+                                      """, new { CharacterId = characterId }).AsList();
     }
 
     [Time]
@@ -139,15 +172,15 @@ public sealed class HistoryService : IDisposable {
     public void ImportAchievementStatuses(List<AchievementStatus> statuses) {
         var values = string.Join("), (", statuses.Select(s => $"{s.CharacterId}, {s.AchievementId}, {s.Status}, {s.Progress}"));
         var changedIds = connection.Query<uint>($"""
-                                                INSERT INTO AchievementStatus (CharacterId, AchievementId, Status, Progress)
-                                                VALUES ({values})
-                                                ON CONFLICT (CharacterId, AchievementId) DO UPDATE SET
-                                                    Status = excluded.Status,
-                                                    Progress = excluded.Progress
-                                                WHERE AchievementStatus.Status IS NOT excluded.Status
-                                                   OR AchievementStatus.Progress IS NOT excluded.Progress
-                                                RETURNING AchievementId
-                                                """).AsList();
+                                                 INSERT INTO AchievementStatus (CharacterId, AchievementId, Status, Progress)
+                                                 VALUES ({values})
+                                                 ON CONFLICT (CharacterId, AchievementId) DO UPDATE SET
+                                                     Status = excluded.Status,
+                                                     Progress = excluded.Progress
+                                                 WHERE AchievementStatus.Status IS NOT excluded.Status
+                                                    OR AchievementStatus.Progress IS NOT excluded.Progress
+                                                 RETURNING AchievementId
+                                                 """).AsList();
 
         if (changedIds.Count == 0) {
             return;
@@ -155,11 +188,11 @@ public sealed class HistoryService : IDisposable {
 
         var timestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         values = string.Join("), (", statuses.Where(it => changedIds.Contains(it.AchievementId))
-                                           .Select(s => $"{s.CharacterId}, {s.AchievementId}, {timestamp}, {s.Status}, {s.Progress}, 1"));
+                                             .Select(s => $"{s.CharacterId}, {s.AchievementId}, {timestamp}, {s.Status}, {s.Progress}, 1"));
         connection.Execute($"""
-                           INSERT INTO AchievementUpdate (CharacterId, AchievementId, Timestamp, Status, Progress, Imported)
-                           VALUES ({values})
-                           """);
+                            INSERT INTO AchievementUpdate (CharacterId, AchievementId, Timestamp, Status, Progress, Imported)
+                            VALUES ({values})
+                            """);
     }
 
     public IEnumerable<AchievementStatus> GetAllAchievementStatus(ulong characterId) {
@@ -204,15 +237,22 @@ public sealed class HistoryService : IDisposable {
     }
 
     private void OnUnlock(RowRef rowRef) {
+        if (!rowRef.Is<Achievement>()) {
+            return;
+        }
         if (!rowRef.TryGetValue(out Achievement achievement)) {
             log.Warning($"Could not find achievement with RowRef.RowId = {rowRef.RowId}.");
         }
 
-        UpdateAchievementStatus(new AchievementStatus { CharacterId = Plugin.PlayerState.ContentId, AchievementId = achievement.RowId, Status = true, Progress = achievement.Maximum() });
+        UpdateAchievementStatus(new AchievementStatus {
+            CharacterId = Plugin.PlayerState.ContentId, AchievementId = achievement.RowId, Status = true, Progress = achievement.Maximum()
+        });
     }
 
     private void OnReceiveAchievementProgress(uint id, uint current, uint max) {
-        UpdateAchievementStatus(new AchievementStatus { CharacterId = Plugin.PlayerState.ContentId, AchievementId = id, Progress = current, Status = current == max });
+        UpdateAchievementStatus(new AchievementStatus {
+            CharacterId = Plugin.PlayerState.ContentId, AchievementId = id, Progress = current, Status = current == max
+        });
     }
 
     [Time]
@@ -226,8 +266,10 @@ public sealed class HistoryService : IDisposable {
 
         var statuses = ExcelSheets.Achievement.Value
                                   .Where(Plugin.UnlockState.IsAchievementComplete)
-                                  .Select(achievement => new AchievementStatus
-                                              { CharacterId = Plugin.PlayerState.ContentId, AchievementId = achievement.RowId, Status = true, Progress = achievement.Maximum() })
+                                  .Select(achievement => new AchievementStatus {
+                                      CharacterId = Plugin.PlayerState.ContentId, AchievementId = achievement.RowId, Status = true,
+                                      Progress = achievement.Maximum()
+                                  })
                                   .ToList();
 
         try {
@@ -245,13 +287,17 @@ public sealed class HistoryService : IDisposable {
 
         try {
             var rows = 0;
-            rows += connection.Execute("UPDATE AchievementStatus SET CharacterId = @CharacterId WHERE CharacterId = 0;", new { CharacterId = characterId });
-            rows += connection.Execute("UPDATE AchievementUpdate SET CharacterId = @CharacterId WHERE CharacterId = 0;", new { CharacterId = characterId });
+            foreach (var achievementId in plugin.Configuration.PinnedAchievements) {
+                rows += connection.Execute("INSERT OR IGNORE INTO PinnedAchievements (CharacterId, AchievementId) VALUES (@CharacterId, @AchievementId);",
+                                           new { AchievementId = achievementId, CharacterId = characterId });
+            }
+            plugin.Configuration.PinnedAchievements.Clear();
+            plugin.Configuration.Save();
             tx.Commit();
-            log.Information($"Updated {rows} rows with new character IDs");
+            log.Information($"Inserted {rows} rows for pinned achievements");
         } catch (Exception ex) {
             tx.Rollback();
-            log.Warning(ex, "Failed to update local database with character ID");
+            log.Warning(ex, "Failed to update local database with pinned achievements");
         }
 
         // we wanna re-import them on login

@@ -7,10 +7,12 @@ using Recollection.Helpers;
 namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableTieredAchievement : IUnlockable {
+    private readonly Plugin plugin;
     private readonly bool spoilers;
 
     [Time]
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, List<UnlockableAchievement> providesAchievements, bool spoilers, Plugin plugin) {
+        this.plugin = plugin;
         this.spoilers = spoilers;
         ExcelAchievements = excelAchievements;
         Spoilers = spoilers;
@@ -20,7 +22,6 @@ public sealed class UnlockableTieredAchievement : IUnlockable {
         Maximum = (uint)ProvidesAchievements.Count;
         MaximumPoints = (uint)ExcelAchievements.Select(it => (int)it.Points).Sum();
         Ids = ExcelAchievements.Select(it => it.RowId).ToList();
-        Pinned = ExcelAchievements.Any(it => plugin.Configuration.PinnedAchievements.Contains(it.RowId));
         Name = "";
         NameLowercase = "";
         UpdateCurrent();
@@ -44,7 +45,7 @@ public sealed class UnlockableTieredAchievement : IUnlockable {
     public List<Achievement> ExcelAchievements { get; }
     public List<UnlockableAchievement> ProvidesAchievements { get; }
     public List<uint> Ids { get; }
-    public bool Pinned { get; }
+    public bool Pinned => Ids.Any(plugin.UnlockablesService.GetPinned);
     public bool Spoilers { get; }
     public uint CurrentPoints { get; set; }
     public uint MaximumPoints { get; }

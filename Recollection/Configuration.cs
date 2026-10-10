@@ -28,7 +28,7 @@ public class Configuration : IPluginConfiguration {
     // Other settings
     public bool DisplayIds = false;
 
-    // Not shown in the config UI
+    // TODO: Remove
     public List<uint> PinnedAchievements { get; set; } = new();
 
     // The below exists just to make saving less cumbersome

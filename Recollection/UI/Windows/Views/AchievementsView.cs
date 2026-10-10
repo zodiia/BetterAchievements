@@ -68,10 +68,10 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
         clipper.Draw(unlockables.Count, i => {
             switch (unlockables[i]) {
                 case UnlockableAchievement achievement:
-                    UiComponents.Achievement(achievement, plugin.Configuration);
+                    UiComponents.Achievement(achievement, plugin);
                     break;
                 case UnlockableTieredAchievement tiered:
-                    UiComponents.Achievement(tiered, plugin.Configuration);
+                    UiComponents.Achievement(tiered, plugin);
                     break;
             }
 
