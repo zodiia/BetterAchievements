@@ -8,13 +8,13 @@
     "properties": {
         "achievementCategories": {
             "type": "array",
-            "items": { "$ref": "#/definitions/AchievementCategory" }
+            "items": { "$ref": "#/definitions/AchievementGroup" }
         }
     },
     "definitions": {
-        "AchievementCategory": {
+        "AchievementGroup": {
             "type": "object",
-            "required": ["name"],
+            "required": ["name", "categories"],
             "properties": {
                 "name": {
                     "type": "string"
@@ -22,22 +22,27 @@
                 "icon": {
                     "type": "string"
                 },
-                "seasonal": {
-                    "type": "boolean"
-                },
                 "categories": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/AchievementCategory" }
+                }
+            }
+        },
+        "AchievementCategory": {
+            "type": "object",
+            "required": ["name", "items"],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "seasonal": {
+                    "type": "boolean"
                 },
                 "items": {
                     "type": "array",
                     "items": { "$ref": "#/definitions/AchievementItem" }
                 }
-            },
-            "oneOf": [
-                { "required": ["categories"] },
-                { "required": ["items"] }
-            ]
+            }
         },
         "AchievementItem": {
             "type": "object",

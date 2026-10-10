@@ -2,9 +2,11 @@ using System.Collections.Generic;
 
 namespace Recollection.Data.Layout;
 
-public record JsonLayout(List<JsonAchievementCategory> AchievementCategories);
+public record JsonLayout(List<JsonAchievementGroup> AchievementCategories);
 
-public record JsonAchievementCategory(string Name, string? Icon, bool? Seasonal, List<JsonAchievementCategory>? Categories, List<JsonAchievementItem>? Items);
+public record JsonAchievementGroup(string Name, string? Icon, List<JsonAchievementCategory> Categories);
+
+public record JsonAchievementCategory(string Name, bool? Seasonal, List<JsonAchievementItem> Items);
 
 public record JsonAchievementItem(
     List<uint>? Unique,

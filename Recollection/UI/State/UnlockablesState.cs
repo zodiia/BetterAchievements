@@ -37,7 +37,7 @@ public class UnlockablesState(Plugin plugin) {
     public void ApplyFilters() {
         progressAchievementIds.Clear();
 
-        FilteredLayout = new MainLayout { Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList() };
+        FilteredLayout = new MainLayout { Achievements = mainLayout.Achievements.Select(FilterAchievementLayout).OfType<AchievementLayoutGroup>().ToList() };
         progressCache.Clear();
         collectionCategoryCache.Clear();
         collectionCache.Clear();
@@ -174,7 +174,7 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public AchievementLayoutGroup? FindTopLevelGroup(string name) {
-        return FilteredLayout.Achievements.OfType<AchievementLayoutGroup>().FirstOrDefault(it => it.Name == name);
+        return FilteredLayout.Achievements.FirstOrDefault(it => it.Name == name);
     }
 
     public List<CollectionCategory> CollectionCategories(UnlockableType type) {
@@ -234,18 +234,11 @@ public class UnlockablesState(Plugin plugin) {
         return PinnedUnlockables().Where(it => ids.Contains(it.Id)).ToList();
     }
 
-    private static CategoryWithBreadcrumbs? FindCategory(
-        IEnumerable<AchievementLayout> group, Func<AchievementLayoutCategory, bool> predicate, string prefix = "") {
-        foreach (var item in group)
-            switch (item) {
-                case AchievementLayoutGroup subgroup:
-                    var res = FindCategory(subgroup.Items, predicate, prefix.Length == 0 ? subgroup.Name : $"{prefix} / {subgroup.Name}");
-                    if (res != null) return res;
-
-                    break;
-                case AchievementLayoutCategory category when predicate(category):
-                    return new CategoryWithBreadcrumbs(category, prefix.Length == 0 ? category.Name : $"{prefix} / {category.Name}");
-            }
+    private static CategoryWithBreadcrumbs? FindCategory(IEnumerable<AchievementLayoutGroup> groups, Func<AchievementLayoutCategory, bool> predicate) {
+        foreach (var group in groups)
+            foreach (var category in group.Items)
+                if (predicate(category))
+                    return new CategoryWithBreadcrumbs(category, $"{group.Name} / {category.Name}");
 
         return null;
     }
@@ -344,7 +337,7 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     private AchievementLayoutGroup? FilterAchievementLayout(AchievementLayoutGroup group) {
-        var filteredChildren = group.Items.Select(FilterAchievementLayout).OfType<AchievementLayout>().ToList();
+        var filteredChildren = group.Items.Select(FilterAchievementLayout).OfType<AchievementLayoutCategory>().ToList();
 
         var progressIds = group.Items.SelectMany(child => progressAchievementIds[child]).ToList();
         progressAchievementIds[group] = progressIds;
@@ -354,13 +347,5 @@ public class UnlockablesState(Plugin plugin) {
         var filtered = new AchievementLayoutGroup { Name = group.Name, Icon = group.Icon, Items = filteredChildren };
         progressAchievementIds[filtered] = progressIds;
         return filtered;
-    }
-
-    private AchievementLayout? FilterAchievementLayout(AchievementLayout layout) {
-        return layout switch {
-            AchievementLayoutGroup group => FilterAchievementLayout(group),
-            AchievementLayoutCategory category => FilterAchievementLayout(category),
-            _ => null
-        };
     }
 }

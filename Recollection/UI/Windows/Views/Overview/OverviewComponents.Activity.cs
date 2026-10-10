@@ -22,12 +22,6 @@ public static partial class OverviewComponents {
     private static MainLayout? NearingCompletionSource;
     private static List<ActivityEntry> NearingCompletionCache = [];
 
-    private static IEnumerable<AchievementLayoutItem> AllItems(AchievementLayout layout) => layout switch {
-        AchievementLayoutGroup group => group.Items.SelectMany(AllItems),
-        AchievementLayoutCategory category => category.Items,
-        _ => []
-    };
-
     private static string FormatPercentage(double ratio) => $"{(int)MathF.Round((float)ratio * 100)}%";
 
     private static RankedEntry NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
@@ -46,7 +40,8 @@ public static partial class OverviewComponents {
         NearingCompletionSource = unlockables.FilteredLayout;
 
         NearingCompletionCache = plugin.MainLayout.Achievements
-                                        .SelectMany(AllItems)
+                                        .SelectMany(group => group.Items)
+                                        .SelectMany(category => category.Items)
                                         .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
                                         .Where(it => it.Ratio < 1.0)
                                         .OrderByDescending(it => it.Ratio)

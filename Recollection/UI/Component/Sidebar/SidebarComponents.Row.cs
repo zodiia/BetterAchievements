@@ -98,17 +98,4 @@ public static partial class SidebarComponents {
 
         return clicked;
     }
-
-    private static void StaticSubCategoryLabel(Plugin plugin, string name, float progress) {
-        var style = ImGui.GetStyle();
-        var width = ImGui.GetContentRegionAvail().X - UiSize.Em(CategoryRowPaddingEm * plugin.Configuration.UiDensity);
-        var lineStart = ImGui.GetCursorScreenPos();
-
-        ImGui.SetCursorScreenPos(lineStart with { Y = lineStart.Y + style.FramePadding.Y });
-        ImGui.TextColored(RowTextColor, name);
-        RightAlignedText(lineStart with { Y = lineStart.Y + style.FramePadding.Y }, width, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress, 0f, 1f) * 100)}%");
-
-        var rowHeight = ImGui.GetTextLineHeight() + (style.FramePadding.Y * 2);
-        ImGui.SetCursorScreenPos(lineStart with { Y = lineStart.Y + rowHeight });
-    }
 }

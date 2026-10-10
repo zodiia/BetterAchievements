@@ -47,44 +47,36 @@ public static partial class SidebarComponents {
         }
     }
 
-    private static void MainCategoryItem(Plugin plugin, MainWindowState state, AchievementLayout layout) {
-        var (_, (obtained, total)) = state.Unlockables.GetProgress(layout);
+    private static void MainCategoryItem(Plugin plugin, MainWindowState state, AchievementLayoutGroup group) {
+        var (_, (obtained, total)) = state.Unlockables.GetProgress(group);
         var progress = total == 0 ? 0f : (float)obtained / total;
+        var target = new NavigationTarget.Group(group.Name);
+        var isOpen = state.Navigation.IsGroupOpen(group.Name);
+        var selected = state.Navigation.IsSelected(target);
+        var icon = ParseIcon(group.Icon);
 
-        switch (layout) {
-            case AchievementLayoutGroup group: {
-                var target = new NavigationTarget.Group(group.Name);
-                var isOpen = state.Navigation.IsGroupOpen(group.Name);
-                var selected = state.Navigation.IsSelected(target);
-                var icon = ParseIcon(group.Icon);
+        if (CategoryRow(plugin, $"##MainCategory-{group.Name}", icon, UiColors.Progress(), group.Name, progress, isOpen, selected)) {
+            state.Navigation.Navigate(target);
+        }
 
-                if (CategoryRow(plugin, $"##MainCategory-{group.Name}", icon, UiColors.Progress(), group.Name, progress, isOpen, selected)) {
-                    state.Navigation.Navigate(target);
-                }
-
-                if (isOpen) {
-                    ImGui.Indent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
-                    foreach (var item in group.Items) {
-                        SubTree(plugin, state, item);
-                    }
-
-                    ImGui.Unindent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
-                    ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm * plugin.Configuration.UiDensity)));
-                }
-
-                break;
+        if (isOpen) {
+            ImGui.Indent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
+            foreach (var category in group.Items) {
+                CategoryItem(plugin, state, category);
             }
 
-            case AchievementLayoutCategory category: {
-                var target = new NavigationTarget.Category(category.Id);
-                var selected = state.Navigation.IsSelected(target);
+            ImGui.Unindent(UiSize.Em(FirstLevelIndentEm * plugin.Configuration.UiDensity));
+            ImGui.Dummy(new Vector2(0, UiSize.Em(SubTreeBottomPaddingEm * plugin.Configuration.UiDensity)));
+        }
+    }
 
-                if (CategoryRow(plugin, $"##MainCategory-{category.Id}", FontAwesomeIcon.Star, UiColors.Progress(), category.Name, progress, selected, selected)) {
-                    state.Navigation.Navigate(target);
-                }
+    private static void CategoryItem(Plugin plugin, MainWindowState state, AchievementLayoutCategory category) {
+        var (_, (obtained, total)) = state.Unlockables.GetProgress(category);
+        var progress = total == 0 ? 0f : (float)obtained / total;
+        var target = new NavigationTarget.Category(category.Id);
 
-                break;
-            }
+        if (SubCategoryRow(plugin, $"##SubCategory-{category.Id}", category.Name, progress, state.Navigation.IsSelected(target))) {
+            state.Navigation.Navigate(target);
         }
     }
 }
