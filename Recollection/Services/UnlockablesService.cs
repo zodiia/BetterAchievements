@@ -310,7 +310,7 @@ public class UnlockablesService : IDisposable {
     public IUnlockable GetUnlockable(UnlockableType type, uint rowId) => collectionItems.GetOrAdd(new UnlockableKey(type, rowId), CreateUnlockable);
 
     public IUnlockable? GetExistingAchievement(uint achievementId) {
-        return achievements.GetValueOrDefault(achievementId) as IUnlockable ?? tieredAchievements.GetValueOrDefault(achievementId);
+        return tieredAchievements.GetValueOrDefault(achievementId) as IUnlockable ?? achievements.GetValueOrDefault(achievementId);
     }
 
     private void LoadPinnedAchievements() {
