@@ -6,23 +6,21 @@ using System.Collections.Generic;
 namespace Recollection.Services;
 
 public class AchievementProgressService : IDisposable {
-    private readonly Plugin plugin;
-    private readonly UnlockablesService unlockables;
-    private readonly DatabaseService database;
+    private readonly UnlockablesService unlockablesService;
+    private readonly DatabaseService databaseService;
     private readonly ConcurrentDictionary<uint, uint> progressCache = new();
     private bool updated = false;
 
     [Time]
     public AchievementProgressService(Plugin plugin) {
-        this.plugin = plugin;
-        unlockables = plugin.UnlockablesService;
-        database = plugin.DatabaseService;
+        unlockablesService = plugin.UnlockablesService;
+        databaseService = plugin.DatabaseService;
         SetupEvent();
         LoadProgress();
     }
 
     private unsafe void SetupEvent() {
-        plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, _) => SetProgress(id, current);
+        Plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, _) => SetProgress(id, current);
         Plugin.ClientState.Login += OnLogin;
         Plugin.ClientState.Logout += OnLogout;
     }
@@ -44,7 +42,7 @@ public class AchievementProgressService : IDisposable {
     [Time]
     private void LoadProgress() {
         progressCache.Clear();
-        var all = database.GetAllAchievementStatus(Plugin.PlayerState.ContentId);
+        var all = databaseService.GetAllAchievementStatus(Plugin.PlayerState.ContentId);
         foreach (var status in all) {
             if (status.Progress != null) {
                 progressCache[status.AchievementId] = (uint)status.Progress;
@@ -63,19 +61,19 @@ public class AchievementProgressService : IDisposable {
     }
 
     public void SetProgress(uint achievementId, uint progress) {
-        var lastId = unlockables.HighestAchievementIdMap.GetValueOrDefault(achievementId, achievementId);
+        var lastId = unlockablesService.HighestAchievementIdMap.GetValueOrDefault(achievementId, achievementId);
 
         progressCache[lastId] = progress;
-        unlockables.SetAchievementProgress(lastId, progress);
+        unlockablesService.SetAchievementProgress(lastId, progress);
     }
 
     public uint? IncrementProgress(uint achievementId, int amount) {
-        var lastId = unlockables.HighestAchievementIdMap.GetValueOrDefault(achievementId, achievementId);
+        var lastId = unlockablesService.HighestAchievementIdMap.GetValueOrDefault(achievementId, achievementId);
 
         if (progressCache.TryGetValue(lastId, out var current)) {
             current += (uint) amount;
             progressCache[lastId] = current;
-            unlockables.SetAchievementProgress(lastId, current);
+            unlockablesService.SetAchievementProgress(lastId, current);
             return current;
         }
 

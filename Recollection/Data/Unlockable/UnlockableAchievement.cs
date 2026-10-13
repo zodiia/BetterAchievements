@@ -2,18 +2,19 @@ using MethodTimer;
 using System;
 using System.Collections.Generic;
 using Recollection.Helpers;
+using Recollection.Services;
 using Lumina.Excel.Sheets;
 
 namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableAchievement : IUnlockable {
     private readonly Achievement achievement;
-    private readonly Plugin plugin;
+    private readonly UnlockablesService unlockablesService;
 
     [Time]
     public UnlockableAchievement(Achievement achievement, Plugin plugin) {
         this.achievement = achievement;
-        this.plugin = plugin;
+        unlockablesService = plugin.UnlockablesService;
         Name = achievement.Name.ToString();
         Description = achievement.Description.ToString();
         NameLowercase = Name.ToLower();
@@ -37,7 +38,7 @@ public sealed class UnlockableAchievement : IUnlockable {
     public uint Maximum => achievement.Maximum();
     public bool Unlocked { get; set; }
 
-    public bool Pinned => plugin.UnlockablesService.GetPinned(achievement.RowId);
+    public bool Pinned => unlockablesService.GetPinned(achievement.RowId);
     public Title? Title => achievement.Title.ValueNullable;
     public byte Points => achievement.Points;
     public byte AchievementType => achievement.Type;

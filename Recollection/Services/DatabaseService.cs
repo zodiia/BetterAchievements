@@ -52,7 +52,7 @@ public sealed class DatabaseService : IDisposable {
 
     private unsafe void SetupEvents() {
         Plugin.UnlockState.Unlock += OnUnlock;
-        plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, max) => OnReceiveAchievementProgress(id, current, max);
+        Plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, max) => OnReceiveAchievementProgress(id, current, max);
         Plugin.Framework.Update += OnFrameworkUpdate;
         Plugin.ClientState.Login += OnLogin;
     }

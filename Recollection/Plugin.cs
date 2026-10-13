@@ -111,6 +111,7 @@ public sealed class Plugin : IDalamudPlugin {
     public TrackerService TrackerService { get; private set; }
     public AddonLifecycleService AddonLifecycleService { get; private set; }
     public DatabaseService DatabaseService { get; private set; }
+    public FateService FateService { get; private set; }
 
     public Configuration Configuration { get; private set; }
 
@@ -118,8 +119,8 @@ public sealed class Plugin : IDalamudPlugin {
     private MainWindow MainWindow { get; init; }
     public MainLayout MainLayout { get; init; }
 
-    public ReceiveAchievementProgressHook ReceiveAchievementProgressHook { get; private set; } = null!;
-    public SetModeHook SetModeHook { get; private set; } = null!;
+    public static ReceiveAchievementProgressHook ReceiveAchievementProgressHook = null!;
+    public static SetModeHook SetModeHook = null!;
 
     public Plugin() {
         PluginInterface.ConfigDirectory.Create();
@@ -147,6 +148,7 @@ public sealed class Plugin : IDalamudPlugin {
         UnlockablesService = new UnlockablesService(this);
         AchievementProgressService = new AchievementProgressService(this);
         TrackerService = new TrackerService(this);
+        FateService = new FateService();
 
         UiFonts.Initialize();
 

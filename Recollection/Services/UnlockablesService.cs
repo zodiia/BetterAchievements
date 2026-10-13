@@ -19,6 +19,7 @@ public class UnlockablesService : IDisposable {
     private readonly IPluginLog log = Plugin.GetLogger<UnlockablesService>();
     private readonly Plugin plugin;
     private readonly LalachievementsService lalachievementsService;
+    private readonly DatabaseService databaseService;
     private readonly ConcurrentDictionary<uint, UnlockableAchievement> achievements = new();
     private readonly ConcurrentDictionary<uint, UnlockableTieredAchievement> tieredAchievements = new();
     private readonly ConcurrentDictionary<UnlockableKey, IUnlockable> collectionItems = new();
@@ -38,6 +39,7 @@ public class UnlockablesService : IDisposable {
     public UnlockablesService(Plugin plugin) {
         this.plugin = plugin;
         lalachievementsService = plugin.LalachievementsService;
+        databaseService = plugin.DatabaseService;
         HighestAchievementIdMap = plugin.MainLayout.GetHighestIdMap();
         Plugin.UnlockState.Unlock += OnUnlock;
         Plugin.ClientState.Logout += OnLogout;
@@ -314,7 +316,7 @@ public class UnlockablesService : IDisposable {
     }
 
     private void LoadPinnedAchievements() {
-        pinnedAchievementIds = plugin.DatabaseService.GetPinnedAchievements(Plugin.PlayerState.ContentId);
+        pinnedAchievementIds = databaseService.GetPinnedAchievements(Plugin.PlayerState.ContentId);
     }
 
     public IReadOnlyList<uint> GetPinned() => pinnedAchievementIds;
@@ -326,10 +328,10 @@ public class UnlockablesService : IDisposable {
         var characterId = Plugin.PlayerState.ContentId;
 
         if (pinned) {
-            plugin.DatabaseService.SetPinnedAchievement(characterId, ids.Last(), true);
+            databaseService.SetPinnedAchievement(characterId, ids.Last(), true);
             if (!GetPinned(ids.Last())) pinnedAchievementIds.Add(ids.Last());
         } else {
-            ids.ForEach(id => plugin.DatabaseService.SetPinnedAchievement(characterId, id, false));
+            ids.ForEach(id => databaseService.SetPinnedAchievement(characterId, id, false));
             pinnedAchievementIds.RemoveAll(ids.Contains);
         }
     }

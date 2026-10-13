@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Lumina.Excel.Sheets;
 using Recollection.Helpers;
+using Recollection.Services;
 
 namespace Recollection.Data.Unlockable;
 
 public sealed class UnlockableTieredAchievement : IUnlockable {
-    private readonly Plugin plugin;
+    private readonly UnlockablesService unlockablesService;
     private readonly bool spoilers;
 
     [Time]
     public UnlockableTieredAchievement(List<Achievement> excelAchievements, List<UnlockableAchievement> providesAchievements, bool spoilers, Plugin plugin) {
-        this.plugin = plugin;
+        unlockablesService = plugin.UnlockablesService;
         this.spoilers = spoilers;
         ExcelAchievements = excelAchievements;
         Spoilers = spoilers;
@@ -45,7 +46,7 @@ public sealed class UnlockableTieredAchievement : IUnlockable {
     public List<Achievement> ExcelAchievements { get; }
     public List<UnlockableAchievement> ProvidesAchievements { get; }
     public List<uint> Ids { get; }
-    public bool Pinned => Ids.Any(plugin.UnlockablesService.GetPinned);
+    public bool Pinned => Ids.Any(unlockablesService.GetPinned);
     public bool Spoilers { get; }
     public uint CurrentPoints { get; set; }
     public uint MaximumPoints { get; }

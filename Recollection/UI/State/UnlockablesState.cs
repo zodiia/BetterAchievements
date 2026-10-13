@@ -5,6 +5,7 @@ using System.Linq;
 using Dalamud.Plugin.Services;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
+using Recollection.External.Lalachievements;
 using Recollection.Services;
 
 namespace Recollection.UI.State;
@@ -13,6 +14,11 @@ public class UnlockablesState(Plugin plugin) {
     private readonly IPluginLog log = Plugin.GetLogger<UnlockablesState>();
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
+    private readonly UnlockablesService unlockablesService = plugin.UnlockablesService;
+    private readonly CollectionsService collectionsService = plugin.CollectionsService;
+    private readonly DatabaseService databaseService = plugin.DatabaseService;
+    private readonly AchievementProgressService achievementProgressService = plugin.AchievementProgressService;
+    private readonly LalachievementsService lalachievementsService = plugin.LalachievementsService;
     private readonly Dictionary<AchievementLayout, List<uint>> progressAchievementIds = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<AchievementLayout, AchievementProgress> progressCache = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<CollectionCategory, CollectionProgress> collectionCategoryCache = new(ReferenceEqualityComparer.Instance);
@@ -47,26 +53,26 @@ public class UnlockablesState(Plugin plugin) {
 
     [Time]
     public void Refresh() {
-        plugin.UnlockablesService.Refresh();
+        unlockablesService.Refresh();
         ApplyFilters();
         Achievement = UnlockablesService.CalculateAchievementPoints();
-        RecentlyUnlockedAchievements = plugin.DatabaseService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
+        RecentlyUnlockedAchievements = databaseService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
     }
 
-    public bool CollectionsLoaded => plugin.CollectionsService.Loaded;
+    public bool CollectionsLoaded => collectionsService.Loaded;
 
     public bool CheckForUpdates() {
-        if (plugin.CollectionsService.CheckForUpdates() ||
-            plugin.UnlockablesService.GetAchievementListUpdatedForUi() ||
-            plugin.AchievementProgressService.CheckUpdated()) {
+        if (collectionsService.CheckForUpdates() ||
+            unlockablesService.GetAchievementListUpdatedForUi() ||
+            achievementProgressService.CheckUpdated()) {
             Refresh();
             return true;
         }
 
-        plugin.UnlockablesService.CheckPolledUnlocks();
+        unlockablesService.CheckPolledUnlocks();
 
-        if (plugin.UnlockablesService.HasChanges) {
-            ApplyChanges(plugin.UnlockablesService.GetUpdates());
+        if (unlockablesService.HasChanges) {
+            ApplyChanges(unlockablesService.GetUpdates());
         }
 
         return false;
@@ -94,7 +100,7 @@ public class UnlockablesState(Plugin plugin) {
         if (progressCache.TryGetValue(layout, out var cached)) return cached;
 
         var ids = progressAchievementIds.GetValueOrDefault(layout, layout.GetAllAchievementIds());
-        var result = plugin.UnlockablesService.CalculateAchievementProgress(ids);
+        var result = unlockablesService.CalculateAchievementProgress(ids);
         progressCache[layout] = result;
         return result;
     }
@@ -104,11 +110,11 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public AchievementProgress GetPinnedProgress() {
-        var pinned = plugin.UnlockablesService.GetPinned();
+        var pinned = unlockablesService.GetPinned();
         if (pinnedProgressCache is { } cached && pinned.SequenceEqual(pinnedSnapshot)) return cached;
 
         pinnedSnapshot = pinned.ToList();
-        return pinnedProgressCache = plugin.UnlockablesService.CalculateAchievementProgress(pinnedSnapshot);
+        return pinnedProgressCache = unlockablesService.CalculateAchievementProgress(pinnedSnapshot);
     }
 
     [Time]
@@ -120,7 +126,7 @@ public class UnlockablesState(Plugin plugin) {
         uint visible = 0;
 
         foreach (var item in category.Items) {
-            var unlockable = plugin.UnlockablesService.GetUnlockable(type, item);
+            var unlockable = unlockablesService.GetUnlockable(type, item);
             if (!MatchSearch(unlockable)) continue;
 
             total++;
@@ -178,11 +184,11 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public List<CollectionCategory> CollectionCategories(UnlockableType type) {
-        return plugin.CollectionsService.Categories(type);
+        return collectionsService.Categories(type);
     }
 
     public CollectionCategory? FindCollectionCategory(UnlockableType type, uint id) {
-        return plugin.CollectionsService.FindCategory(type, id);
+        return collectionsService.FindCategory(type, id);
     }
 
     public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
@@ -196,10 +202,10 @@ public class UnlockablesState(Plugin plugin) {
         var unlockables = items.SelectMany<AchievementLayoutItem, IUnlockable>(it => {
             return it switch {
                 AchievementLayoutItemSimple simple => [
-                    plugin.UnlockablesService.GetUnlockableAchievement(simple.Id)
+                    unlockablesService.GetUnlockableAchievement(simple.Id)
                 ],
                 AchievementLayoutItemTiered tiered => [
-                    plugin.UnlockablesService.GetUnlockableTieredAchievement(
+                    unlockablesService.GetUnlockableTieredAchievement(
                         tiered.Ids, tiered.Spoilers)
                 ],
                 _ => []
@@ -215,7 +221,7 @@ public class UnlockablesState(Plugin plugin) {
     [Time]
     public List<IUnlockable> SortedCollectionUnlockables(UnlockableType type, CollectionCategory category) {
         var unlockables = category.Items
-                                  .Select(it => plugin.UnlockablesService.GetUnlockable(type, it))
+                                  .Select(it => unlockablesService.GetUnlockable(type, it))
                                   .Where(it => MatchSearch(it) && MatchUnlockFilter(it.Unlocked))
                                   .ToList();
 
@@ -226,7 +232,7 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     public List<IUnlockable> PinnedUnlockables() {
-        return plugin.UnlockablesService.GetPinnedUnlockables();
+        return unlockablesService.GetPinnedUnlockables();
     }
 
     public List<IUnlockable> PinnedUnlockables(AchievementLayout layout) {
@@ -245,8 +251,8 @@ public class UnlockablesState(Plugin plugin) {
 
     private uint Rarity(AchievementLayoutItem item) {
         return item switch {
-            AchievementLayoutItemSimple simple => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue),
-            AchievementLayoutItemTiered tiered => plugin.LalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue),
+            AchievementLayoutItemSimple simple => lalachievementsService.AchievementRarity.GetValueOrDefault(simple.Id, uint.MaxValue),
+            AchievementLayoutItemTiered tiered => lalachievementsService.AchievementRarity.GetValueOrDefault(tiered.Ids.Last(), uint.MaxValue),
             _ => uint.MaxValue
         };
     }
@@ -275,17 +281,17 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item) {
-        var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
+        var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
                && MatchUnlockFilter(achievement.Unlocked)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
+               && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item) {
-        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
+        var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
                && MatchUnlockFilter(achievements.Unlocked)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
+               && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
     private bool FilterAchievementLayoutItem(AchievementLayoutItem item) {
@@ -297,15 +303,15 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     private bool MatchProgressFilter(AchievementLayoutItemSimple item) {
-        var achievement = plugin.UnlockablesService.GetUnlockableAchievement(item.Id);
+        var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
+               && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
     private bool MatchProgressFilter(AchievementLayoutItemTiered item) {
-        var achievements = plugin.UnlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
+        var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
-               && MatchRankedFilter(plugin.LalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
+               && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
     private bool MatchProgressFilter(AchievementLayoutItem item) {

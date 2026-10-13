@@ -41,6 +41,7 @@ public class CollectionsService(Plugin plugin) {
         UnlockableType.SurveyRecord,
     ];
 
+    private readonly LalachievementsService lalachievementsService = plugin.LalachievementsService;
     private readonly Dictionary<UnlockableType, List<CollectionCategory>> categories = new();
     public bool Loaded { get; private set; } = false;
 
@@ -80,12 +81,12 @@ public class CollectionsService(Plugin plugin) {
     }
 
     public bool CheckForUpdates() {
-        if (plugin.LalachievementsService.GameAllLoaded == Loaded || plugin.LalachievementsService.GameAll == null) {
+        if (lalachievementsService.GameAllLoaded == Loaded || lalachievementsService.GameAll == null) {
             return false;
         }
 
-        Rebuild(plugin.LalachievementsService.GameAll);
-        Loaded = plugin.LalachievementsService.GameAllLoaded;
+        Rebuild(lalachievementsService.GameAll);
+        Loaded = lalachievementsService.GameAllLoaded;
         return true;
     }
 
