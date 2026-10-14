@@ -122,7 +122,7 @@ public class NavigationState {
                 SetNavigation(target, null, new AchievementsView(
                     plugin,
                     "Pinned",
-                    unlockables.PinnedUnlockables(),
+                    [new UnlockableSection("Achievements", unlockables.PinnedUnlockables(), null)],
                     unlockables.GetPinnedProgress,
                     ClipperFor(target)));
                 break;

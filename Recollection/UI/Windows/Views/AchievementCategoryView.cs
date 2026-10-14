@@ -24,7 +24,7 @@ public class AchievementCategoryView(Plugin plugin, AchievementLayoutGroup group
         var pinned = unlockables.PinnedUnlockables(group);
         if (pinned.Count == 0) return;
 
-        UiComponents.SeparatorText("Pinned", plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader("Pinned", plugin.Configuration.UiDensity);
 
         for (var i = 0; i < pinned.Count; i++) {
             switch (pinned[i]) {
@@ -56,10 +56,10 @@ public class AchievementCategoryView(Plugin plugin, AchievementLayoutGroup group
 
         ImGui.Dummy(new Vector2(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
-        UiComponents.SeparatorText(group.Name, plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader(group.Name, plugin.Configuration.UiDensity);
         OverviewComponents.OverviewStats(plugin, unlockables, group);
 
-        UiComponents.SeparatorText("Categories", plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader("Categories", plugin.Configuration.UiDensity);
         OverviewComponents.CategoriesGrid(plugin, unlockables, navigation, group.Items);
 
         DrawPinnedAchievements();

@@ -1,80 +1,118 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "JsonLayout",
-    "type": "object",
-    "required": [
-        "achievementCategories"
-    ],
-    "properties": {
-        "achievementCategories": {
-            "type": "array",
-            "items": { "$ref": "#/definitions/AchievementGroup" }
-        }
-    },
-    "definitions": {
-        "AchievementGroup": {
-            "type": "object",
-            "required": ["name", "categories"],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "icon": {
-                    "type": "string"
-                },
-                "categories": {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/AchievementCategory" }
-                }
-            }
-        },
-        "AchievementCategory": {
-            "type": "object",
-            "required": ["name", "items"],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "seasonal": {
-                    "type": "boolean"
-                },
-                "items": {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/AchievementItem" }
-                }
-            }
-        },
-        "AchievementItem": {
-            "type": "object",
-            "properties": {
-                "unique": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                    },
-                    "minItems": 1
-                },
-                "tiered": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                    },
-                    "minItems": 1
-                },
-                "spoilers": {
-                    "type": "boolean"
-                },
-                "area": {
-                    "type": "integer",
-                },
-                "huntingLog": {
-                    "type": "integer",
-                }
-            },
-            "oneOf": [
-                { "required": ["unique"] },
-                { "required": ["tiered"] }
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JsonLayout",
+  "type": "object",
+  "required": [
+    "achievementCategories"
+  ],
+  "properties": {
+    "achievementCategories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AchievementGroup"
+      }
     }
+  },
+  "definitions": {
+    "AchievementGroup": {
+      "type": "object",
+      "required": [
+        "name",
+        "categories"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AchievementCategory"
+          }
+        }
+      }
+    },
+    "AchievementCategory": {
+      "type": "object",
+      "required": [
+        "name",
+        "sections"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "seasonal": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AchievementSection"
+          }
+        }
+      }
+    },
+    "AchievementSection": {
+      "type": "object",
+      "required": [
+        "name",
+        "items"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AchievementItem"
+          }
+        }
+      }
+    },
+    "AchievementItem": {
+      "type": "object",
+      "properties": {
+        "unique": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "tiered": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "spoilers": {
+          "type": "boolean"
+        },
+        "area": {
+          "type": "integer"
+        },
+        "huntingLog": {
+          "type": "integer"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "unique"
+          ]
+        },
+        {
+          "required": [
+            "tiered"
+          ]
+        }
+      ]
+    }
+  }
 }

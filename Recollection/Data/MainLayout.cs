@@ -24,7 +24,10 @@ public class MainLayout {
                     Name = category.Name,
                     Id = nextCategoryId++,
                     Seasonal = category.Seasonal ?? false,
-                    Items = category.Items.SelectMany(it => BuildItems(category.Name, it)).ToList(),
+                    Sections = category.Sections.Select(section => new AchievementLayoutSection {
+                        Name = section.Name,
+                        Items = section.Items.SelectMany(it => BuildItems(category.Name, it)).ToList(),
+                    }).ToList(),
                 }).ToList(),
             }).ToList()
         };
@@ -115,9 +118,28 @@ public class AchievementLayoutGroup : AchievementLayout {
 }
 
 public class AchievementLayoutCategory : AchievementLayout {
-    public required List<AchievementLayoutItem> Items { get; init; }
+    public required List<AchievementLayoutSection> Sections { get; init; }
     public required int Id { get; init; }
     public bool Seasonal { get; init; } = false;
+
+    public override List<uint> GetAllAchievementIds() => Sections.SelectMany(it => it.GetAllAchievementIds()).ToList();
+
+    internal Dictionary<uint, uint> GetHighestIdMap() {
+        var map = new Dictionary<uint, uint>();
+
+        foreach (var section in Sections) {
+            foreach (var (key, value) in section.GetHighestIdMap()) {
+                map[key] = value;
+            }
+        }
+
+        return map;
+    }
+}
+
+public class AchievementLayoutSection : AchievementLayout {
+    public required List<AchievementLayoutItem> Items { get; init; }
+    public bool IsOpen = true;
 
     public override List<uint> GetAllAchievementIds() {
         return Items.SelectMany(it => it switch {

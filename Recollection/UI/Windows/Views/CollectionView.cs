@@ -21,9 +21,9 @@ public class CollectionView(
     private const string TitleListNotLoadedWarning = "Title list not loaded, please open the vanilla title window once!";
 
     private void DrawHeader() {
-        UiComponents.SeparatorText(breadcrumb, plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader(breadcrumb, plugin.Configuration.UiDensity);
         OverviewComponents.OverviewStats(plugin, score(), CollectionsService.Label(type).ToLower());
-        UiComponents.SeparatorText(CollectionsService.Label(type), plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader(CollectionsService.Label(type), plugin.Configuration.UiDensity);
     }
 
     private bool DrawWarnings() {

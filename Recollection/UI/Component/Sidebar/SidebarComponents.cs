@@ -16,7 +16,7 @@ public static partial class SidebarComponents {
     private const float SectionPaddingBelowEm = 0.25f;
 
     private static void SectionHeader(Plugin plugin, string name) {
-        UiComponents.SeparatorText(name, plugin.Configuration.UiDensity, UiFonts.FontSize100, UiColors.Grey(), SectionPaddingAboveEm, SectionPaddingBelowEm);
+        UiComponents.SectionHeader(name, plugin.Configuration.UiDensity, UiFonts.FontSize100, UiColors.Grey(), SectionPaddingAboveEm, SectionPaddingBelowEm);
     }
 
     private static void FillerItems(Plugin plugin, MainWindowState state, params string[] names) {

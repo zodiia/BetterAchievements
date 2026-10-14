@@ -31,10 +31,10 @@ public class OverviewView(Plugin plugin, UnlockablesState unlockables, Navigatio
 
         ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
-        UiComponents.SeparatorText("Overview", plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader("Overview", plugin.Configuration.UiDensity);
         OverviewComponents.OverviewStats(plugin, unlockables);
 
-        UiComponents.SeparatorText("Categories", plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader("Categories", plugin.Configuration.UiDensity);
         OverviewComponents.CategoriesGrid(plugin, unlockables, navigation);
 
         OverviewComponents.ActivityColumns(plugin, unlockables);

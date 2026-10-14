@@ -41,7 +41,8 @@ public static partial class OverviewComponents {
 
         NearingCompletionCache = plugin.MainLayout.Achievements
                                         .SelectMany(group => group.Items)
-                                        .SelectMany(category => category.Items)
+                                        .SelectMany(category => category.Sections)
+                                        .SelectMany(section => section.Items)
                                         .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
                                         .Where(it => it.Ratio < 1.0)
                                         .OrderByDescending(it => it.Ratio)
@@ -81,7 +82,7 @@ public static partial class OverviewComponents {
     }
 
     private static void ActivityColumn(Plugin plugin, string title, IReadOnlyList<ActivityEntry> entries) {
-        UiComponents.SeparatorText(title, plugin.Configuration.UiDensity, UiFonts.FontSize110, paddingAboveEm: 0f);
+        UiComponents.SectionHeader(title, plugin.Configuration.UiDensity, UiFonts.FontSize110, paddingAboveEm: 0f);
 
         if (entries.Count == 0) {
             ImGui.TextColored(UiColors.Grey(), NoDataText);

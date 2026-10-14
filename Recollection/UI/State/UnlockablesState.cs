@@ -191,8 +191,13 @@ public class UnlockablesState(Plugin plugin) {
         return collectionsService.FindCategory(type, id);
     }
 
-    public List<IUnlockable> SortedUnlockables(AchievementLayoutCategory category) {
-        var items = category.Items;
+    public List<UnlockableSection> SortedUnlockables(AchievementLayoutCategory category) {
+        var unfiltered = mainLayout.Achievements.SelectMany(group => group.Items).First(it => it.Id == category.Id).Sections;
+        return category.Sections.Select(section => new UnlockableSection(section.Name, SortedUnlockables(section), unfiltered.First(it => it.Name == section.Name))).ToList();
+    }
+
+    private List<IUnlockable> SortedUnlockables(AchievementLayoutSection section) {
+        var items = section.Items;
 
         if (configuration.SortBy is SortBy.MostCommon or SortBy.Rarest) {
             items = items.OrderBy(Rarity).ToList();
@@ -330,14 +335,21 @@ public class UnlockablesState(Plugin plugin) {
         };
     }
 
-    private AchievementLayoutCategory? FilterAchievementLayout(AchievementLayoutCategory category) {
-        var progressIds = category.Items.Where(MatchProgressFilter).SelectMany(AchievementIds).ToList();
-        progressAchievementIds[category] = progressIds;
-
-        var items = category.Items.Where(FilterAchievementLayoutItem).ToList();
+    private AchievementLayoutSection? FilterAchievementLayout(AchievementLayoutSection section) {
+        var items = section.Items.Where(FilterAchievementLayoutItem).ToList();
         if (items.Count == 0) return null;
 
-        var filtered = new AchievementLayoutCategory { Name = category.Name, Id = category.Id, Seasonal = category.Seasonal, Items = items };
+        return new AchievementLayoutSection { Name = section.Name, Items = items };
+    }
+
+    private AchievementLayoutCategory? FilterAchievementLayout(AchievementLayoutCategory category) {
+        var progressIds = category.Sections.SelectMany(section => section.Items).Where(MatchProgressFilter).SelectMany(AchievementIds).ToList();
+        progressAchievementIds[category] = progressIds;
+
+        var sections = category.Sections.Select(FilterAchievementLayout).OfType<AchievementLayoutSection>().ToList();
+        if (sections.Count == 0) return null;
+
+        var filtered = new AchievementLayoutCategory { Name = category.Name, Id = category.Id, Seasonal = category.Seasonal, Sections = sections };
         progressAchievementIds[filtered] = progressIds;
         return filtered;
     }

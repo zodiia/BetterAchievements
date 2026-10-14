@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Recollection.Data;
@@ -8,7 +9,7 @@ using Recollection.UI.Component;
 
 namespace Recollection.UI.Windows.Views;
 
-public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable> unlockables, Func<AchievementProgress> progress, VariableHeightClipper clipper) : IView {
+public class AchievementsView(Plugin plugin, string breadcrumb, List<UnlockableSection> sections, Func<AchievementProgress> progress, VariableHeightClipper clipper) : IView {
     private const string AchievementListNotLoadedWarning = "Achievement list not loaded, please open the vanilla achievement window once!";
 
     private void DrawHeaderStatsLine(uint obtainedCount, uint totalCount, uint obtainedPoints, uint totalPoints) {
@@ -40,14 +41,12 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
 
         ImGui.Dummy(new(0, UiSize.Em(0.5f) * plugin.Configuration.UiDensity));
 
-        UiComponents.SeparatorText(breadcrumb, plugin.Configuration.UiDensity);
+        UiComponents.SectionHeader(breadcrumb, plugin.Configuration.UiDensity);
 
         DrawHeaderStatsLine(obtainedCount, totalCount, obtainedPoints, totalPoints);
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + UiSize.Em(0.5f));
         UiComponents.ProgressBar(progressRatio, UiColors.Progress(), insideText: $"{progressRatio * 100 :0.#}%");
-
-        UiComponents.SeparatorText("Achievements", plugin.Configuration.UiDensity);
     }
 
     private bool DrawWarnings() {
@@ -65,8 +64,21 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
     }
 
     private void DrawAchievementsMainContent() {
-        clipper.Draw(unlockables.Count, i => {
-            switch (unlockables[i]) {
+        var rows = sections.SelectMany(section => Enumerable.Range(-1, section.Layout?.IsOpen == false ? 1 : section.Unlockables.Count + 1)
+                                                            .Select(index => (section, index))).ToList();
+
+        clipper.Draw(rows.Count, idx => {
+            var (section, sectionIdx) = rows[idx];
+
+            if (sectionIdx == -1) {
+                if (UiComponents.SectionHeader(section.Name, plugin.Configuration.UiDensity, open: section.Layout?.IsOpen)) {
+                    section.Layout!.IsOpen = !section.Layout.IsOpen;
+                }
+                return;
+            }
+
+            var unlockables = section.Unlockables;
+            switch (unlockables[sectionIdx]) {
                 case UnlockableAchievement achievement:
                     UiComponents.Achievement(achievement, plugin);
                     break;
@@ -75,7 +87,7 @@ public class AchievementsView(Plugin plugin, string breadcrumb, List<IUnlockable
                     break;
             }
 
-            if (i != unlockables.Count - 1) {
+            if (sectionIdx != unlockables.Count - 1) {
                 ImGui.Separator();
             }
         });
