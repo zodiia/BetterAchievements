@@ -12,7 +12,6 @@ public readonly record struct TimingRow(string Name, long Calls, double Total, d
 public static class TimingStats {
     public const int DefaultSampleWindow = 10000;
 
-    // Percentiles are computed over the most recent SampleWindow calls of each method.
     public static int SampleWindow { get; set; } = DefaultSampleWindow;
 
     private sealed class Entry {
@@ -44,7 +43,6 @@ public static class TimingStats {
         }
     }
 
-    // Type.Method(ParamType, ParamType), so overloads get their own row.
     private static string FormatName(MethodBase method) {
         var parameters = string.Join(", ", method.GetParameters().Select(p => FormatType(p.ParameterType)));
         return $"{method.DeclaringType?.Name}.{method.Name.TrimStart('.')}({parameters})";
@@ -65,7 +63,7 @@ public static class TimingStats {
             lock (entry.Lock) {
                 if (entry.Cached == null || entry.CachedWindow != SampleWindow) {
                     var sorted = entry.Samples.Take(SampleWindow).Order().ToArray();
-                    entry.Cached = new TimingRow(name, entry.Calls, entry.Total, Percentile(sorted, 0.5), entry.Total / entry.Calls, Percentile(sorted, 0.95), Percentile(sorted, 0.99), entry.Max);
+                    entry.Cached = new TimingRow(name, entry.Calls, entry.Total, Percentile(sorted, 0.5), sorted.Average(), Percentile(sorted, 0.95), Percentile(sorted, 0.99), entry.Max);
                     entry.CachedWindow = SampleWindow;
                 }
                 rows.Add(entry.Cached.Value);
