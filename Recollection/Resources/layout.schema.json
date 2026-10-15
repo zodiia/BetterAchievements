@@ -45,9 +45,6 @@
         "name": {
           "type": "string"
         },
-        "seasonal": {
-          "type": "boolean"
-        },
         "sections": {
           "type": "array",
           "items": {
@@ -65,6 +62,9 @@
       "properties": {
         "name": {
           "type": "string"
+        },
+        "seasonal": {
+          "type": "boolean"
         },
         "items": {
           "type": "array",
@@ -95,9 +95,15 @@
           "type": "boolean"
         },
         "area": {
-          "type": "integer"
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
         },
         "huntingLog": {
+          "type": "integer"
+        },
+        "requiredQuest": {
           "type": "integer"
         }
       },

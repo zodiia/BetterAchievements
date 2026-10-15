@@ -25,6 +25,11 @@ public enum AreaFilter {
     Zone
 }
 
+public enum ProgressionFilter {
+    All,
+    OnlyAvailable
+}
+
 public enum SortBy {
     Default,
     Alphabetically,
@@ -76,12 +81,22 @@ public static class ConfigEnumsExtensions {
         };
     }
 
-    public static string DisplayName(this AreaFilter filter) => filter switch {
-        AreaFilter.All => "All",
-        AreaFilter.Region => "Current region only",
-        AreaFilter.Zone => "Current area only",
-        _ => throw new ArgumentOutOfRangeException($"{filter} not implemented.")
-    };
+    extension(AreaFilter filter) {
+        public string DisplayName() => filter switch {
+            AreaFilter.All => "All",
+            AreaFilter.Region => "Current region only (Work in progress)",
+            AreaFilter.Zone => "Current area only (Work in progress)",
+            _ => throw new ArgumentOutOfRangeException($"{filter} not implemented.")
+        };
+
+        public string DisplayDescription() => filter switch {
+            AreaFilter.All => "Displays all items regardless of which location you're currently in",
+            AreaFilter.Region => "Only display items you can unlock in your current region",
+            AreaFilter.Zone => "Only display items you can unlock in your current zone",
+            _ => throw new ArgumentOutOfRangeException($"{filter} not implemented.")
+        };
+
+    }
 
     extension(SortBy filter) {
         public string DisplayName() => filter switch {
@@ -114,6 +129,20 @@ public static class ConfigEnumsExtensions {
             TieredAchievementDisplay.CurrentOnly => "Only displays the current level",
             TieredAchievementDisplay.MaxOnly => "Only displays the max level",
             _ => throw new ArgumentOutOfRangeException($"{bars} not implemented.")
+        };
+    }
+
+    extension(ProgressionFilter progression) {
+        public string DisplayName() => progression switch {
+            ProgressionFilter.All => "All",
+            ProgressionFilter.OnlyAvailable => "Only available (Work in progress)",
+            _ => throw new ArgumentOutOfRangeException($"{progression} not implemented.")
+        };
+
+        public string DisplayDescription() => progression switch {
+            ProgressionFilter.All => "Displays all items regardless of your story progression",
+            ProgressionFilter.OnlyAvailable => "Filter out items that you cannot access yet due to story progression",
+            _ => throw new ArgumentOutOfRangeException($"{progression} not implemented.")
         };
     }
 }

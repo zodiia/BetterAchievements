@@ -11,6 +11,7 @@ namespace Recollection.Data;
 
 public class MainLayout {
     public static readonly IPluginLog Log = Plugin.GetLogger<MainLayout>();
+    private const uint SeasonalEventsCategoryId = 38;
 
     public required List<AchievementLayoutGroup> Achievements { get; init; }
 
@@ -20,17 +21,26 @@ public class MainLayout {
             Achievements = json.AchievementCategories.Select(group => new AchievementLayoutGroup {
                 Name = group.Name,
                 Icon = group.Icon,
-                Items = group.Categories.Select(category => new AchievementLayoutCategory {
-                    Name = category.Name,
-                    Id = nextCategoryId++,
-                    Seasonal = category.Seasonal ?? false,
-                    Sections = category.Sections.Select(section => new AchievementLayoutSection {
-                        Name = section.Name,
-                        Items = section.Items.SelectMany(it => BuildItems(category.Name, it)).ToList(),
-                    }).ToList(),
-                }).ToList(),
+                Items = group.Categories.Select(category => BuildCategory(category, nextCategoryId++)).ToList(),
             }).ToList()
         };
+    }
+
+    private static AchievementLayoutCategory BuildCategory(JsonAchievementCategory category, int id) {
+        var sections = category.Sections.Select(section => new AchievementLayoutSection {
+            Name = section.Name,
+            Seasonal = section.Seasonal ?? false,
+            Items = section.Items.SelectMany(it => BuildItems(category.Name, it)).ToList(),
+        }).ToList();
+        var mappedIds = sections.SelectMany(it => it.GetAllAchievementIds()).ToHashSet();
+
+        foreach (var section in sections.Where(it => it.Seasonal)) {
+            section.Items.AddRange(ExcelSheets.Achievement.Value
+                                              .Where(ach => ach.IsValidEntry() && ach.AchievementCategory.RowId == SeasonalEventsCategoryId && mappedIds.Add(ach.RowId))
+                                              .Select(ach => new AchievementLayoutItemSimple { Id = ach.RowId }));
+        }
+
+        return new AchievementLayoutCategory { Name = category.Name, Id = id, Sections = sections };
     }
 
     private static IEnumerable<AchievementLayoutItem> BuildItems(string categoryName, JsonAchievementItem json) {
@@ -41,11 +51,11 @@ public class MainLayout {
         }
 
         if (json.Tiered is { Count: > 0 }) {
-            return [new AchievementLayoutItemTiered { Ids = json.Tiered, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog }];
+            return [new AchievementLayoutItemTiered { Ids = json.Tiered, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog, RequiredQuest = json.RequiredQuest }];
         }
 
         if (json.Unique is { Count: > 0 }) {
-            return json.Unique.Select(id => new AchievementLayoutItemSimple { Id = id, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog });
+            return json.Unique.Select(id => new AchievementLayoutItemSimple { Id = id, Spoilers = spoilers, Area = json.Area, HuntingLog = json.HuntingLog, RequiredQuest = json.RequiredQuest });
         }
 
         throw new InvalidOperationException($"An item in category \"{categoryName}\" must have a non-empty tiered or unique list");
@@ -120,7 +130,6 @@ public class AchievementLayoutGroup : AchievementLayout {
 public class AchievementLayoutCategory : AchievementLayout {
     public required List<AchievementLayoutSection> Sections { get; init; }
     public required int Id { get; init; }
-    public bool Seasonal { get; init; } = false;
 
     public override List<uint> GetAllAchievementIds() => Sections.SelectMany(it => it.GetAllAchievementIds()).ToList();
 
@@ -139,6 +148,7 @@ public class AchievementLayoutCategory : AchievementLayout {
 
 public class AchievementLayoutSection : AchievementLayout {
     public required List<AchievementLayoutItem> Items { get; init; }
+    public bool Seasonal { get; init; } = false;
     public bool IsOpen = true;
 
     public override List<uint> GetAllAchievementIds() {
@@ -173,8 +183,9 @@ public class AchievementLayoutSection : AchievementLayout {
 
 public abstract class AchievementLayoutItem {
     public bool Spoilers { get; init; } = false;
-    public uint? Area { get; init; }
+    public List<uint>? Area { get; init; }
     public uint? HuntingLog { get; init; }
+    public uint? RequiredQuest { get; init; }
 }
 
 public class AchievementLayoutItemSimple : AchievementLayoutItem {

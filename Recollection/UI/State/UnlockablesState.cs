@@ -6,6 +6,7 @@ using Dalamud.Plugin.Services;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.External.Lalachievements;
+using Recollection.Helpers;
 using Recollection.Services;
 
 namespace Recollection.UI.State;
@@ -285,44 +286,71 @@ public class UnlockablesState(Plugin plugin) {
         };
     }
 
-    private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item) {
+    private bool MatchAreaFilter(List<uint>? area) {
+        if (configuration.AreaFilter == AreaFilter.All) return true;
+        if (area == null || ExcelSheets.TerritoryType.Value.GetRowOrDefault(Plugin.ClientState.TerritoryType) is not { } current) return false;
+
+        return configuration.AreaFilter switch {
+            AreaFilter.Region => area.Any(id => ExcelSheets.TerritoryType.Value.GetRowOrDefault(id)?.PlaceNameRegion.RowId == current.PlaceNameRegion.RowId),
+            AreaFilter.Zone => area.Any(id => ExcelSheets.TerritoryType.Value.GetRowOrDefault(id)?.PlaceName.RowId == current.PlaceName.RowId),
+            _ => throw new ArgumentOutOfRangeException($"{configuration.AreaFilter} not implemented.")
+        };
+    }
+
+    private bool MatchProgressionFilter(uint? requiredQuest) {
+        return configuration.ProgressionFilter switch {
+            ProgressionFilter.All => true,
+            ProgressionFilter.OnlyAvailable => requiredQuest == null || Plugin.UnlockState.IsQuestCompleted(ExcelSheets.Quest.Value.GetRow(requiredQuest.Value)),
+            _ => throw new ArgumentOutOfRangeException($"{configuration.ProgressionFilter} not implemented.")
+        };
+    }
+
+    private bool FilterAchievementLayoutItem(AchievementLayoutItemSimple item, bool seasonal) {
         var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
                && MatchUnlockFilter(achievement.Unlocked)
+               && (!seasonal || achievement.Unlocked)
                && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
-    private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item) {
+    private bool FilterAchievementLayoutItem(AchievementLayoutItemTiered item, bool seasonal) {
         var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
                && MatchUnlockFilter(achievements.Unlocked)
+               && (!seasonal || achievements.Unlocked)
                && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
-    private bool FilterAchievementLayoutItem(AchievementLayoutItem item) {
+    private bool FilterAchievementLayoutItem(AchievementLayoutItem item, bool seasonal) {
+        if (!MatchAreaFilter(item.Area) || !MatchProgressionFilter(item.RequiredQuest)) return false;
+
         return item switch {
-            AchievementLayoutItemSimple simple => FilterAchievementLayoutItem(simple),
-            AchievementLayoutItemTiered tiered => FilterAchievementLayoutItem(tiered),
+            AchievementLayoutItemSimple simple => FilterAchievementLayoutItem(simple, seasonal),
+            AchievementLayoutItemTiered tiered => FilterAchievementLayoutItem(tiered, seasonal),
             _ => false
         };
     }
 
-    private bool MatchProgressFilter(AchievementLayoutItemSimple item) {
+    private bool MatchProgressFilter(AchievementLayoutItemSimple item, bool seasonal) {
         var achievement = unlockablesService.GetUnlockableAchievement(item.Id);
         return MatchSearch(achievement)
+               && (!seasonal || achievement.Unlocked)
                && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievement.Id));
     }
 
-    private bool MatchProgressFilter(AchievementLayoutItemTiered item) {
+    private bool MatchProgressFilter(AchievementLayoutItemTiered item, bool seasonal) {
         var achievements = unlockablesService.GetUnlockableTieredAchievement(item.Ids, item.Spoilers);
         return MatchSearch(achievements)
+               && (!seasonal || achievements.Unlocked)
                && MatchRankedFilter(lalachievementsService.AchievementRarity.ContainsKey(achievements.ProvidesAchievements.Last().Id));
     }
 
-    private bool MatchProgressFilter(AchievementLayoutItem item) {
+    private bool MatchProgressFilter(AchievementLayoutItem item, bool seasonal) {
+        if (!MatchAreaFilter(item.Area) || !MatchProgressionFilter(item.RequiredQuest)) return false;
+
         return item switch {
-            AchievementLayoutItemSimple simple => MatchProgressFilter(simple),
-            AchievementLayoutItemTiered tiered => MatchProgressFilter(tiered),
+            AchievementLayoutItemSimple simple => MatchProgressFilter(simple, seasonal),
+            AchievementLayoutItemTiered tiered => MatchProgressFilter(tiered, seasonal),
             _ => false
         };
     }
@@ -336,20 +364,20 @@ public class UnlockablesState(Plugin plugin) {
     }
 
     private AchievementLayoutSection? FilterAchievementLayout(AchievementLayoutSection section) {
-        var items = section.Items.Where(FilterAchievementLayoutItem).ToList();
+        var items = section.Items.Where(it => FilterAchievementLayoutItem(it, section.Seasonal)).ToList();
         if (items.Count == 0) return null;
 
-        return new AchievementLayoutSection { Name = section.Name, Items = items };
+        return new AchievementLayoutSection { Name = section.Name, Seasonal = section.Seasonal, Items = items };
     }
 
     private AchievementLayoutCategory? FilterAchievementLayout(AchievementLayoutCategory category) {
-        var progressIds = category.Sections.SelectMany(section => section.Items).Where(MatchProgressFilter).SelectMany(AchievementIds).ToList();
+        var progressIds = category.Sections.SelectMany(section => section.Items.Where(it => MatchProgressFilter(it, section.Seasonal))).SelectMany(AchievementIds).ToList();
         progressAchievementIds[category] = progressIds;
 
         var sections = category.Sections.Select(FilterAchievementLayout).OfType<AchievementLayoutSection>().ToList();
         if (sections.Count == 0) return null;
 
-        var filtered = new AchievementLayoutCategory { Name = category.Name, Id = category.Id, Seasonal = category.Seasonal, Sections = sections };
+        var filtered = new AchievementLayoutCategory { Name = category.Name, Id = category.Id, Sections = sections };
         progressAchievementIds[filtered] = progressIds;
         return filtered;
     }

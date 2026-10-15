@@ -29,7 +29,9 @@ public static class ExcelSheets {
     public static readonly Lazy<ExcelSheet<OrchestrionUiparam>> OrchestrionUiparam = new(() => Plugin.DataManager.GetExcelSheet<OrchestrionUiparam>());
     public static readonly Lazy<ExcelSheet<Ornament>> Ornament = new(() => Plugin.DataManager.GetExcelSheet<Ornament>());
     public static readonly Lazy<ExcelSheet<OrnamentTransient>> OrnamentTransient = new(() => Plugin.DataManager.GetExcelSheet<OrnamentTransient>());
+    public static readonly Lazy<ExcelSheet<Quest>> Quest = new(() => Plugin.DataManager.GetExcelSheet<Quest>());
     public static readonly Lazy<ExcelSheet<Recipe>> Recipe = new(() => Plugin.DataManager.GetExcelSheet<Recipe>());
+    public static readonly Lazy<ExcelSheet<TerritoryType>> TerritoryType = new(() => Plugin.DataManager.GetExcelSheet<TerritoryType>());
     public static readonly Lazy<ExcelSheet<Title>> Title = new(() => Plugin.DataManager.GetExcelSheet<Title>());
     public static readonly Lazy<ExcelSheet<TripleTriad>> TripleTriad = new(() => Plugin.DataManager.GetExcelSheet<TripleTriad>());
     public static readonly Lazy<ExcelSheet<TripleTriadCard>> TripleTriadCard = new(() => Plugin.DataManager.GetExcelSheet<TripleTriadCard>());

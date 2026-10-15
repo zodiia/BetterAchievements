@@ -89,11 +89,19 @@ public class SettingsView : IView {
             },
             new EnumSetting<AreaFilter> {
                 Name = "Filter by area",
-                Description = "Feature coming soon!",
-                IsDisabled = _ => true,
+                Description = "This feature is still a work in progress, and therefore is not implemented for everything yet.",
                 ValueName = ConfigEnumsExtensions.DisplayName,
+                ValueDescription = ConfigEnumsExtensions.DisplayDescription,
                 Getter = it => it.AreaFilter,
                 Setter = (it, value) => it.AreaFilter = value,
+            },
+            new EnumSetting<ProgressionFilter> {
+                Name = "Filter by story progression",
+                Description = "This feature is still a work in progress, and therefore is not implemented for everything yet.",
+                ValueName = ConfigEnumsExtensions.DisplayName,
+                ValueDescription = ConfigEnumsExtensions.DisplayDescription,
+                Getter = it => it.ProgressionFilter,
+                Setter = (it, value) => it.ProgressionFilter = value,
             },
         ]),
         new("Sorting options", [

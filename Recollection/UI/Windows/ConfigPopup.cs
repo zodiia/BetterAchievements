@@ -8,6 +8,12 @@ using Recollection.UI.State;
 
 namespace Recollection.UI.Windows;
 
+public enum ConfigurationEffect {
+    None,
+    RebuildView,
+    Refilter
+}
+
 public static class ConfigPopup {
     public const string FiltersPopupId = "FilterPopup";
 
@@ -39,6 +45,11 @@ public static class ConfigPopup {
         EnumCombo("Unlock status", configuration.UnlockStatusFilter.DisplayName(),
                   state, configuration.UnlockStatusFilter,
                   ConfigEnumsExtensions.DisplayName, (it, value) => it.UnlockStatusFilter = value,
+                  ConfigurationEffect.Refilter);
+        ImGui.Dummy(new(0, UiSize.Em(0.25f) * configuration.UiDensity));
+        EnumCombo("Location", configuration.AreaFilter.DisplayName(),
+                  state, configuration.AreaFilter,
+                  ConfigEnumsExtensions.DisplayName, (it, value) => it.AreaFilter = value,
                   ConfigurationEffect.Refilter);
         ImGui.Dummy(new(0, UiSize.Em(0.25f) * configuration.UiDensity));
         EnumCombo("Counts towards rankings", configuration.RankedFilter.DisplayName(),

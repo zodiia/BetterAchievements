@@ -1,12 +1,8 @@
 using System;
+using Recollection.Data;
+using Recollection.UI.Windows;
 
 namespace Recollection.UI.State;
-
-public enum ConfigurationEffect {
-    None,
-    RebuildView,
-    Refilter
-}
 
 public class MainWindowState {
     private readonly Configuration configuration;
@@ -20,6 +16,18 @@ public class MainWindowState {
         configuration = plugin.Configuration;
         Unlockables = new UnlockablesState(plugin);
         Navigation = new NavigationState(plugin, Unlockables);
+        Plugin.ClientState.TerritoryChanged += OnTerritoryChanged;
+    }
+
+    public void Dispose() {
+        Plugin.ClientState.TerritoryChanged -= OnTerritoryChanged;
+    }
+
+    private void OnTerritoryChanged(uint territory) {
+        if (configuration.AreaFilter == AreaFilter.All) return;
+
+        Unlockables.ApplyFilters();
+        Navigation.Rebuild();
     }
 
     public void SetSearch(string search) {

@@ -89,16 +89,14 @@ public static partial class SidebarComponents {
         CollectionItem(plugin, state, UnlockableType.Emote, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.FramersKit, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.Leve, UiColors.Blue());
-
-        SectionHeader(plugin, "Records");
-        CollectionItem(plugin, state, UnlockableType.HuntingLog, UiColors.Green());
-        CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Green());
-        CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Green());
+        CollectionItem(plugin, state, UnlockableType.HuntingLog, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.CraftingLog, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.GatheringLog, UiColors.Blue());
         FillerItems(plugin, state, "Mount Speed", "Aether Currents", "Field Records");
-        CollectionItem(plugin, state, UnlockableType.SurveyRecord, UiColors.Green());
-        CollectionItem(plugin, state, UnlockableType.OccultRecord, UiColors.Green());
+        CollectionItem(plugin, state, UnlockableType.SurveyRecord, UiColors.Blue());
+        CollectionItem(plugin, state, UnlockableType.OccultRecord, UiColors.Blue());
 
-        SectionHeader(plugin, "Seasonal & Others");
-        FillerItems(plugin, state, "Yo-kai Watch", "The Rising");
+        SectionHeader(plugin, "Others");
+        FillerItems(plugin, state, "Achievement roulette");
     }
 }

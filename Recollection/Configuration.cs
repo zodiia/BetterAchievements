@@ -8,7 +8,7 @@ namespace Recollection;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 10;
+    public int Version { get; set; } = 11;
 
     // UI settings
     public float ProgressBarHeight = 1.5f;
@@ -23,6 +23,7 @@ public class Configuration : IPluginConfiguration {
     public ContainsRewardsFilter ContainsRewardsFilter = ContainsRewardsFilter.All;
     public RankedFilter RankedFilter = RankedFilter.All;
     public AreaFilter AreaFilter = AreaFilter.All;
+    public ProgressionFilter ProgressionFilter = ProgressionFilter.All;
     public SortBy SortBy = SortBy.Default;
 
     // Other settings

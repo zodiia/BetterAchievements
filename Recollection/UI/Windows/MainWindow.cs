@@ -26,7 +26,9 @@ public class MainWindow : Window, IDisposable {
         };
     }
 
-    public void Dispose() { }
+    public void Dispose() {
+        state.Dispose();
+    }
 
     public void OpenSettings() {
         IsOpen = true;
