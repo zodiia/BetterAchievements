@@ -63,6 +63,24 @@ public static partial class UiComponents {
         }
     }
 
+    private static Vector2 BeginAccent() {
+        var start = ImGui.GetCursorScreenPos();
+
+        ImGui.Indent(UiSize.Em(0.75f));
+        ImGui.BeginGroup();
+        return start;
+    }
+
+    private static void EndAccent(Vector2 start, Vector4 color) {
+        var width = UiSize.Em(0.2f);
+
+        ImGui.EndGroup();
+        ImGui.Unindent(UiSize.Em(0.75f));
+
+        var end = ImGui.GetItemRectMax();
+        ImGui.GetWindowDrawList().AddRectFilled(start, end with { X = start.X + width }, ImGui.GetColorU32(color), width / 2);
+    }
+
     private static float AchievementIconSize() => ImGui.GetTextLineHeightWithSpacing() * 2;
 
     private static void AchievementIcon(uint iconId, float size) {
@@ -256,6 +274,7 @@ public static partial class UiComponents {
     }
 
     public static void Achievement(UnlockableAchievement achievement, Plugin plugin) {
+        var accentStart = BeginAccent();
         ImGui.BeginGroup();
 
         AchievementIcon(achievement.Icon, AchievementIconSize());
@@ -275,12 +294,15 @@ public static partial class UiComponents {
         AchievementDescriptionSimple(achievement, plugin.Configuration);
 
         ImGui.EndGroup();
+        EndAccent(accentStart, achievement.Unlocked ? UiColors.Green() : UiColors.Red());
     }
 
     public static void Achievement(UnlockableTieredAchievement achievements, Plugin plugin) {
+        var accentStart = BeginAccent();
         ImGui.BeginGroup();
 
         var maxLevel = achievements.ProvidesAchievements.Last();
+        var accentColor = maxLevel.Unlocked ? UiColors.Green() : achievements.ProvidesAchievements[0].Unlocked ? UiColors.Yellow() : UiColors.Red();
         AchievementIcon(maxLevel.Icon, AchievementIconSize());
         ImGui.SameLine();
         ImGui.BeginGroup();
@@ -297,5 +319,6 @@ public static partial class UiComponents {
         AchievementDescriptionTiered(achievements, plugin.Configuration);
 
         ImGui.EndGroup();
+        EndAccent(accentStart, accentColor);
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility.Raii;
 using Recollection.Data.Unlockable;
 
 namespace Recollection.UI.Component;
@@ -73,8 +72,7 @@ public static partial class UiComponents {
     }
 
     public static void CollectionItem(IUnlockable unlockable, Configuration config) {
-        using var group = ImRaii.Group();
-
+        var accentStart = BeginAccent();
         var start = ImGui.GetCursorPos();
         var availableWidth = ImGui.GetContentRegionAvail().X;
         var iconSize = AchievementIconSize();
@@ -118,7 +116,7 @@ public static partial class UiComponents {
                 enabled: progress != null);
         }
 
-
         ImGui.Dummy(Vector2.Zero);
+        EndAccent(accentStart, unlockable.Unlocked ? UiColors.Green() : UiColors.Red());
     }
 }
