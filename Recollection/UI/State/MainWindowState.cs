@@ -8,6 +8,7 @@ public class MainWindowState {
     private readonly Configuration configuration;
 
     public readonly UnlockablesState Unlockables;
+    public readonly RouletteState Roulette;
     public readonly NavigationState Navigation;
 
     public string SearchBuffer = "";
@@ -15,12 +16,14 @@ public class MainWindowState {
     public MainWindowState(Plugin plugin) {
         configuration = plugin.Configuration;
         Unlockables = new UnlockablesState(plugin);
-        Navigation = new NavigationState(plugin, Unlockables);
+        Roulette = new RouletteState(plugin);
+        Navigation = new NavigationState(plugin, Unlockables, Roulette);
         Plugin.ClientState.TerritoryChanged += OnTerritoryChanged;
     }
 
     public void Dispose() {
         Plugin.ClientState.TerritoryChanged -= OnTerritoryChanged;
+        Roulette.Dispose();
     }
 
     private void OnTerritoryChanged(uint territory) {
@@ -37,11 +40,15 @@ public class MainWindowState {
 
     public void Refresh() {
         Unlockables.Refresh();
+        Roulette.Rebuild();
         Navigation.Rebuild();
     }
 
     public void CheckForUiRefresh() {
-        if (Unlockables.CheckForUpdates()) Navigation.Rebuild();
+        if (!Unlockables.CheckForUpdates()) return;
+
+        Roulette.Rebuild();
+        Navigation.Rebuild();
     }
 
     public void UpdateConfiguration(Action<Configuration> update, ConfigurationEffect effect = ConfigurationEffect.None) {

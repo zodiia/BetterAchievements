@@ -7,6 +7,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
+using Recollection.Helpers;
 using Recollection.UI.Component;
 using Recollection.UI.State;
 
@@ -17,6 +18,7 @@ public static partial class OverviewComponents {
     private const string NoDataText = "No data.";
 
     private readonly record struct ActivityEntry(UnlockableAchievement Achievement, string? Breadcrumb, string? Detail);
+
     private readonly record struct RankedEntry(double Ratio, ActivityEntry Entry);
 
     private static MainLayout? NearingCompletionSource;
@@ -27,7 +29,8 @@ public static partial class OverviewComponents {
     private static RankedEntry NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
         var candidate = item switch {
             AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).AchievementCompletionRatio(),
-            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).AchievementCompletionRatio(),
+            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers)
+                                                        .AchievementCompletionRatio(),
             _ => throw new InvalidDataException("Unmapped achievement layout item type")
         };
 
@@ -40,15 +43,15 @@ public static partial class OverviewComponents {
         NearingCompletionSource = unlockables.FilteredLayout;
 
         NearingCompletionCache = plugin.MainLayout.Achievements
-                                        .SelectMany(group => group.Items)
-                                        .SelectMany(category => category.Sections)
-                                        .SelectMany(section => section.Items)
-                                        .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
-                                        .Where(it => it.Ratio < 1.0)
-                                        .OrderByDescending(it => it.Ratio)
-                                        .Take(ActivityRowCount)
-                                        .Select(it => it.Entry)
-                                        .ToList();
+                                       .SelectMany(group => group.Items)
+                                       .SelectMany(category => category.Sections)
+                                       .SelectMany(section => section.Items)
+                                       .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
+                                       .Where(it => it.Ratio < 1.0)
+                                       .OrderByDescending(it => it.Ratio)
+                                       .Take(ActivityRowCount)
+                                       .Select(it => it.Entry)
+                                       .ToList();
 
         return NearingCompletionCache;
     }
@@ -75,7 +78,7 @@ public static partial class OverviewComponents {
         var entries = unlockables.RecentlyUnlockedAchievements.Select(update => {
             var achievement = plugin.UnlockablesService.GetUnlockableAchievement(update.AchievementId);
             var breadcrumb = unlockables.FindBreadcrumb(achievement.Id);
-            return new ActivityEntry(achievement, breadcrumb, FormatTimeAgo(update.Timestamp));
+            return new ActivityEntry(achievement, breadcrumb, TimeFormat.FormatTimeAgo(update.Timestamp));
         }).ToList();
 
         ActivityColumn(plugin, "Recently Obtained", entries);
@@ -97,22 +100,6 @@ public static partial class OverviewComponents {
             ImGui.Dummy(new());
         }
     }
-
-    private static string FormatTimeAgo(ulong timestamp) {
-        var elapsed = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds((long)timestamp);
-
-        return elapsed switch {
-            { TotalMinutes: < 1 } => "just now",
-            { TotalHours: < 1 } => FormatUnit((int)elapsed.TotalMinutes, "minute"),
-            { TotalDays: < 1 } => FormatUnit((int)elapsed.TotalHours, "hour"),
-            { TotalDays: < 7 } => FormatUnit((int)elapsed.TotalDays, "day"),
-            { TotalDays: < 30 } => FormatUnit((int)(elapsed.TotalDays / 7), "week"),
-            { TotalDays: < 365 } => FormatUnit((int)(elapsed.TotalDays / 30), "month"),
-            _ => FormatUnit((int)(elapsed.TotalDays / 365), "year"),
-        };
-    }
-
-    private static string FormatUnit(int amount, string unit) => $"{amount} {unit}{(amount == 1 ? "" : "s")} ago";
 
     private static void ActivityRow(ActivityEntry entry) {
         var achievement = entry.Achievement;

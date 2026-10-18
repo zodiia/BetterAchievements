@@ -14,6 +14,7 @@ namespace Recollection.UI.Component.Sidebar;
 public static partial class SidebarComponents {
     private const float SectionPaddingAboveEm = 0.5f;
     private const float SectionPaddingBelowEm = 0.25f;
+    private const float NavigationItemsPaddingBelowEm = 0.5f;
 
     private static void SectionHeader(Plugin plugin, string name) {
         UiComponents.SectionHeader(name, plugin.Configuration.UiDensity, UiFonts.FontSize100, UiColors.Grey(), SectionPaddingAboveEm, SectionPaddingBelowEm);
@@ -26,6 +27,15 @@ public static partial class SidebarComponents {
             if (CategoryRow(plugin, $"##Filler-{name}", FontAwesomeIcon.Lock, UiColors.Red(), name, 1.0f, selected, selected)) {
                 state.Navigation.Navigate(target);
             }
+        }
+    }
+
+    private static void RouletteItem(Plugin plugin, MainWindowState state) {
+        var target = new NavigationTarget.Roulette();
+        var selected = state.Navigation.IsSelected(target);
+
+        if (CategoryRow(plugin, "##Roulette", FontAwesomeIcon.Dice, UiColors.Progress(), "Achievement roulette", null, selected, selected)) {
+            state.Navigation.Navigate(target);
         }
     }
 
@@ -67,8 +77,11 @@ public static partial class SidebarComponents {
         SearchAndSettings(plugin, state);
 
         SectionHeader(plugin, "Achievements");
-        PinnedAchievementsItem(plugin, state);
         OverviewItem(plugin, state);
+        PinnedAchievementsItem(plugin, state);
+        RouletteItem(plugin, state);
+
+        ImGui.Dummy(new Vector2(0, UiSize.Em(NavigationItemsPaddingBelowEm)));
         foreach (var layout in state.Unlockables.FilteredLayout.Achievements) {
             MainCategoryItem(plugin, state, layout);
         }
@@ -95,8 +108,5 @@ public static partial class SidebarComponents {
         FillerItems(plugin, state, "Mount Speed", "Aether Currents", "Field Records");
         CollectionItem(plugin, state, UnlockableType.SurveyRecord, UiColors.Blue());
         CollectionItem(plugin, state, UnlockableType.OccultRecord, UiColors.Blue());
-
-        SectionHeader(plugin, "Others");
-        FillerItems(plugin, state, "Achievement roulette");
     }
 }

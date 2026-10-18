@@ -55,19 +55,19 @@ public static partial class SidebarComponents {
         UiComponents.ProgressBar(progress, color, height: height);
     }
 
-    private static bool CategoryRow(Plugin plugin, string id, FontAwesomeIcon icon, Vector4 color, string name, float progress, bool active, bool selected) {
+    private static bool CategoryRow(Plugin plugin, string id, FontAwesomeIcon icon, Vector4 color, string name, float? progress, bool active, bool selected) {
         var style = ImGui.GetStyle();
         var barHeight = UiSize.Em(plugin.Configuration.SidebarProgressBarHeight);
         var lineHeight = ImGui.GetTextLineHeight();
-        var contentHeight = lineHeight + style.ItemSpacing.Y + barHeight;
+        var contentHeight = progress == null ? lineHeight : lineHeight + style.ItemSpacing.Y + barHeight;
         var padding = new Vector2(UiSize.Em(CategoryRowPaddingEm * plugin.Configuration.UiDensity), UiSize.Em(CategoryRowPaddingEm * plugin.Configuration.UiDensity));
         var iconColumnWidth = lineHeight;
+        var iconText = icon.ToIconString();
 
         var (clicked, contentStart, contentWidth) = BeginRow(id, contentHeight, padding, selected);
 
         using (ImRaii.PushFont(UiBuilder.IconFont)) {
             ImGui.SetWindowFontScale(CategoryIconScale);
-            var iconText = icon.ToIconString();
             var iconSize = ImGui.CalcTextSize(iconText);
             var iconX = contentStart.X + ((iconColumnWidth - iconSize.X) / 2f);
             ImGui.SetCursorScreenPos(new Vector2(iconX, contentStart.Y + UiSize.Em(CategoryIconVerticalOffsetEm * plugin.Configuration.UiDensity)));
@@ -79,10 +79,12 @@ public static partial class SidebarComponents {
         ImGui.SetCursorScreenPos(contentStart with { X = contentStart.X + iconColumnWidth + style.ItemSpacing.X });
         ImGui.TextColored(RowTextColor, name);
 
-        RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress, 0f, 1f) * 100)}%");
+        if (progress == null) return clicked;
+
+        RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress.Value, 0f, 1f) * 100)}%");
 
         ImGui.SetCursorScreenPos(contentStart with { Y = contentStart.Y + lineHeight + style.ItemSpacing.Y });
-        PaddedProgressBar($"{id}_bar", contentWidth, barHeight, Math.Clamp(progress, 0f, 1f), color);
+        PaddedProgressBar($"{id}_bar", contentWidth, barHeight, Math.Clamp(progress.Value, 0f, 1f), color);
 
         return clicked;
     }

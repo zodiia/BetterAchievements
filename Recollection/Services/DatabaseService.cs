@@ -17,7 +17,7 @@ public record AchievementUpdate {
     public ulong CharacterId { get; init; }
     public ulong Id { get; init; }
     public uint AchievementId { get; init; }
-    public ulong Timestamp { get; init; }
+    public long Timestamp { get; init; }
     public bool Status { get; init; }
     public uint? Progress { get; init; }
     public bool Imported { get; init; }
@@ -28,6 +28,15 @@ public record AchievementStatus {
     public uint AchievementId { get; init; }
     public bool Status { get; init; }
     public uint? Progress { get; init; }
+}
+
+public record AchievementRoulette {
+    public long Id { get; init; }
+    public ulong CharacterId { get; init; }
+    public uint AchievementId { get; init; }
+    public bool Status { get; init; }
+    public long RollDate { get; init; }
+    public long? CompletionDate { get; init; }
 }
 
 public sealed class DatabaseService : IDisposable {
@@ -50,9 +59,8 @@ public sealed class DatabaseService : IDisposable {
 
     private bool importedAchievementList;
 
-    private unsafe void SetupEvents() {
+    private void SetupEvents() {
         Plugin.UnlockState.Unlock += OnUnlock;
-        Plugin.ReceiveAchievementProgressHook.OnDetour += (_, id, current, max) => OnReceiveAchievementProgress(id, current, max);
         Plugin.Framework.Update += OnFrameworkUpdate;
         Plugin.ClientState.Login += OnLogin;
     }
@@ -115,6 +123,20 @@ public sealed class DatabaseService : IDisposable {
                                """);
             connection.Execute("PRAGMA user_version = 4;");
         }
+
+        if (version < 5) {
+            connection.Execute("""
+                               CREATE TABLE AchievementRoulette (
+                                   Id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                                   CharacterId    INTEGER NOT NULL,
+                                   AchievementId  INTEGER NOT NULL,
+                                   Status         INTEGER NOT NULL,
+                                   RollDate       INTEGER NOT NULL,
+                                   CompletionDate INTEGER
+                               );
+                               """);
+            connection.Execute("PRAGMA user_version = 5;");
+        }
     }
 
     [Time]
@@ -162,7 +184,7 @@ public sealed class DatabaseService : IDisposable {
                            """, new {
             status.CharacterId,
             status.AchievementId,
-            Timestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             status.Status,
             status.Progress,
         });
@@ -186,7 +208,7 @@ public sealed class DatabaseService : IDisposable {
             return;
         }
 
-        var timestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         values = string.Join("), (", statuses.Where(it => changedIds.Contains(it.AchievementId))
                                              .Select(s => $"{s.CharacterId}, {s.AchievementId}, {timestamp}, {s.Status}, {s.Progress}, 1"));
         connection.Execute($"""
@@ -222,6 +244,49 @@ public sealed class DatabaseService : IDisposable {
     }
 
     [Time]
+    public List<AchievementUpdate> GetAchievementUpdates(List<uint> achievementIds, ulong characterId) {
+        return connection.Query<AchievementUpdate>("""
+                                                   SELECT CharacterId, Id, AchievementId, Timestamp, Status, Progress, Imported
+                                                   FROM AchievementUpdate
+                                                   WHERE AchievementId IN @AchievementIds AND CharacterId = @CharacterId
+                                                   ORDER BY Timestamp, Id;
+                                                   """, new { AchievementIds = achievementIds, CharacterId = characterId }).AsList();
+    }
+
+    [Time]
+    public List<AchievementRoulette> GetAchievementRoulettes(ulong characterId) {
+        return connection.Query<AchievementRoulette>("""
+                                                     SELECT Id, CharacterId, AchievementId, Status, RollDate, CompletionDate
+                                                     FROM AchievementRoulette
+                                                     WHERE CharacterId = @CharacterId
+                                                     ORDER BY RollDate DESC, Id DESC;
+                                                     """, new { CharacterId = characterId }).AsList();
+    }
+
+    [Time]
+    public AchievementRoulette InsertAchievementRoulette(ulong characterId, uint achievementId, long rollDate) {
+        return connection.QuerySingle<AchievementRoulette>("""
+                                                           INSERT INTO AchievementRoulette (CharacterId, AchievementId, Status, RollDate)
+                                                           VALUES (@CharacterId, @AchievementId, 0, @RollDate)
+                                                           RETURNING Id, CharacterId, AchievementId, Status, RollDate, CompletionDate;
+                                                           """, new { CharacterId = characterId, AchievementId = achievementId, RollDate = rollDate });
+    }
+
+    [Time]
+    public void CompleteAchievementRoulette(long id, long completionDate) {
+        connection.Execute("""
+                           UPDATE AchievementRoulette
+                           SET Status = 1, CompletionDate = @CompletionDate
+                           WHERE Id = @Id;
+                           """, new { Id = id, CompletionDate = completionDate });
+    }
+
+    [Time]
+    public void DeleteAchievementRoulette(long id) {
+        connection.Execute("DELETE FROM AchievementRoulette WHERE Id = @Id;", new { Id = id });
+    }
+
+    [Time]
     public List<AchievementUpdate> GetLastUnlockedAchievements(ulong characterId) {
         return connection.Query<AchievementUpdate>("""
                                                    SELECT CharacterId, Id, AchievementId, Timestamp, Status, Progress, Imported
@@ -240,18 +305,13 @@ public sealed class DatabaseService : IDisposable {
         if (!rowRef.Is<Achievement>()) {
             return;
         }
+
         if (!rowRef.TryGetValue(out Achievement achievement)) {
             log.Warning($"Could not find achievement with RowRef.RowId = {rowRef.RowId}.");
         }
 
         UpdateAchievementStatus(new AchievementStatus {
             CharacterId = Plugin.PlayerState.ContentId, AchievementId = achievement.RowId, Status = true, Progress = achievement.Maximum()
-        });
-    }
-
-    private void OnReceiveAchievementProgress(uint id, uint current, uint max) {
-        UpdateAchievementStatus(new AchievementStatus {
-            CharacterId = Plugin.PlayerState.ContentId, AchievementId = id, Progress = current, Status = current == max
         });
     }
 
@@ -291,6 +351,7 @@ public sealed class DatabaseService : IDisposable {
                 rows += connection.Execute("INSERT OR IGNORE INTO PinnedAchievements (CharacterId, AchievementId) VALUES (@CharacterId, @AchievementId);",
                                            new { AchievementId = achievementId, CharacterId = characterId });
             }
+
             plugin.Configuration.PinnedAchievements.Clear();
             plugin.Configuration.Save();
             tx.Commit();
@@ -301,7 +362,10 @@ public sealed class DatabaseService : IDisposable {
         }
 
         // we wanna re-import them on login
-        importedAchievementList = false;
+        if (importedAchievementList) {
+            Plugin.Framework.Update += OnFrameworkUpdate;
+            importedAchievementList = false;
+        }
     }
 
     public void Dispose() {

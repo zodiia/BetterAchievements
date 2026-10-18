@@ -105,6 +105,7 @@ public sealed class Plugin : IDalamudPlugin {
     public IPluginManifest PluginManifest { get; private set; } = null!;
 
     public AchievementProgressService AchievementProgressService { get; private set; }
+    public AchievementRouletteService AchievementRouletteService { get; private set; }
     public UnlockablesService UnlockablesService { get; private set; }
     public LalachievementsService LalachievementsService { get; private set; }
     public CollectionsService CollectionsService { get; private set; }
@@ -147,6 +148,7 @@ public sealed class Plugin : IDalamudPlugin {
         CollectionsService = new CollectionsService(this);
         UnlockablesService = new UnlockablesService(this);
         AchievementProgressService = new AchievementProgressService(this);
+        AchievementRouletteService = new AchievementRouletteService(this);
         TrackerService = new TrackerService(this);
         FateService = new FateService();
 
@@ -191,6 +193,7 @@ public sealed class Plugin : IDalamudPlugin {
         UiFonts.Dispose();
 
         AchievementProgressService.Dispose();
+        AchievementRouletteService.Dispose();
         UnlockablesService.Dispose();
         DatabaseService.Dispose();
 

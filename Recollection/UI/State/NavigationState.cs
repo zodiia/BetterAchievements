@@ -6,33 +6,46 @@ using Recollection.Data.Unlockable;
 using Recollection.Services;
 using Recollection.UI.Windows.Views;
 using Recollection.UI.Windows.Views.Overview;
+using Recollection.UI.Windows.Views.Roulette;
 using Recollection.UI.Windows.Views.Settings;
 
 namespace Recollection.UI.State;
 
 public abstract record NavigationTarget {
     public sealed record Overview : NavigationTarget;
+
     public sealed record Pinned : NavigationTarget;
+
     public sealed record Category(int Id) : NavigationTarget;
+
     public sealed record Group(string Name) : NavigationTarget;
+
     public sealed record Collection(UnlockableType Type) : NavigationTarget;
+
     public sealed record CollectionCategory(UnlockableType Type, uint Id) : NavigationTarget;
+
     public sealed record Todo(string Name) : NavigationTarget;
+
+    public sealed record Roulette : NavigationTarget;
+
     public sealed record Settings : NavigationTarget;
 }
 
 public class NavigationState {
     private readonly Plugin plugin;
     private readonly UnlockablesState unlockables;
+    private readonly RouletteState roulette;
     private readonly Dictionary<NavigationTarget, VariableHeightClipper> clippers = new();
+    private RouletteView? rouletteView;
 
     public NavigationTarget Target { get; private set; } = new NavigationTarget.Overview();
     public string? OpenGroupName { get; private set; }
     public IView CurrentView { get; private set; }
 
-    public NavigationState(Plugin plugin, UnlockablesState unlockables) {
+    public NavigationState(Plugin plugin, UnlockablesState unlockables, RouletteState roulette) {
         this.plugin = plugin;
         this.unlockables = unlockables;
+        this.roulette = roulette;
         CurrentView = new OverviewView(plugin, unlockables, this);
     }
 
@@ -99,8 +112,8 @@ public class NavigationState {
             case NavigationTarget.Collection collection:
                 var collectionCategories = unlockables.CollectionCategories(collection.Type);
                 IView collectionView = collectionCategories.Count == 1
-                    ? CollectionView(target, collection.Type, collectionCategories[0], CollectionsService.Label(collection.Type))
-                    : new CollectionOverviewView(plugin, collection.Type, unlockables, this);
+                                           ? CollectionView(target, collection.Type, collectionCategories[0], CollectionsService.Label(collection.Type))
+                                           : new CollectionOverviewView(plugin, collection.Type, unlockables, this);
 
                 SetNavigation(target, CollectionsService.Label(collection.Type), collectionView);
                 break;
@@ -120,11 +133,11 @@ public class NavigationState {
 
             case NavigationTarget.Pinned:
                 SetNavigation(target, null, new AchievementsView(
-                    plugin,
-                    "Pinned",
-                    [new UnlockableSection("Achievements", unlockables.PinnedUnlockables(), null)],
-                    unlockables.GetPinnedProgress,
-                    ClipperFor(target)));
+                                  plugin,
+                                  "Pinned",
+                                  [new UnlockableSection("Achievements", unlockables.PinnedUnlockables(), null)],
+                                  unlockables.GetPinnedProgress,
+                                  ClipperFor(target)));
                 break;
 
             case NavigationTarget.Settings:
@@ -135,6 +148,12 @@ public class NavigationState {
                 SetNavigation(target, null, new TodoView());
                 break;
 
+            case NavigationTarget.Roulette:
+                // kept alive between navigations so that the drawn cards are not lost when the views are rebuilt
+                rouletteView ??= new RouletteView(plugin, roulette);
+                SetNavigation(target, null, rouletteView);
+                break;
+
             default:
                 SetNavigation(new NavigationTarget.Overview(), null, new OverviewView(plugin, unlockables, this));
                 break;
@@ -142,5 +161,4 @@ public class NavigationState {
     }
 
     public void Rebuild() => Navigate(Target);
-
 }

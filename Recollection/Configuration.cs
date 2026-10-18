@@ -29,6 +29,14 @@ public class Configuration : IPluginConfiguration {
     // Other settings
     public bool DisplayIds = false;
 
+    // Achievement roulette settings, not in settings view
+    public HashSet<string> RouletteDisabledCategories = [];
+    public int RouletteCardCount = 2;
+    public int RouletteMinPoints = 0;
+    public int RouletteMaxPoints = 50;
+    public bool RouletteNextTierOnly = false;
+    public bool RouletteOnlyWithCounter = false;
+
     // TODO: Remove
     public List<uint> PinnedAchievements { get; set; } = new();
 

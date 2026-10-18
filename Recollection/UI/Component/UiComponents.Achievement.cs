@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
+using Recollection.Services;
 
 namespace Recollection.UI.Component;
 
@@ -28,14 +27,6 @@ public static partial class UiComponents {
             >= 1 => "I" + ToRoman(number - 1),
             _ => ""
         };
-    }
-
-    private static unsafe void OpenAchievementWindow(uint achievementId) {
-        if (AgentModule.Instance() is null || AgentModule.Instance()->GetAgentAchievement() is null) {
-            return;
-        }
-
-        AgentModule.Instance()->GetAgentAchievement()->OpenById(achievementId);
     }
 
     public static void SameLineRightTextColored(Vector4 color, string text) {
@@ -136,7 +127,7 @@ public static partial class UiComponents {
             insideText: progress != null ? $"{achievement.Current}/{achievement.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progress != null,
-            onClick: () => OpenAchievementWindow(achievement.Id));
+            onClick: () => AchievementProgressService.OpenAchievementWindow(achievement.Id));
     }
 
     private static void WrappedColoredText(params (string Text, Vector4? Color)[] segments) {
@@ -191,7 +182,7 @@ public static partial class UiComponents {
             insideText: progressLoaded ? $"{maxLevel.Current}/{currentLevel.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progressLoaded,
-            onClick: () => OpenAchievementWindow(maxLevel.Id));
+            onClick: () => AchievementProgressService.OpenAchievementWindow(maxLevel.Id));
     }
 
     private static void AchievementDescriptionTieredMaxLevel(
@@ -211,7 +202,7 @@ public static partial class UiComponents {
             insideText: progressLoaded ? $"{maxLevel.Current}/{maxLevel.Maximum}" : "Not loaded (click to refresh)",
             tooltip: "Click to refresh",
             enabled: progressLoaded,
-            onClick: () => OpenAchievementWindow(maxLevel.Id));
+            onClick: () => AchievementProgressService.OpenAchievementWindow(maxLevel.Id));
     }
 
     private static void AchievementDescriptionTiered(UnlockableTieredAchievement achievements, Configuration config) {
@@ -248,6 +239,7 @@ public static partial class UiComponents {
         for (var i = 1; i <= achievements.Maximum; i++) {
             widthCalculationText += (config.DisableRomanNumerals ? i.ToString() : $"{ToRoman(i)}");
         }
+
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(widthCalculationText).X -
                        UiSize.Em(achievements.Maximum - 1);
 

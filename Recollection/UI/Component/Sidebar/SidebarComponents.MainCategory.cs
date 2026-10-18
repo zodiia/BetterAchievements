@@ -28,10 +28,8 @@ public static partial class SidebarComponents {
     private static void PinnedAchievementsItem(Plugin plugin, MainWindowState state) {
         var target = new NavigationTarget.Pinned();
         var isPinned = state.Navigation.IsSelected(target);
-        var (_, (obtained, total)) = state.Unlockables.GetPinnedProgress();
-        var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow(plugin, "##Pinned", FontAwesomeIcon.Thumbtack, UiColors.Progress(), "Pinned", progress, isPinned, isPinned)) {
+        if (CategoryRow(plugin, "##Pinned", FontAwesomeIcon.Thumbtack, UiColors.Progress(), "Pinned", null, isPinned, isPinned)) {
             state.Navigation.Navigate(target);
         }
     }
@@ -39,10 +37,8 @@ public static partial class SidebarComponents {
     private static void OverviewItem(Plugin plugin, MainWindowState state) {
         var target = new NavigationTarget.Overview();
         var isOverview = state.Navigation.IsSelected(target);
-        var (_, (obtained, total)) = state.Unlockables.GetOverallProgress();
-        var progress = total == 0 ? 0f : (float)obtained / total;
 
-        if (CategoryRow(plugin, "##Overview", FontAwesomeIcon.Home, UiColors.Progress(), "Overview", progress, isOverview, isOverview)) {
+        if (CategoryRow(plugin, "##Overview", FontAwesomeIcon.Home, UiColors.Progress(), "Overview", null, isOverview, isOverview)) {
             state.Navigation.Navigate(target);
         }
     }
