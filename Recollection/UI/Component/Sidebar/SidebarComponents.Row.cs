@@ -59,7 +59,8 @@ public static partial class SidebarComponents {
         var style = ImGui.GetStyle();
         var barHeight = UiSize.Em(plugin.Configuration.SidebarProgressBarHeight);
         var lineHeight = ImGui.GetTextLineHeight();
-        var contentHeight = progress == null ? lineHeight : lineHeight + style.ItemSpacing.Y + barHeight;
+        var showBar = progress != null && barHeight >= 1f;
+        var contentHeight = showBar ? lineHeight + style.ItemSpacing.Y + barHeight : lineHeight;
         var padding = new Vector2(UiSize.Em(CategoryRowPaddingEm * plugin.Configuration.UiDensity), UiSize.Em(CategoryRowPaddingEm * plugin.Configuration.UiDensity));
         var iconColumnWidth = lineHeight;
         var iconText = icon.ToIconString();
@@ -82,6 +83,8 @@ public static partial class SidebarComponents {
         if (progress == null) return clicked;
 
         RightAlignedText(contentStart, contentWidth, UiColors.Grey(), $"{(int)MathF.Round(Math.Clamp(progress.Value, 0f, 1f) * 100)}%");
+
+        if (!showBar) return clicked;
 
         ImGui.SetCursorScreenPos(contentStart with { Y = contentStart.Y + lineHeight + style.ItemSpacing.Y });
         PaddedProgressBar($"{id}_bar", contentWidth, barHeight, Math.Clamp(progress.Value, 0f, 1f), color);
