@@ -155,6 +155,7 @@ public class NavigationState {
                 break;
 
             default:
+                unlockables.RefreshActivity();
                 SetNavigation(new NavigationTarget.Overview(), null, new OverviewView(plugin, unlockables, this));
                 break;
         }

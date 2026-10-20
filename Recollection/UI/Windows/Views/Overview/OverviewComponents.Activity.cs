@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Textures;
-using Recollection.Data;
 using Recollection.Data.Unlockable;
 using Recollection.Helpers;
 using Recollection.UI.Component;
@@ -14,47 +12,11 @@ using Recollection.UI.State;
 namespace Recollection.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
-    private const int ActivityRowCount = 10;
     private const string NoDataText = "No data.";
 
     private readonly record struct ActivityEntry(UnlockableAchievement Achievement, string? Breadcrumb, string? Detail);
 
-    private readonly record struct RankedEntry(double Ratio, ActivityEntry Entry);
-
-    private static MainLayout? NearingCompletionSource;
-    private static List<ActivityEntry> NearingCompletionCache = [];
-
     private static string FormatPercentage(double ratio) => $"{(int)MathF.Round((float)ratio * 100)}%";
-
-    private static RankedEntry NearingCompletionCandidate(Plugin plugin, UnlockablesState unlockables, AchievementLayoutItem item) {
-        var candidate = item switch {
-            AchievementLayoutItemSimple simple => plugin.UnlockablesService.GetUnlockableAchievement(simple.Id).AchievementCompletionRatio(),
-            AchievementLayoutItemTiered tiered => plugin.UnlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers)
-                                                        .AchievementCompletionRatio(),
-            _ => throw new InvalidDataException("Unmapped achievement layout item type")
-        };
-
-        var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id);
-        return new RankedEntry(candidate.Ratio, new ActivityEntry(candidate.Achievement, breadcrumb, FormatPercentage(candidate.Ratio)));
-    }
-
-    private static List<ActivityEntry> NearingCompletionAchievements(Plugin plugin, UnlockablesState unlockables) {
-        if (ReferenceEquals(NearingCompletionSource, unlockables.FilteredLayout)) return NearingCompletionCache;
-        NearingCompletionSource = unlockables.FilteredLayout;
-
-        NearingCompletionCache = plugin.MainLayout.Achievements
-                                       .SelectMany(group => group.Items)
-                                       .SelectMany(category => category.Sections)
-                                       .SelectMany(section => section.Items)
-                                       .Select(item => NearingCompletionCandidate(plugin, unlockables, item))
-                                       .Where(it => it.Ratio < 1.0)
-                                       .OrderByDescending(it => it.Ratio)
-                                       .Take(ActivityRowCount)
-                                       .Select(it => it.Entry)
-                                       .ToList();
-
-        return NearingCompletionCache;
-    }
 
     public static void ActivityColumns(Plugin plugin, UnlockablesState unlockables) {
         if (!ImGui.BeginTable("ActivityColumns", 3)) return;
@@ -69,7 +31,7 @@ public static partial class OverviewComponents {
         ImGui.TableNextColumn();
 
         ImGui.TableNextColumn();
-        ActivityColumn(plugin, "Nearing Completion", NearingCompletionAchievements(plugin, unlockables));
+        NearingCompletionColumn(plugin, unlockables);
 
         ImGui.EndTable();
     }
@@ -82,6 +44,15 @@ public static partial class OverviewComponents {
         }).ToList();
 
         ActivityColumn(plugin, "Recently Obtained", entries);
+    }
+
+    private static void NearingCompletionColumn(Plugin plugin, UnlockablesState unlockables) {
+        var entries = unlockables.NearingCompletionAchievements.Select(candidate => {
+            var breadcrumb = unlockables.FindBreadcrumb(candidate.Achievement.Id);
+            return new ActivityEntry(candidate.Achievement, breadcrumb, FormatPercentage(candidate.Ratio));
+        }).ToList();
+
+        ActivityColumn(plugin, "Nearing Completion", entries);
     }
 
     private static void ActivityColumn(Plugin plugin, string title, IReadOnlyList<ActivityEntry> entries) {

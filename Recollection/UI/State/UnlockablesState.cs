@@ -1,6 +1,7 @@
 using MethodTimer;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Dalamud.Plugin.Services;
 using Recollection.Data;
@@ -12,6 +13,8 @@ using Recollection.Services;
 namespace Recollection.UI.State;
 
 public class UnlockablesState(Plugin plugin) {
+    private const int ActivityRowCount = 10;
+
     private readonly IPluginLog log = Plugin.GetLogger<UnlockablesState>();
     private readonly Configuration configuration = plugin.Configuration;
     private readonly MainLayout mainLayout = plugin.MainLayout;
@@ -34,6 +37,7 @@ public class UnlockablesState(Plugin plugin) {
     public MainLayout FilteredLayout { get; private set; } = plugin.MainLayout;
     public Score Achievement { get; private set; } = new(0, 0);
     public List<AchievementUpdate> RecentlyUnlockedAchievements { get; private set; } = [];
+    public List<AchievementCompletionRatio> NearingCompletionAchievements { get; private set; } = [];
 
     public void SetSearch(string value) {
         search = value.ToLower();
@@ -57,7 +61,21 @@ public class UnlockablesState(Plugin plugin) {
         unlockablesService.Refresh();
         ApplyFilters();
         Achievement = UnlockablesService.CalculateAchievementPoints();
+        RefreshActivity();
+    }
+
+    [Time]
+    public void RefreshActivity() {
         RecentlyUnlockedAchievements = databaseService.GetLastUnlockedAchievements(Plugin.PlayerState.ContentId);
+        NearingCompletionAchievements = mainLayout.Achievements
+                                                  .SelectMany(group => group.Items)
+                                                  .SelectMany(category => category.Sections)
+                                                  .SelectMany(section => section.Items)
+                                                  .Select(CompletionRatio)
+                                                  .Where(it => it.Ratio < 1.0)
+                                                  .OrderByDescending(it => it.Ratio)
+                                                  .Take(ActivityRowCount)
+                                                  .ToList();
     }
 
     public bool CollectionsLoaded => collectionsService.Loaded;
@@ -89,6 +107,7 @@ public class UnlockablesState(Plugin plugin) {
             staleLayouts.ForEach(layout => progressCache.Remove(layout));
             overallProgressCache = null;
             if (pinnedSnapshot.Any(unlockedAchievementIds.Contains)) pinnedProgressCache = null;
+            RefreshActivity();
         }
 
         foreach (var type in unlockedCollectionTypes) {
@@ -253,6 +272,14 @@ public class UnlockablesState(Plugin plugin) {
                     return new CategoryWithBreadcrumbs(category, $"{group.Name} / {category.Name}");
 
         return null;
+    }
+
+    private AchievementCompletionRatio CompletionRatio(AchievementLayoutItem item) {
+        return item switch {
+            AchievementLayoutItemSimple simple => unlockablesService.GetUnlockableAchievement(simple.Id).AchievementCompletionRatio(),
+            AchievementLayoutItemTiered tiered => unlockablesService.GetUnlockableTieredAchievement(tiered.Ids, tiered.Spoilers).AchievementCompletionRatio(),
+            _ => throw new InvalidDataException("Unmapped achievement layout item type")
+        };
     }
 
     private uint Rarity(AchievementLayoutItem item) {
