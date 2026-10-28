@@ -13,6 +13,9 @@ namespace Recollection.UI.Windows.Views.Overview;
 
 public static partial class OverviewComponents {
     private const string NoDataText = "No data.";
+    private const string Ellipsis = "...";
+
+    private static readonly Dictionary<uint, (float MaxWidth, string Text)> TruncatedNames = new();
 
     private readonly record struct ActivityEntry(UnlockableAchievement Achievement, string? Breadcrumb, string? Detail);
 
@@ -75,6 +78,12 @@ public static partial class OverviewComponents {
     private static void ActivityRow(ActivityEntry entry) {
         var achievement = entry.Achievement;
         var iconSize = ImGui.GetTextLineHeight();
+        var pointsText = $"+{achievement.Points}";
+        var rightWidth = ImGui.CalcTextSize(pointsText).X;
+        if (entry.Detail != null) {
+            rightWidth += ImGui.CalcTextSize(entry.Detail).X + UiSize.Em(0.5f);
+        }
+        var maxNameWidth = ImGui.GetContentRegionAvail().X - iconSize - ImGui.GetStyle().ItemSpacing.X - rightWidth - UiSize.Em(0.5f);
 
         ImGui.BeginGroup();
 
@@ -82,9 +91,8 @@ public static partial class OverviewComponents {
         ImGui.Image(wrap.Handle, new Vector2(iconSize, iconSize));
 
         ImGui.SameLine();
-        ImGui.TextColored(UiColors.Text(), achievement.Name);
+        ImGui.TextColored(UiColors.Text(), TruncateName(achievement, maxNameWidth));
 
-        var pointsText = $"+{achievement.Points}";
         if (entry.Detail != null) {
             RightAlignedTwoPart(entry.Detail, UiColors.Grey(), pointsText, UiColors.Progress());
         } else {
@@ -94,6 +102,29 @@ public static partial class OverviewComponents {
         ImGui.EndGroup();
 
         if (ImGui.IsItemHovered()) ImGui.SetTooltip(BuildTooltip(entry));
+    }
+
+    private static string TruncateName(UnlockableAchievement achievement, float maxWidth) {
+        if (TruncatedNames.TryGetValue(achievement.Id, out var cached) && Math.Abs(cached.MaxWidth - maxWidth) < 5f) return cached.Text;
+
+        var text = achievement.Name;
+        if (ImGui.CalcTextSize(text).X > maxWidth) {
+            var available = maxWidth - ImGui.CalcTextSize(Ellipsis).X;
+            var low = 0;
+            var high = text.Length;
+            while (low < high) {
+                var mid = (low + high + 1) / 2;
+                if (ImGui.CalcTextSize(text[..mid]).X <= available) {
+                    low = mid;
+                } else {
+                    high = mid - 1;
+                }
+            }
+            text = text[..low].TrimEnd() + Ellipsis;
+        }
+
+        TruncatedNames[achievement.Id] = (maxWidth, text);
+        return text;
     }
 
     private static string BuildTooltip(ActivityEntry entry) => $"In {entry.Breadcrumb ?? "(unknown)"}\n{entry.Achievement.Description}";
