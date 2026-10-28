@@ -63,7 +63,7 @@ public class SettingsView : IView {
                 Setter = (it, value) => it.DisableRomanNumerals = value,
             }
         ]),
-        new("Filters and sorting options", [
+        new("Filters", [
             new EnumSetting<UnlockStatusFilter> {
                 Name = "Filter by unlock status",
                 ValueName = ConfigEnumsExtensions.DisplayName,
