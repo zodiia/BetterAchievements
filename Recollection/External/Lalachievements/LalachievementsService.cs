@@ -18,6 +18,7 @@ public class LalachievementsService {
     private static readonly JsonSerializerOptions GameAllJsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     public static readonly IPluginLog Log = Plugin.GetLogger<LalachievementsService>();
     public readonly ConcurrentDictionary<uint, uint> AchievementRarity = new();
+    public event Action? OnAchievementRarityLoaded;
     public GameAllResponse? GameAll { get; private set; }
     public bool GameAllLoaded { get; private set; } = false;
 
@@ -48,6 +49,8 @@ public class LalachievementsService {
                     AchievementRarity[it.Id] = idx;
                     idx++;
                 }
+
+                await Plugin.Framework.RunOnFrameworkThread(() => OnAchievementRarityLoaded?.Invoke());
             }
         } catch (Exception exception) {
             Log.Error(exception, "Error requesting Lalachievements for achievement rarity");

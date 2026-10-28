@@ -7,6 +7,7 @@ using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Recollection.Data;
 using Recollection.Data.Unlockable;
+using Recollection.External.Lalachievements;
 using Recollection.Helpers;
 using Recollection.Services;
 
@@ -31,7 +32,7 @@ public sealed record AchievementRoulette(
     internal static DateTime ToLocalDateTime(long timestamp) => DateTimeOffset.FromUnixTimeSeconds(timestamp).LocalDateTime;
 }
 
-public readonly record struct AchievementPoolEntry(uint Id, string Breadcrumb, bool NextTier, bool HasCounter, byte Points);
+public readonly record struct AchievementPoolEntry(uint Id, string Breadcrumb, string Section, bool NextTier, bool HasCounter, byte Points, uint? RequiredQuest);
 
 public sealed class RouletteState : IDisposable {
     public const string LongDateFormat = "dd MMMM yyyy 'at' HH:mm";
@@ -41,6 +42,7 @@ public sealed class RouletteState : IDisposable {
     private readonly UnlockablesService unlockablesService;
     private readonly DatabaseService databaseService;
     private readonly AchievementRouletteService rouletteService;
+    private readonly LalachievementsService lalachievementsService;
 
     private List<AchievementPoolEntry> achievementPool = [];
 
@@ -48,7 +50,8 @@ public sealed class RouletteState : IDisposable {
     public List<AchievementRoulette> Completed { get; private set; } = [];
 
     public List<AchievementPoolEntry> RouletteCandidates { get; private set; } = [];
-    public Dictionary<string, int> CategoryCounts { get; private set; } = new();
+    public Dictionary<string, int> SectionCounts { get; private set; } = new();
+    public HashSet<string> PoolSections { get; private set; } = [];
 
     public RouletteState(Plugin plugin) {
         configuration = plugin.Configuration;
@@ -56,9 +59,11 @@ public sealed class RouletteState : IDisposable {
         unlockablesService = plugin.UnlockablesService;
         databaseService = plugin.DatabaseService;
         rouletteService = plugin.AchievementRouletteService;
+        lalachievementsService = plugin.LalachievementsService;
 
         rouletteService.OnRouletteChanged += Rebuild;
         rouletteService.OnRouletteProgress += OnRouletteProgress;
+        lalachievementsService.OnAchievementRarityLoaded += BuildPool;
         Plugin.UnlockState.Unlock += OnUnlock;
         Rebuild();
     }
@@ -66,6 +71,7 @@ public sealed class RouletteState : IDisposable {
     public void Dispose() {
         rouletteService.OnRouletteChanged -= Rebuild;
         rouletteService.OnRouletteProgress -= OnRouletteProgress;
+        lalachievementsService.OnAchievementRarityLoaded -= BuildPool;
         Plugin.UnlockState.Unlock -= OnUnlock;
     }
 
@@ -156,25 +162,27 @@ public sealed class RouletteState : IDisposable {
     private void BuildPool() {
         var active = rouletteService.GetActiveRoulette().Select(it => it.AchievementId).ToHashSet();
 
-        achievementPool = Categories().SelectMany(it => it.Category.Sections.Where(section => !section.Seasonal)
-                                                          .SelectMany(section => section.Items)
-                                                          .SelectMany(item => PoolEntries(item, it.Breadcrumb)))
+        achievementPool = Categories().SelectMany(it => it.Category.Sections.SelectMany(section => section.Items.SelectMany(item =>
+                                                          PoolEntries(item, it.Breadcrumb, $"{it.Breadcrumb} / {section.Name}"))))
                                       .Where(it => !active.Contains(it.Id))
                                       .ToList();
+        PoolSections = achievementPool.Select(it => it.Section).ToHashSet();
         ApplySettings();
     }
 
-    private static IEnumerable<AchievementPoolEntry> PoolEntries(AchievementLayoutItem item, string breadcrumb) {
+    private IEnumerable<AchievementPoolEntry> PoolEntries(AchievementLayoutItem item, string breadcrumb, string section) {
         var ids = item switch {
             AchievementLayoutItemSimple simple => [simple.Id],
             AchievementLayoutItemTiered tiered => tiered.Ids,
             _ => [],
         };
 
+        if (ids.Count == 0 || !lalachievementsService.AchievementRarity.ContainsKey(ids.Last())) return [];
+
         return ids.Select(ExcelSheets.Achievement.Value.GetRowOrDefault)
                   .OfType<Achievement>()
                   .Where(it => it.IsValidEntry() && !Plugin.UnlockState.IsAchievementComplete(it))
-                  .Select((it, index) => new AchievementPoolEntry(it.RowId, breadcrumb, index == 0, it.Maximum() > 1, it.Points));
+                  .Select((it, index) => new AchievementPoolEntry(it.RowId, breadcrumb, section, index == 0, it.Maximum() > 1, it.Points, item.RequiredQuest));
     }
 
     private void ApplySettings() {
@@ -188,14 +196,20 @@ public sealed class RouletteState : IDisposable {
 
             if (configuration.RouletteNextTierOnly && !entry.NextTier) continue;
             if (configuration.RouletteOnlyWithCounter && !entry.HasCounter) continue;
+            // TODO: apply RouletteOnlyWithRewards once ContainsRewardsFilter.Rewards is implemented
 
-            counts[entry.Breadcrumb] = counts.GetValueOrDefault(entry.Breadcrumb) + 1;
-            if (!configuration.RouletteDisabledCategories.Contains(entry.Breadcrumb)) {
+            if (configuration.RouletteOnlyAvailable && entry.RequiredQuest is { } requiredQuest &&
+                !Plugin.UnlockState.IsQuestCompleted(ExcelSheets.Quest.Value.GetRow(requiredQuest))) {
+                continue;
+            }
+
+            counts[entry.Section] = counts.GetValueOrDefault(entry.Section) + 1;
+            if (!configuration.RouletteDisabledCategories.Contains(entry.Section)) {
                 candidates.Add(entry);
             }
         }
 
-        CategoryCounts = counts;
+        SectionCounts = counts;
         RouletteCandidates = candidates;
     }
 }

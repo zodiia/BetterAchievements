@@ -8,7 +8,7 @@ namespace Recollection;
 
 [Serializable]
 public class Configuration : IPluginConfiguration {
-    public int Version { get; set; } = 11;
+    public int Version { get; set; } = 12;
 
     // UI settings
     public float ProgressBarHeight = 1.5f;
@@ -36,6 +36,8 @@ public class Configuration : IPluginConfiguration {
     public int RouletteMaxPoints = 50;
     public bool RouletteNextTierOnly = false;
     public bool RouletteOnlyWithCounter = false;
+    public bool RouletteOnlyAvailable = true;
+    public bool RouletteOnlyWithRewards = false;
 
     // TODO: Remove
     public List<uint> PinnedAchievements { get; set; } = new();
