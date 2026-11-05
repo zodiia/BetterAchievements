@@ -235,6 +235,13 @@ public static partial class UiComponents {
         AchievementDescriptionTieredMaxLevel(currentLevel, maxLevel, progressLoaded, config);
     }
 
+    private static string TieredAchievementGetName(UnlockableTieredAchievement achievements, int tier) {
+        var achievement = achievements.ProvidesAchievements[Math.Max(tier, 1) - 1];
+
+        if (tier == achievements.Maximum && achievements.Spoilers && !achievement.Unlocked) return "???";
+        return achievement.Name;
+    }
+
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements, Configuration config) {
         var currentString = config.DisableRomanNumerals ? (achievements.Current ?? 1).ToString() : ToRoman(achievements.Current ?? 1);
         var maximumString = config.DisableRomanNumerals ? achievements.Maximum.ToString() : ToRoman(achievements.Maximum);
@@ -242,6 +249,9 @@ public static partial class UiComponents {
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
         ImGui.TextColored(achievements.ProvidesAchievements.Last().Unlocked ? UiColors.Green() : UiColors.Red(), maximumString);
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip(TieredAchievementGetName(achievements, (int)achievements.Maximum));
+        }
         position -= UiSize.Em(1) + ImGui.CalcTextSize("/").X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
@@ -250,6 +260,9 @@ public static partial class UiComponents {
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
         ImGui.TextColored(UiColors.Green(), currentString);
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip(TieredAchievementGetName(achievements, (int)(achievements.Current ?? 1)));
+        }
     }
 
     private static void TieredAchievementTiers(UnlockableTieredAchievement achievements, Configuration config) {
@@ -267,6 +280,9 @@ public static partial class UiComponents {
             ImGui.SameLine();
             ImGui.SetCursorPosX(position);
             ImGui.TextColored(achievements.ProvidesAchievements[i - 1].Unlocked ? UiColors.Green() : UiColors.Red(), text);
+            if (ImGui.IsItemHovered()) {
+                ImGui.SetTooltip(TieredAchievementGetName(achievements, i));
+            }
             if (i != achievements.Maximum) {
                 position += UiSize.Em(1) + ImGui.CalcTextSize(text).X;
             }
