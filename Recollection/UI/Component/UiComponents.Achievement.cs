@@ -238,12 +238,12 @@ public static partial class UiComponents {
     private static string TieredAchievementGetName(UnlockableTieredAchievement achievements, int tier) {
         var achievement = achievements.ProvidesAchievements[Math.Max(tier, 1) - 1];
 
-        if (tier == achievements.Maximum && achievements.Spoilers && !achievement.Unlocked) return "???";
+        if ((tier == achievements.Maximum || tier <= 1) && achievements.Spoilers && !achievement.Unlocked) return "???";
         return achievement.Name;
     }
 
     private static void TieredAchievementSimpleTiers(UnlockableTieredAchievement achievements, Configuration config) {
-        var currentString = config.DisableRomanNumerals ? (achievements.Current ?? 1).ToString() : ToRoman(achievements.Current ?? 1);
+        var currentString = config.DisableRomanNumerals ? Math.Max(achievements.Current ?? 1, 1u).ToString() : ToRoman(Math.Max(achievements.Current ?? 1, 1u));
         var maximumString = config.DisableRomanNumerals ? achievements.Maximum.ToString() : ToRoman(achievements.Maximum);
         var position = ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(maximumString).X;
         ImGui.SameLine();
@@ -259,7 +259,7 @@ public static partial class UiComponents {
         position -= UiSize.Em(1) + ImGui.CalcTextSize(currentString).X;
         ImGui.SameLine();
         ImGui.SetCursorPosX(position);
-        ImGui.TextColored(UiColors.Green(), currentString);
+        ImGui.TextColored(achievements.Current > 0 ? UiColors.Green() : UiColors.Red(), currentString);
         if (ImGui.IsItemHovered()) {
             ImGui.SetTooltip(TieredAchievementGetName(achievements, (int)(achievements.Current ?? 1)));
         }
